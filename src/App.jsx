@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import heroImg from "./assets/hero.png";
+import logo from "./assets/logo.png"; 
 
 const NAV = [
   { id: "home", label: "Home" },
@@ -87,7 +88,7 @@ export default function App() {
             className="flex items-center gap-3"
             aria-label="Ir para início"
           >
-            <span className="text-lg font-semibold">Stock Capital MFO</span>
+            <img src={logo} alt="Logo Stock Capital MFO" className="h-24 w-auto" />
           </button>
 
           {/* Botão hambúrguer (sempre visível) */}
