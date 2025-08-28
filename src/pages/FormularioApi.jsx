@@ -61,7 +61,7 @@ export default function FormularioApi() {
           }}
           className="grid gap-6 rounded-2xl border border-white/10 bg-white/5 p-8 shadow-xl"
         >
-          <h1 className="text-2xl font-display text-center">Formulário de API</h1>
+          <h1 className="text-3xl font-bold text-center">Formulário de API</h1>
 
           {/* Honeypot anti-spam (oculto) */}
           <input
