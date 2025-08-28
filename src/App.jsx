@@ -302,33 +302,21 @@ export default function App() {
           </div>
         </Section>
 
-        <Section id="formulario-api" title="Formulário de API" subtitle="Análise de Perfil do Investidor (rótulo e CTA de demonstração).">
-          <form
-            onSubmit={(e) => {
-              e.preventDefault();
-              alert("Demonstração: os dados seriam enviados para o endpoint/APIs de suitability.");
-            }}
-            className="grid gap-4 rounded-2xl border border-white/10 bg-white/5 p-5"
-          >
-            <div className="grid gap-1">
-              <label className="text-sm text-white/80">Nome</label>
-              <input className="rounded-lg border border-white/10 bg-black/30 px-3 py-2 outline-none focus:ring-2 focus:ring-white/20" placeholder="Seu nome" />
-            </div>
-            <div className="grid gap-1">
-              <label className="text-sm text-white/80">E-mail</label>
-              <input type="email" className="rounded-lg border border-white/10 bg-black/30 px-3 py-2 outline-none focus:ring-2 focus:ring-white/20" placeholder="voce@email.com" />
-            </div>
-            <div className="grid gap-1">
-              <label className="text-sm text-white/80">Horizonte de investimento</label>
-              <select className="rounded-lg border border-white/10 bg-black/30 px-3 py-2 outline-none focus:ring-2 focus:ring-white/20">
-                <option>Curto (até 1 ano)</option>
-                <option>Médio (1 a 5 anos)</option>
-                <option>Longo (5+ anos)</option>
-              </select>
-            </div>
-            <button className="mt-2 w-full rounded-xl bg-white px-5 py-3 text-sm font-semibold text-neutral-900 hover:bg-white/90">Enviar</button>
-          </form>
-        </Section>
+        <Section
+  id="formulario-api"
+  title="Formulário de API"
+  subtitle="Descubra seu perfil de investidor preenchendo nosso questionário de suitability."
+>
+  <div className="flex justify-center">
+    <a
+      href="/formulario-api"
+      className="rounded-xl bg-white px-6 py-3 text-sm font-semibold text-neutral-900 shadow hover:bg-white/90"
+    >
+      Preencher formulário
+    </a>
+  </div>
+</Section>
+
 
         <Section id="midias" title="Mídias" subtitle="Coletânea de entrevistas, artigos e menções na imprensa.">
           <Cards
