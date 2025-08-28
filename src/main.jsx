@@ -6,8 +6,9 @@ import App from "./App.jsx";
 import FormularioApi from "./pages/FormularioApi.jsx";
 
 const router = createBrowserRouter([
-  { path: "/", element: <App /> },
-  { path: "/formulario-api", element: <FormularioApi /> },
+  { path: "/", element: <App /> },                 // sua landing
+  { path: "/formulario-api", element: <FormularioApi /> }, // página do formulário
+  { path: "*", element: <App /> },                 // catch-all opcional
 ]);
 
 createRoot(document.getElementById("root")).render(

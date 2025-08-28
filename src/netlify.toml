@@ -3,11 +3,17 @@
   publish = "dist"
 
 [functions]
+  directory = "netlify/functions"
   node_bundler = "esbuild"
-  external_node_modules = []
-  included_files = []
 
+# API -> Function
 [[redirects]]
   from = "/api/form"
   to = "/.netlify/functions/send-to-pipefy"
+  status = 200
+
+# SPA -> sempre servir index.html
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
   status = 200

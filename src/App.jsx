@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
+import { Link } from "react-router-dom"; 
 import heroImg from "./assets/hero.png";
 import logo from "./assets/logo.png"; 
 
@@ -308,12 +309,11 @@ export default function App() {
   subtitle="Descubra seu perfil de investidor preenchendo nosso questionário de suitability."
 >
   <div className="flex justify-center">
-    <a
-      href="/formulario-api"
-      className="rounded-xl bg-white px-6 py-3 text-sm font-semibold text-neutral-900 shadow hover:bg-white/90"
-    >
+    <Link
+      to="/formulario-api"
+      className="rounded-xl bg-white px-6 py-3 text-sm font-semibold text-neutral-900 shadow hover:bg-white/90">
       Preencher formulário
-    </a>
+      </Link>
   </div>
 </Section>
 
