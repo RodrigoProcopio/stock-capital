@@ -2,15 +2,18 @@
 
 const GQL = "https://api.pipefy.com/graphql";
 
-/** Busca metadados do campo (id, internal_id, type, options) */
-async function getFieldMeta(token, pipeId, targetFieldIdOrInternal) {
-  const query = `
+const norm = (s) => String(s ?? "").normalize("NFKC").trim().toLowerCase();
+
+/** Busca metadados dos campos do start form e tenta identificar o campo de 'Objetivos' de forma resiliente */
+async function findObjetivosFieldMeta(token, pipeId, hint) {
+  const q = `
     query ($pipeId: ID!) {
       pipe(id: $pipeId) {
         id
         start_form_fields {
           id
           internal_id
+          label
           type
           options
         }
@@ -19,22 +22,33 @@ async function getFieldMeta(token, pipeId, targetFieldIdOrInternal) {
   const res = await fetch(GQL, {
     method: "POST",
     headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-    body: JSON.stringify({ query, variables: { pipeId } }),
+    body: JSON.stringify({ query: q, variables: { pipeId } }),
   });
   const json = await res.json();
-  if (json.errors) throw new Error("pipefy getFieldMeta: " + JSON.stringify(json.errors));
+  if (json.errors) throw new Error("pipefy get fields: " + JSON.stringify(json.errors));
+
   const fields = json.data?.pipe?.start_form_fields ?? [];
-  // Tenta bater por id OU por internal_id (caso a env tenha vindo errada com o número)
-  return fields.find(f => f.id === targetFieldIdOrInternal || f.internal_id === targetFieldIdOrInternal);
+
+  // 1) tenta por id ou internal_id exatamente
+  let meta =
+    fields.find(f => f.id === hint || f.internal_id === hint) ||
+    // 2) tenta por label (normalizado)
+    fields.find(f => norm(f.label) === norm("Objetivos principais")) ||
+    // 3) tenta por id normalizado (caso haja variação de unicode)
+    fields.find(f => norm(f.id) === norm(hint) || norm(f.internal_id) === norm(hint)) ||
+    // 4) pega o primeiro checklist do start form (fallback agressivo)
+    fields.find(f => f.type === "checklist");
+
+  return { meta, fields }; // devolve lista inteira pra log em caso de erro
 }
 
-function normalizeArrayOfStrings(arr) {
+function normalizeArray(arr) {
   return (Array.isArray(arr) ? arr : [])
-    .map(s => String(s ?? "").trim())
+    .map((s) => String(s ?? "").trim())
     .filter(Boolean);
 }
 
-async function tryCreateCard(token, variables) {
+async function gqlCreate(token, variables) {
   const mutation = `
     mutation ($input: CreateCardInput!) {
       createCard(input: $input) {
@@ -46,9 +60,9 @@ async function tryCreateCard(token, variables) {
     headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
     body: JSON.stringify({ query: mutation, variables }),
   });
-  const text = await res.text();
-  let json; try { json = JSON.parse(text); } catch { json = { raw: text }; }
-  return { ok: res.ok && !json.errors, res, json, raw: text };
+  const txt = await res.text();
+  let json; try { json = JSON.parse(txt); } catch { json = { raw: txt }; }
+  return { ok: res.ok && !json.errors, json, raw: txt };
 }
 
 export async function handler(event) {
@@ -63,7 +77,6 @@ export async function handler(event) {
   try {
     const body = JSON.parse(event.body || "{}");
     const { nome, email, telefone, horizonte, experiencia, risco, objetivos = [] } = body;
-
     if (!nome || !email) {
       return { statusCode: 400, headers: cors, body: JSON.stringify({ error: "Campos obrigatórios ausentes (nome, email)." }) };
     }
@@ -77,143 +90,83 @@ export async function handler(event) {
     const FIELD_HOR    = process.env.PIPEFY_FIELD_HOR;
     const FIELD_EXP    = process.env.PIPEFY_FIELD_EXP;
     const FIELD_RISCO  = process.env.PIPEFY_FIELD_RISCO;
-    const FIELD_OBJENV = process.env.PIPEFY_FIELD_OBJ; // pode ser "objetivos_principais" ou, por engano, o internal_id numérico
+    const FIELD_OBJENV = process.env.PIPEFY_FIELD_OBJ; // ex: "objetivos_principais" ou "418233619"
 
-    // Monta campos básicos
-    const fields = [
+    // Campos base
+    const baseFields = [
       { field_id: FIELD_NOME,  field_value: nome },
       { field_id: FIELD_EMAIL, field_value: email },
     ];
-    if (telefone)    fields.push({ field_id: FIELD_TEL,   field_value: telefone });
-    if (horizonte)   fields.push({ field_id: FIELD_HOR,   field_value: horizonte });
-    if (experiencia) fields.push({ field_id: FIELD_EXP,   field_value: experiencia });
-    if (risco)       fields.push({ field_id: FIELD_RISCO, field_value: risco });
+    if (telefone)    baseFields.push({ field_id: FIELD_TEL,   field_value: telefone });
+    if (horizonte)   baseFields.push({ field_id: FIELD_HOR,   field_value: horizonte });
+    if (experiencia) baseFields.push({ field_id: FIELD_EXP,   field_value: experiencia });
+    if (risco)       baseFields.push({ field_id: FIELD_RISCO, field_value: risco });
 
-    // ===== OBJETIVOS (CHECKLIST) =====
-    const selecionados = normalizeArrayOfStrings(objetivos);
+    const selecionados = normalizeArray(objetivos);
 
-    if (selecionados.length) {
-      // Metadados do campo (garante id e internal_id corretos e pega as opções)
-      const meta = await getFieldMeta(TOKEN, PIPE_ID, FIELD_OBJENV);
-      if (!meta) {
-        return {
-          statusCode: 400,
-          headers: cors,
-          body: JSON.stringify({
-            error: "Campo 'Objetivos principais' não encontrado no start form.",
-            procurado_por: FIELD_OBJENV
-          })
-        };
+    // Se NÃO tiver objetivos, cria sem esse campo e pronto
+    if (!selecionados.length) {
+      const variables = { input: { pipe_id: PIPE_ID, title: `Lead • ${nome}`, fields_attributes: baseFields } };
+      const r = await gqlCreate(TOKEN, variables);
+      if (!r.ok) {
+        return { statusCode: 502, headers: cors, body: JSON.stringify({ error: "Falha ao criar card no Pipefy", detail: r.json || r.raw }) };
       }
+      return { statusCode: 200, headers: { ...cors, "Content-Type": "application/json" }, body: JSON.stringify({ ok: true, card: r.json.data.createCard.card }) };
+    }
 
-      // Valida opções (no checklist, options é array de strings)
-      const allowList = normalizeArrayOfStrings(meta.options);
-      const asMap = new Map(allowList.map(o => [o.toLowerCase(), o]));
-      const normalizados = selecionados.map(s => asMap.get(s.toLowerCase())).filter(Boolean);
+    // >>> Com objetivos: identificar o campo de forma resiliente
+    const { meta, fields: allFields } = await findObjetivosFieldMeta(TOKEN, PIPE_ID, FIELD_OBJENV);
 
-      if (!normalizados.length) {
-        return {
-          statusCode: 400,
-          headers: cors,
-          body: JSON.stringify({
-            error: "Nenhuma opção de 'Objetivos principais' corresponde às opções do Pipefy.",
-            enviados: selecionados,
-            opcoesPipefy: allowList
-          })
-        };
-      }
-
-      // Prepara duas versões do mesmo campo: usando id (padrão) e internal_id (fallback)
-      const fieldWithId         = { field_id: meta.id,          field_value: normalizados };
-      const fieldWithInternalId = { field_id: meta.internal_id, field_value: normalizados };
-
-      // Primeiro tenta com o id canônico
-      const variables1 = {
-        input: { pipe_id: PIPE_ID, title: `Lead • ${nome}`, fields_attributes: [...fields, fieldWithId] }
-      };
-      let attempt = await tryCreateCard(TOKEN, variables1);
-
-      // Se falhou especificamente por “Fields not found with ids: …”, tenta com internal_id
-      const msg = attempt.json?.errors?.[0]?.message || "";
-      const isFieldNotFound = /Fields not found with ids/i.test(msg);
-
-      if (!attempt.ok && isFieldNotFound) {
-        const variables2 = {
-          input: { pipe_id: PIPE_ID, title: `Lead • ${nome}`, fields_attributes: [...fields, fieldWithInternalId] }
-        };
-        attempt = await tryCreateCard(TOKEN, variables2);
-
-        if (!attempt.ok) {
-          return {
-            statusCode: 502,
-            headers: cors,
-            body: JSON.stringify({
-              error: "Falha ao criar card no Pipefy (fallback internal_id também falhou).",
-              first_try_message: msg,
-              second_try_message: attempt.json?.errors?.[0]?.message || "",
-              detail_first: variables1,
-              detail_second: variables2
-            })
-          };
-        }
-
-        // Sucesso no fallback
-        return {
-          statusCode: 200,
-          headers: { ...cors, "Content-Type": "application/json" },
-          body: JSON.stringify({ ok: true, card: attempt.json.data.createCard.card, used: "internal_id" })
-        };
-      }
-
-      // Sucesso na primeira tentativa
-      if (attempt.ok) {
-        return {
-          statusCode: 200,
-          headers: { ...cors, "Content-Type": "application/json" },
-          body: JSON.stringify({ ok: true, card: attempt.json.data.createCard.card, used: "id" })
-        };
-      }
-
-      // Falha diferente (não é “Fields not found…”)
+    if (!meta) {
       return {
-        statusCode: 502,
+        statusCode: 400,
         headers: cors,
         body: JSON.stringify({
-          error: "Falha ao criar card no Pipefy",
-          message: msg || "Erro desconhecido",
-          detail: attempt.json || attempt.raw
+          error: "Campo 'Objetivos principais' não encontrado no start form.",
+          procurado_por: FIELD_OBJENV,
+          start_form_fields_snapshot: allFields // ajuda no log
         })
       };
     }
 
-    // ===== caso NÃO haja objetivos marcados, segue normal =====
-    const variables = {
-      input: {
-        pipe_id: PIPE_ID,
-        title: `Lead • ${nome}`,
-        fields_attributes: fields,
-      },
-    };
+    // Validação das opções (checklist usa array de strings exatamente como nas options)
+    const allow = normalizeArray(meta.options);
+    const allowMap = new Map(allow.map(o => [norm(o), o]));
+    const normed = selecionados.map(s => allowMap.get(norm(s))).filter(Boolean);
 
-    const attempt = await tryCreateCard(TOKEN, variables);
-    if (!attempt.ok) {
+    if (!normed.length) {
       return {
-        statusCode: 502,
+        statusCode: 400,
         headers: cors,
         body: JSON.stringify({
-          error: "Falha ao criar card no Pipefy",
-          message: attempt.json?.errors?.[0]?.message || "Erro desconhecido",
-          detail: attempt.json || attempt.raw
+          error: "Nenhuma opção de 'Objetivos principais' corresponde às opções do Pipefy.",
+          enviados: selecionados,
+          opcoesPipefy: allow
         })
       };
     }
 
-    return {
-      statusCode: 200,
-      headers: { ...cors, "Content-Type": "application/json" },
-      body: JSON.stringify({ ok: true, card: attempt.json.data.createCard.card })
-    };
+    // Tenta primeiro com o id; se vier "Fields not found with ids", tenta internal_id
+    const withId = { field_id: meta.id, field_value: normed };
+    const v1 = { input: { pipe_id: PIPE_ID, title: `Lead • ${nome}`, fields_attributes: [...baseFields, withId] } };
+    let r1 = await gqlCreate(TOKEN, v1);
 
+    if (r1.ok) {
+      return { statusCode: 200, headers: { ...cors, "Content-Type": "application/json" }, body: JSON.stringify({ ok: true, used: "id", card: r1.json.data.createCard.card }) };
+    }
+
+    const msg = r1.json?.errors?.[0]?.message || "";
+    if (/Fields not found with ids/i.test(msg) && meta.internal_id) {
+      const withInternal = { field_id: meta.internal_id, field_value: normed };
+      const v2 = { input: { pipe_id: PIPE_ID, title: `Lead • ${nome}`, fields_attributes: [...baseFields, withInternal] } };
+      const r2 = await gqlCreate(TOKEN, v2);
+      if (r2.ok) {
+        return { statusCode: 200, headers: { ...cors, "Content-Type": "application/json" }, body: JSON.stringify({ ok: true, used: "internal_id", card: r2.json.data.createCard.card }) };
+      }
+      return { statusCode: 502, headers: cors, body: JSON.stringify({ error: "Falha ao criar card no Pipefy (fallback internal_id)", first_try: r1.json, second_try: r2.json }) };
+    }
+
+    return { statusCode: 502, headers: cors, body: JSON.stringify({ error: "Falha ao criar card no Pipefy", detail: r1.json || r1.raw }) };
   } catch (e) {
     return { statusCode: 500, headers: cors, body: JSON.stringify({ error: "Erro interno", detail: String(e) }) };
   }
