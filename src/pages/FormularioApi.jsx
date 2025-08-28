@@ -5,7 +5,7 @@ export default function FormularioApi() {
   const [loading, setLoading] = useState(false);
 
   return (
-    <div className="min-h-screen bg-neutral-950 text-neutral-100 flex flex-col items-center p-6">
+    <div className="min-h-screen bg-neutral-950 text-neutral-100 flex flex-col items-center p-6 font-sans">
       <img src={logo} alt="Stock Capital" className="h-24 w-auto mb-6" />
       <main className="w-full max-w-2xl">
         <form
