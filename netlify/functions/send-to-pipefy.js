@@ -1,6 +1,6 @@
 // netlify/functions/send-to-pipefy.js
 
-// Busca as opções (strings) do campo no start form do pipe
+// Busca as opções (strings) do campo no start form do pipe (com inline fragments)
 async function getFieldOptionsStrings(token, pipeId, targetFieldId) {
     const query = `
       query ($pipeId: ID!) {
@@ -8,18 +8,29 @@ async function getFieldOptionsStrings(token, pipeId, targetFieldId) {
           start_form_fields {
             id
             type
-            options    # <- no seu pipe este campo é uma lista de strings (sem { id name })
+            # os campos que têm "options" exposto como [String]
+            ... on ChecklistVerticalField   { options }
+            ... on ChecklistHorizontalField { options }
+            ... on LabelsSelectField        { options }
+            ... on ListSelectField          { options }  # select de uma opção
           }
         }
       }`;
+  
     const res = await fetch("https://api.pipefy.com/graphql", {
       method: "POST",
       headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
       body: JSON.stringify({ query, variables: { pipeId } }),
     });
-    const json = await res.json();
-    if (json.errors) throw new Error(JSON.stringify(json.errors));
-    const field = json.data?.pipe?.start_form_fields?.find(f => f.id === targetFieldId);
+  
+    const text = await res.text();
+    let json; try { json = JSON.parse(text); } catch { json = { raw: text }; }
+  
+    // Se a API devolver erro (ex.: algum fragmento não existir), retornamos [] para não travar o envio
+    if (!res.ok || json.errors) return [];
+  
+    const field = json?.data?.pipe?.start_form_fields?.find(f => f.id === targetFieldId);
+    // Em tipos sem "options", será undefined -> devolvemos []
     return Array.isArray(field?.options) ? field.options : [];
   }
   
@@ -60,35 +71,32 @@ async function getFieldOptionsStrings(token, pipeId, targetFieldId) {
       if (experiencia) fields.push({ field_id: FIELD_EXP,   field_value: experiencia });
       if (risco)       fields.push({ field_id: FIELD_RISCO, field_value: risco });
   
-      // -------- OBJETIVOS (array de strings) --------
+      // -------- OBJETIVOS (array de strings para Checklist) --------
       if (Array.isArray(objetivos) && objetivos.length) {
-        // pega do Pipefy as opções válidas (strings)
-        const allowed = await getFieldOptionsStrings(TOKEN, Number(PIPE_ID), FIELD_OBJ);
+        // tenta obter as opções do Pipefy; se vier vazio, não bloqueia o envio
+        const allowed = await getFieldOptionsStrings(TOKEN, String(PIPE_ID), FIELD_OBJ);
   
-        // normalizador p/ comparação case-insensitive
-        const norm = s => String(s).trim().toLowerCase();
-        const mapAllowed = new Map(allowed.map(opt => [norm(opt), opt]));
+        if (allowed.length > 0) {
+          // normalizador p/ comparação case-insensitive
+          const norm = s => String(s).trim().toLowerCase();
+          const mapAllowed = new Map(allowed.map(opt => [norm(opt), opt]));
   
-        // converte os textos do formulário para a grafia oficial do Pipefy
-        const objetivosNormalizados = objetivos
-          .map(txt => mapAllowed.get(norm(txt)))
-          .filter(Boolean);
+          // converte os textos do formulário para a grafia oficial do Pipefy
+          const objetivosNormalizados = objetivos
+            .map(txt => mapAllowed.get(norm(txt)))
+            .filter(Boolean);
   
-        if (!objetivosNormalizados.length) {
-          return {
-            statusCode: 400,
-            headers: cors,
-            body: JSON.stringify({
-              error: "Nenhuma opção de 'Objetivos principais' corresponde às opções do Pipefy.",
-              enviados: objetivos,
-              opcoesPipefy: allowed
-            })
-          };
+          // Se nada corresponder, ainda assim enviaremos os valores crus — evita 400
+          fields.push({
+            field_id: FIELD_OBJ,
+            field_value: objetivosNormalizados.length ? objetivosNormalizados : objetivos
+          });
+        } else {
+          // Sem opções retornadas do schema -> envia o array como está
+          fields.push({ field_id: FIELD_OBJ, field_value: objetivos });
         }
-  
-        fields.push({ field_id: FIELD_OBJ, field_value: objetivosNormalizados }); // << envia array de strings
       }
-      // ---------------------------------------------
+      // -------------------------------------------------------------
   
       const variables = {
         input: {
@@ -115,7 +123,11 @@ async function getFieldOptionsStrings(token, pipeId, targetFieldId) {
         return { statusCode: 502, headers: cors, body: JSON.stringify({ error: "Falha ao criar card no Pipefy", message: msg, detail: json }) };
       }
   
-      return { statusCode: 200, headers: { ...cors, "Content-Type": "application/json" }, body: JSON.stringify({ ok: true, card: json.data.createCard.card }) };
+      return {
+        statusCode: 200,
+        headers: { ...cors, "Content-Type": "application/json" },
+        body: JSON.stringify({ ok: true, card: json.data.createCard.card })
+      };
     } catch (e) {
       return { statusCode: 500, headers: cors, body: JSON.stringify({ error: "Erro interno", detail: String(e) }) };
     }
