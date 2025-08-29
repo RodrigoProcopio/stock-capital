@@ -10,3 +10,15 @@
 body {
   @apply font-sans;
 }
+
+/* Tipografia e cor de texto global confortável */
+:root {
+  color: #333846; /* slate-ink */
+  background: #fff;
+}
+
+h1, h2, h3 {
+  color: #1c2846; /* brand-navy */
+}
+
+/* Em seções escuras, os títulos já herdarão text-white pela classe do wrapper */
