@@ -513,7 +513,7 @@ export default function FormularioApi() {
 
           <Section title="Perfil e Objetivos">
             <RadioGroup
-              label="PERGUNTA CHAVE 01"
+              label="PERGUNTA CHAVE 01 - Assuma que uma epidemia chegou numa cidade e tem potencial de infectar 600 pessoas. Você precisa escolher o programa de saúde pública que vai salvar essa cidade:"
               required
               options={OPT.chave_01}
               value={form[F.chave01]}
@@ -538,7 +538,7 @@ export default function FormularioApi() {
             />
 
             <RadioGroup
-              label="PERGUNTA CHAVE 02"
+              label="PERGUNTA CHAVE 02 - Assuma que uma epidemia chegou numa cidade e tem potencial de infectar 600 pessoas. Você precisa escolher o programa de saúde pública que vai salvar essa cidade:"
               required
               options={OPT.chave_02}
               value={form[F.chave02]}
