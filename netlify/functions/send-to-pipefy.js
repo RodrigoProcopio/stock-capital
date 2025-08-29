@@ -1,5 +1,57 @@
 // netlify/functions/send-to-pipefy.js
 
+async function fetchStartFormOptions(token, pipeId) {
+  const query = `
+    query ($id: ID!) {
+      pipe(id: $id) {
+        start_form_fields {
+          id
+          type
+          options   # em campos de lista o Pipefy devolve array de strings
+        }
+      }
+    }`;
+  const res = await fetch("https://api.pipefy.com/graphql", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+    body: JSON.stringify({ query, variables: { id: pipeId } }),
+  });
+  const json = await res.json();
+  if (json.errors) throw new Error(JSON.stringify(json.errors));
+  const map = new Map();
+  (json.data?.pipe?.start_form_fields || []).forEach(f => {
+    if (Array.isArray(f.options) && f.options.length) map.set(f.id, f.options);
+  });
+  return map; // Map<field_id, string[]>
+}
+
+// normalizador simples: tira acentos, trim, e colapsa espaços; compara case-insensitive
+function norm(s) {
+  return String(s)
+    .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+    .replace(/\s+/g, " ")
+    .trim()
+    .toLowerCase();
+}
+
+// casa um valor simples com a lista permitida do Pipefy (retorna o texto oficial do Pipefy)
+function normalizeSingleToAllowed(value, allowed) {
+  const table = new Map(allowed.map(opt => [norm(opt), opt]));
+  return table.get(norm(value)) || null;
+}
+
+// casa um array de valores com a lista permitida
+function normalizeManyToAllowed(values, allowed) {
+  const table = new Map(allowed.map(opt => [norm(opt), opt]));
+  const ok = [];
+  const bad = [];
+  for (const v of values) {
+    const hit = table.get(norm(v));
+    if (hit) ok.push(hit); else bad.push(v);
+  }
+  return { ok, bad };
+}
+
 export async function handler(event) {
   const CORS = {
     "Access-Control-Allow-Origin": "*",
@@ -11,11 +63,10 @@ export async function handler(event) {
   if (event.httpMethod !== "POST") return { statusCode: 405, headers: CORS, body: "Method Not Allowed" };
 
   try {
-    const PIPE_ID = process.env.PIPEFY_PIPE_ID;   // ex.: 306574957
+    const PIPE_ID = process.env.PIPEFY_PIPE_ID;   // 306574957
     const TOKEN   = process.env.PIPEFY_TOKEN;
 
-    // ---------- IDs EXATOS do Pipefy (copiados do start_form_fields) ----------
-    // Singles obrigatórios do seu pipe:
+    // IDs EXATOS do Pipefy (copiados do start_form_fields)
     const REQUIRED_SINGLES = [
       "nome_do_cliente",
       "telefone_para_contato_whatsapp",
@@ -36,12 +87,10 @@ export async function handler(event) {
       "sobre_os_conceitos_de_marca_o_a_mercado_em_t_tulos_de_renda_fixa",
     ];
 
-    // Singles opcionais:
     const OPTIONAL_SINGLES = [
       "descreva_brevemente_a_composi_o_da_sua_renda_mensal",
     ];
 
-    // Multiseleção (arrays):
     const MULTI_FIELDS = [
       "qual_a_principal_finalidade_de_investir",
       "especifique_o_perfil_de_dependentes",
@@ -50,93 +99,113 @@ export async function handler(event) {
       "quais_os_tipos_de_investimentos_que_voc_mais_se_identifica",
     ];
 
-    // Perguntas chave (singles) – já estão dentro de REQUIRED_SINGLES
-    // ----------------------------------------------------------------
-
     const body = JSON.parse(event.body || "{}");
 
-    // 1) Validação local dos obrigatórios (antes de chamar o Pipefy)
-    const missing = REQUIRED_SINGLES.filter((id) => {
+    // 1) valida obrigatórios (só checa vazio)
+    const missing = REQUIRED_SINGLES.filter(id => {
       const v = body[id];
       return v === undefined || v === null || String(v).trim() === "";
     });
-
     if (missing.length) {
       return {
         statusCode: 400,
         headers: CORS,
-        body: JSON.stringify({
-          error: "Campos obrigatórios ausentes no payload recebido.",
-          missing,
-          receivedKeys: Object.keys(body).sort(),
-        }),
+        body: JSON.stringify({ error: "Campos obrigatórios ausentes.", missing })
       };
     }
 
-    // 2) Montagem do fields_attributes usando os MESMOS IDs do Pipefy
+    // 2) baixa opções válidas do Pipefy e normaliza tudo que for de lista
+    const optionsMap = await fetchStartFormOptions(TOKEN, Number(PIPE_ID));
     const fields_attributes = [];
+    const notMatched = []; // para reportar o que não casou
 
-    const pushIf = (id) => {
+    // helper para enviar singles
+    const pushSingle = (id) => {
       const v = body[id];
-      if (v === undefined || v === null) return;
-      if (Array.isArray(v)) {
-        const arr = v.filter((x) => String(x).trim() !== "");
-        if (arr.length) fields_attributes.push({ field_id: id, field_value: arr });
+      const allowed = optionsMap.get(id);
+      if (allowed) {
+        const hit = normalizeSingleToAllowed(v, allowed);
+        if (!hit) { notMatched.push({ field: id, sent: v, allowed }); return; }
+        fields_attributes.push({ field_id: id, field_value: hit });
       } else {
-        const s = String(v).trim();
-        if (s !== "") fields_attributes.push({ field_id: id, field_value: s });
+        // campo texto/numérico
+        fields_attributes.push({ field_id: id, field_value: String(v) });
       }
     };
 
-    // singles obrigatórios
-    REQUIRED_SINGLES.forEach(pushIf);
-    // singles opcionais
-    OPTIONAL_SINGLES.forEach(pushIf);
-    // multiselects
-    MULTI_FIELDS.forEach(pushIf);
+    // helper para enviar arrays
+    const pushMulti = (id) => {
+      const arr = Array.isArray(body[id]) ? body[id] : [];
+      if (!arr.length) return;
+      const allowed = optionsMap.get(id) || [];
+      const { ok, bad } = normalizeManyToAllowed(arr, allowed);
+      if (bad.length) notMatched.push({ field: id, sent: bad, allowed });
+      if (ok.length) fields_attributes.push({ field_id: id, field_value: ok });
+    };
 
-    // 3) Envio ao Pipefy
+    // singles
+    REQUIRED_SINGLES.forEach(pushSingle);
+    OPTIONAL_SINGLES.forEach(id => {
+      const v = body[id];
+      if (v !== undefined && v !== null && String(v).trim() !== "") pushSingle(id);
+    });
+
+    // multis
+    MULTI_FIELDS.forEach(pushMulti);
+
+    // se algo não casou, devolve 400 explicando (para você alinhar front x pipe)
+    if (notMatched.length) {
+      return {
+        statusCode: 400,
+        headers: CORS,
+        body: JSON.stringify({
+          error: "Alguns valores não correspondem às opções do Pipefy.",
+          detail: notMatched
+        })
+      };
+    }
+
+    // 3) cria o card
     const query = `
       mutation ($input: CreateCardInput!) {
         createCard(input: $input) {
           card { id title url }
         }
-      }
-    `;
+      }`;
 
     const variables = {
       input: {
         pipe_id: Number(PIPE_ID),
         title: `Perfil • ${body["nome_do_cliente"]}`,
-        fields_attributes,
-      },
+        fields_attributes
+      }
     };
 
     const res = await fetch("https://api.pipefy.com/graphql", {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${TOKEN}`,
-      },
-      body: JSON.stringify({ query, variables }),
+      headers: { "Content-Type": "application/json", "Authorization": `Bearer ${TOKEN}` },
+      body: JSON.stringify({ query, variables })
     });
 
     const text = await res.text();
     let json; try { json = JSON.parse(text); } catch { json = { raw: text }; }
 
     if (!res.ok || json.errors) {
-      const msg = Array.isArray(json?.errors) ? json.errors.map(e => e.message).join(" | ") : "Erro desconhecido";
       return {
         statusCode: 502,
         headers: CORS,
-        body: JSON.stringify({ error: "Falha ao criar card no Pipefy", message: msg, detail: json }),
+        body: JSON.stringify({
+          error: "Falha ao criar card no Pipefy",
+          message: Array.isArray(json.errors) ? json.errors.map(e => e.message).join(" | ") : "Erro desconhecido",
+          detail: json
+        })
       };
     }
 
     return {
       statusCode: 200,
       headers: { ...CORS, "Content-Type": "application/json" },
-      body: JSON.stringify({ ok: true, card: json.data.createCard.card }),
+      body: JSON.stringify({ ok: true, card: json.data.createCard.card })
     };
 
   } catch (err) {

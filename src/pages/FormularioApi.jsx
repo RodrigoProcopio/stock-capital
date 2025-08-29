@@ -213,7 +213,7 @@ const OPT = {
     "100% em Real",
     "100% em Dólar",
     "50% em Real e 50% em Dólar",
-    "Variável entre Real e Dólar",
+    "Variavel entre Real e Dólar",
   ],
   investimentos_24m: [
     "Poupança",
