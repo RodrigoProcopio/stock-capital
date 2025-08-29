@@ -33,7 +33,6 @@ function Toast({ open, message, variant = "error", onClose }) {
   );
 }
 
-
 /** ---------- ids (iguais ao pipefy) ---------- */
 const F = {
   nome: "nome_do_cliente",
@@ -44,52 +43,35 @@ const F = {
   fonteRenda: "qual_a_sua_fonte_de_renda",
   compRenda: "descreva_brevemente_a_composi_o_da_sua_renda_mensal",
   disponibilidade: "patrim_nio_l_quido",
-  chave01: "pergunta_chave_01_assuma_que_uma_epidemia_chegou_numa_cidade_e_tem_potencial_de_infectar_600_pessoas_voc_precisa_escolher_o_programa_de_sa_de_p_blica_que_vai_salvar_essa_cidade",
+  chave01:
+    "pergunta_chave_01_assuma_que_uma_epidemia_chegou_numa_cidade_e_tem_potencial_de_infectar_600_pessoas_voc_precisa_escolher_o_programa_de_sa_de_p_blica_que_vai_salvar_essa_cidade",
   finalidade: "qual_a_principal_finalidade_de_investir",
   dependentesQtd: "quantos_dependentes_financeiros_voc_possui",
-  chave02: "copy_of_pergunta_chave_01_assuma_que_uma_epidemia_chegou_numa_cidade_e_tem_potencial_de_infectar_600_pessoas_voc_precisa_escolher_o_programa_de_sa_de_p_blica_que_vai_salvar_essa_cidade",
+  chave02:
+    "copy_of_pergunta_chave_01_assuma_que_uma_epidemia_chegou_numa_cidade_e_tem_potencial_de_infectar_600_pessoas_voc_precisa_escolher_o_programa_de_sa_de_p_blica_que_vai_salvar_essa_cidade",
   dependentesPerfil: "especifique_o_perfil_de_dependentes",
   moeda: "qual_moeda_voc_tem_prefer_ncia_em_estar_posicionado",
   inv24m: "quais_investimentos_voc_realizou_nos_ltimos_24_meses_1",
-  interesseEco: "qual_o_seu_grau_de_interesse_em_economia_e_mercado_financeiro",
-  tiposInvest: "quais_os_tipos_de_investimentos_que_voc_mais_se_identifica",
+  interesseEco:
+    "qual_o_seu_grau_de_interesse_em_economia_e_mercado_financeiro",
+  tiposInvest:
+    "quais_os_tipos_de_investimentos_que_voc_mais_se_identifica",
   necessidadeRend: "qual_a_necessidade_futura_dos_seus_rendimentos",
   horizonte: "qual_o_seu_horizonte_de_investimento",
   volatilidade: "possui_conhecimento_sobre_o_conceito_volatilidade",
-  reacao10: "como_voc_reagiria_caso_o_seu_investimento_tivesse_uma_perda_de_10",
-  reacao30: "copy_of_como_voc_reagiria_caso_o_seu_investimento_tivesse_uma_oscila_o_de_10",
-  marcacaoMercado: "sobre_os_conceitos_de_marca_o_a_mercado_em_t_tulos_de_renda_fixa",
+  reacao10:
+    "como_voc_reagiria_caso_o_seu_investimento_tivesse_uma_perda_de_10",
+  reacao30:
+    "copy_of_como_voc_reagiria_caso_o_seu_investimento_tivesse_uma_oscila_o_de_10",
+  marcacaoMercado:
+    "sobre_os_conceitos_de_marca_o_a_mercado_em_t_tulos_de_renda_fixa",
 };
 
-/** Lista de campos obrigatórios single-choice/text */
-const REQ_SINGLES = [
-  F.nome,
-  F.tel,
-  F.email,
-  F.estadoCivil,
-  F.faixaEtaria,
-  F.fonteRenda,
-  F.disponibilidade,
-  F.chave01,
-  F.dependentesQtd,
-  F.chave02,
-  F.interesseEco,
-  F.necessidadeRend,
-  F.horizonte,
-  F.volatilidade,
-  F.reacao10,
-  F.reacao30,
-  F.marcacaoMercado,
-];
-
-/** Função utilitária para checar apenas os campos obrigatórios (sem LGPD) */
-const isSinglesOk = (form) =>
-  REQ_SINGLES.every((k) => String(form[k] || "").trim().length > 0);
-
+/** ---------- UI building blocks ---------- */
 function Section({ title, children }) {
   return (
     <section className="rounded-2xl border border-white/10 bg-white/5 p-6 lg:p-8">
-      <h2 className="mb-4 text-lg font-semibold">{title}</h2>
+      {title && <h2 className="mb-4 text-lg font-semibold">{title}</h2>}
       <div className="grid gap-4">{children}</div>
     </section>
   );
@@ -161,7 +143,14 @@ function RadioGroup({ label, required, options, value, onChange }) {
 }
 
 /** Select */
-function Select({ label, required, options, value, onChange, placeholder = "Escolha uma opção" }) {
+function Select({
+  label,
+  required,
+  options,
+  value,
+  onChange,
+  placeholder = "Escolha uma opção",
+}) {
   return (
     <Field label={label} required={required}>
       <select
@@ -185,8 +174,19 @@ function Select({ label, required, options, value, onChange, placeholder = "Esco
 
 /** ---------- opções (copiadas do formulário público) ---------- */
 const OPT = {
-  estado_civil: ["Solteiro (a)", "Casado (a)", "Divorciado (a)", "Morando Junto"],
-  faixa_etaria: ["Até 25 anos", "Entre 26 e 35 anos", "Entre 36 e 45 anos", "Entre 46 e 55 anos", "Acima de 56 anos"],
+  estado_civil: [
+    "Solteiro (a)",
+    "Casado (a)",
+    "Divorciado (a)",
+    "Morando Junto",
+  ],
+  faixa_etaria: [
+    "Até 25 anos",
+    "Entre 26 e 35 anos",
+    "Entre 36 e 45 anos",
+    "Entre 46 e 55 anos",
+    "Acima de 56 anos",
+  ],
   fonte_renda: [
     "Salário (emprego CLT)",
     "Trabalho autônomo ou prestação de serviços",
@@ -202,9 +202,26 @@ const OPT = {
     "Realizar conquistas financeiras no médio prazo",
   ],
   dependentes_qtd: ["1 ou 2", "3 ou mais", "Nenhum"],
-  dependentes_perfil: ["Crianças até 12 anos", "Adolescentes entre 13 a 18 anos", "Adultos acima de 19 anos", "Cônjuge", "Idosos"],
-  moeda_preferencia: ["100% em Real", "100% em Dólar", "50% em Real e 50% em Dólar", "Variável entre Real e Dólar"],
-  investimentos_24m: ["Poupança", "Renda Fixa", "Renda Variável", "Investimento Imobiliário", "Nenhum"],
+  dependentes_perfil: [
+    "Crianças até 12 anos",
+    "Adolescentes entre 13 a 18 anos",
+    "Adultos acima de 19 anos",
+    "Cônjuge",
+    "Idosos",
+  ],
+  moeda_preferencia: [
+    "100% em Real",
+    "100% em Dólar",
+    "50% em Real e 50% em Dólar",
+    "Variável entre Real e Dólar",
+  ],
+  investimentos_24m: [
+    "Poupança",
+    "Renda Fixa",
+    "Renda Variável",
+    "Investimento Imobiliário",
+    "Nenhum",
+  ],
   interesse_eco: ["Nenhum interesse", "Algum interesse", "Muito interesse"],
   tipos_invest: [
     "Poupança",
@@ -218,9 +235,17 @@ const OPT = {
     "Investimentos Alternativos",
     "Investimento Empresarial (Private Equity, Venture Capital, Investimento Anjo)",
   ],
-  necessidade_rend: ["Complemento de renda", "Elevar padrão de vida", "Sem previsão de uso"],
+  necessidade_rend: [
+    "Complemento de renda",
+    "Elevar padrão de vida",
+    "Sem previsão de uso",
+  ],
   horizonte: ["Até 1 ano", "Entre 2 e 5 anos", "Mais de 5 anos"],
-  volatilidade: ["Não conheço", "Aceito variação no curto prazo", "Aceito variação ou perda no curto prazo"],
+  volatilidade: [
+    "Não conheço",
+    "Aceito variação no curto prazo",
+    "Aceito variação ou perda no curto prazo",
+  ],
   reacao_10: ["Muito preocupado", "Avaliaria reversão", "Não me preocuparia"],
   reacao_30: ["Muito preocupado", "Avaliaria reversão", "Não me preocuparia"],
   chave_01: [
@@ -233,17 +258,28 @@ const OPT = {
     "Método que traz 1/3 de chance de todas as 600 pessoas serem mortas e 2/3 de todas as 600 pessoas viverem.",
     "Método que fortalece todos a viverem, mesmo não tendo controle quantos morrem, podendo ser todos inclusive.",
   ],
-  marcacao_mercado: ["Nenhum conhecimento", "Já ouvi mas desconheço impacto", "Conheço bem"],
+  marcacao_mercado: [
+    "Nenhum conhecimento",
+    "Já ouvi mas desconheço impacto",
+    "Conheço bem",
+  ],
 };
 
 export default function FormularioApi() {
   const [loading, setLoading] = useState(false);
+  const [toast, setToast] = useState({
+    open: false,
+    message: "",
+    variant: "error",
+  });
 
-  const [toast, setToast] = useState({ open: false, message: "", variant: "error" });
   const showToast = (message, variant = "error", timeout = 3200) => {
     setToast({ open: true, message, variant });
     window.clearTimeout(showToast._t);
-    showToast._t = window.setTimeout(() => setToast((t) => ({ ...t, open: false })), timeout);
+    showToast._t = window.setTimeout(
+      () => setToast((t) => ({ ...t, open: false })),
+      timeout
+    );
   };
 
   const [form, setForm] = useState({
@@ -275,19 +311,60 @@ export default function FormularioApi() {
 
   const handle = (key, val) => setForm((s) => ({ ...s, [key]: val }));
 
-  const requiredOk = useMemo(() => {
-    const singlesOk = isSinglesOk(form);
-    const lgpdOk = form.lgpd;
-    return singlesOk && lgpdOk;
-  }, [form]);
+  /** ---------- validação ---------- */
+  const REQ_SINGLES = [
+    F.nome,
+    F.tel,
+    F.email,
+    F.estadoCivil,
+    F.faixaEtaria,
+    F.fonteRenda,
+    F.compRenda, // textarea obrigatória
+    F.disponibilidade,
+    F.chave01,
+    F.dependentesQtd,
+    F.chave02,
+    F.interesseEco,
+    F.necessidadeRend,
+    F.horizonte,
+    F.volatilidade,
+    F.reacao10,
+    F.reacao30,
+    F.marcacaoMercado,
+  ];
+
+  const REQ_MULTIS = [
+    F.finalidade,
+    F.dependentesPerfil,
+    F.moeda,
+    F.inv24m,
+    F.tiposInvest,
+  ];
+
+  const isSinglesOk = (f) =>
+    REQ_SINGLES.every((k) => String(f[k] || "").trim().length > 0);
+  const isMultisOk = (f) =>
+    REQ_MULTIS.every((k) => Array.isArray(f[k]) && f[k].length > 0);
+  const isFormOk = (f) => isSinglesOk(f) && isMultisOk(f) && f.lgpd;
+
+  const requiredOk = useMemo(() => isFormOk(form), [form]);
 
   const onSubmit = async (e) => {
     e.preventDefault();
     if (loading) return;
 
-    // Prioriza preenchimento; só depois LGPD
     if (!isSinglesOk(form)) {
-      showToast("Preencha todos os campos obrigatórios.", "error");
+      showToast(
+        "Preencha todos os campos de seleção única/entrada obrigatórios.",
+        "error"
+      );
+      return;
+    }
+    if (!isMultisOk(form)) {
+      showToast(
+        "Selecione ao menos uma opção nos campos de múltipla escolha obrigatórios.",
+        "error"
+      );
       return;
     }
     if (!form.lgpd) {
@@ -297,7 +374,6 @@ export default function FormularioApi() {
 
     setLoading(true);
     try {
-      // monta payload 1:1 com os IDs do Pipefy
       const payload = { ...form };
       delete payload.lgpd;
 
@@ -310,7 +386,10 @@ export default function FormularioApi() {
 
       if (!res.ok || json.error) {
         console.error(json);
-        showToast(json.message || json.error || "Erro ao enviar para o Pipefy.", "error");
+        showToast(
+          json.message || json.error || "Erro ao enviar para o Pipefy.",
+          "error"
+        );
       } else {
         showToast("Formulário enviado com sucesso!", "success");
         window.scrollTo({ top: 0 });
@@ -338,12 +417,16 @@ export default function FormularioApi() {
       <main className="w-full max-w-3xl">
         <form onSubmit={onSubmit} className="grid gap-6">
           <Section>
-            <h1 className="text-3xl font-bold text-center">Análise de Perfil de Investidor</h1>
+            <h1 className="text-3xl font-bold text-center">
+              Análise de Perfil de Investidor
+            </h1>
             <h2 className="text-sm text-justify mb-6">
-              Este questionário tem como objetivo identificar o perfil de risco, os objetivos financeiros e o horizonte de investimento
-              de cada cliente da Stock Capital Family Office. As informações coletadas são fundamentais
-              para a construção de estratégias personalizadas de gestão patrimonial, alinhadas aos
-              interesses, necessidades e tolerância ao risco de cada investidor.
+              Este questionário tem como objetivo identificar o perfil de risco,
+              os objetivos financeiros e o horizonte de investimento de cada
+              cliente da Stock Capital Family Office. As informações coletadas
+              são fundamentais para a construção de estratégias personalizadas
+              de gestão patrimonial, alinhadas aos interesses, necessidades e
+              tolerância ao risco de cada investidor.
             </h2>
 
             <Field label="Nome do Cliente" required>
@@ -401,12 +484,16 @@ export default function FormularioApi() {
               onChange={(v) => handle(F.fonteRenda, v)}
             />
 
-            <Field label="Descreva Brevemente a Composição da sua Renda Mensal">
+            <Field
+              label="Descreva Brevemente a Composição da sua Renda Mensal"
+              required
+            >
               <textarea
                 rows={4}
                 className="rounded-lg border border-white/10 bg-black/30 px-3 py-2 outline-none focus:ring-2 focus:ring-white/20"
                 value={form[F.compRenda]}
                 onChange={(e) => handle(F.compRenda, e.target.value)}
+                required
               />
             </Field>
 
@@ -435,7 +522,7 @@ export default function FormularioApi() {
 
             <CheckGroup
               label="Qual a principal finalidade de investir?"
-              required={false}
+              required
               options={OPT.finalidade_investir}
               values={form[F.finalidade]}
               onChange={(vals) => handle(F.finalidade, vals)}
@@ -460,6 +547,7 @@ export default function FormularioApi() {
 
             <CheckGroup
               label="Especifique o Perfil de Dependentes"
+              required
               options={OPT.dependentes_perfil}
               values={form[F.dependentesPerfil]}
               onChange={(vals) => handle(F.dependentesPerfil, vals)}
@@ -468,6 +556,7 @@ export default function FormularioApi() {
 
             <CheckGroup
               label="Qual moeda você tem preferência em estar posicionado?"
+              required
               options={OPT.moeda_preferencia}
               values={form[F.moeda]}
               onChange={(vals) => handle(F.moeda, vals)}
@@ -476,6 +565,7 @@ export default function FormularioApi() {
 
             <CheckGroup
               label="Quais investimentos você realizou nos últimos 24 meses?"
+              required
               options={OPT.investimentos_24m}
               values={form[F.inv24m]}
               onChange={(vals) => handle(F.inv24m, vals)}
@@ -492,6 +582,7 @@ export default function FormularioApi() {
 
             <CheckGroup
               label="Quais os tipos de investimentos que você mais se identifica?"
+              required
               options={OPT.tipos_invest}
               values={form[F.tiposInvest]}
               onChange={(vals) => handle(F.tiposInvest, vals)}
@@ -556,50 +647,56 @@ export default function FormularioApi() {
             Concordo com os termos de uso e a política de privacidade (LGPD)
           </label>
 
-          {/* Wrapper clicável para explicar por que o botão está desabilitado */}
+          {/* Botões */}
           <div className="mt-2 flex items-center justify-center gap-3">
-  {(!requiredOk || loading) ? (
-    // Botão "falso": não envia, só explica o motivo
-    <button
-      type="button"
-      aria-disabled="true"
-      className={cx(
-        "rounded-xl bg-white px-5 py-3 text-sm font-semibold text-neutral-900 shadow",
-        "opacity-60 cursor-not-allowed"
-      )}
-      onClick={() => {
-        if (loading) return;
-        if (!isSinglesOk(form)) {
-          showToast("Preencha todos os campos obrigatórios.", "error");
-        } else if (!form.lgpd) {
-          showToast("É necessário aceitar a LGPD para continuar.", "error");
-        }
-      }}
-    >
-      {loading ? "Enviando..." : "Enviar"}
-    </button>
-  ) : (
-    // Botão "real": envia o formulário
-    <button
-      type="submit"
-      className="rounded-xl bg-white px-5 py-3 text-sm font-semibold text-neutral-900 shadow hover:bg-white/90"
-    >
-      Enviar
-    </button>
-  )}
+            {!requiredOk || loading ? (
+              <button
+                type="button"
+                aria-disabled="true"
+                className={cx(
+                  "rounded-xl bg-white px-5 py-3 text-sm font-semibold text-neutral-900 shadow",
+                  "opacity-60 cursor-not-allowed"
+                )}
+                onClick={() => {
+                  if (loading) return;
+                  if (!isSinglesOk(form)) {
+                    showToast(
+                      "Preencha todos os campos de seleção única/entrada obrigatórios.",
+                      "error"
+                    );
+                  } else if (!isMultisOk(form)) {
+                    showToast(
+                      "Selecione ao menos uma opção nos campos de múltipla escolha obrigatórios.",
+                      "error"
+                    );
+                  } else if (!form.lgpd) {
+                    showToast(
+                      "É necessário aceitar a LGPD para continuar.",
+                      "error"
+                    );
+                  }
+                }}
+              >
+                {loading ? "Enviando..." : "Enviar"}
+              </button>
+            ) : (
+              <button
+                type="submit"
+                className="rounded-xl bg-white px-5 py-3 text-sm font-semibold text-neutral-900 shadow hover:bg-white/90"
+              >
+                Enviar
+              </button>
+            )}
 
-  <a
-    href="/"
-    className="rounded-xl border border-white/20 bg-white/5 px-5 py-3 text-sm font-semibold hover:bg-white/10"
-  >
-    Voltar
-  </a>
-</div>
-
+            <a
+              href="/"
+              className="rounded-xl border border-white/20 bg-white/5 px-5 py-3 text-sm font-semibold hover:bg-white/10"
+            >
+              Voltar
+            </a>
+          </div>
         </form>
       </main>
     </div>
   );
 }
-
-
