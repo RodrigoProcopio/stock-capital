@@ -70,7 +70,7 @@ const F = {
 
 /* ------------------------------ opções estáticas ----------------------------- */
 const OPT = {
-  estado_civil: ["Solteiro (a)", "Casado (a)", "Divorciado (a)", "Morando Junto"],
+  estado_civil: ["Solteiro (a)", "Casado(a)", "Divorciado (a)", "Morando Junto"],
   faixa_etaria: ["Até 25 anos", "Entre 26 e 35 anos", "Entre 36 e 45 anos", "Entre 46 e 55 anos", "Acima de 56 anos"],
 
   fonte_renda: [
