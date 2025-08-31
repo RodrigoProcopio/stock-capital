@@ -25,11 +25,14 @@
       document.title = "Stock Capital — CMS";
 
       if (window.netlifyIdentity) {
+        // Inicializa o widget (necessário para processar tokens da URL)
+        window.netlifyIdentity.init();
+
         // Evento disparado quando o login é concluído (inclusive via convite com token)
         window.netlifyIdentity.on("login", (user) => {
           console.log("Usuário logado:", user);
-          // Se quiser forçar ir para o /admin após login:
-          // window.location.href = "/admin/";
+          // Se quiser garantir o redirecionamento para o /admin
+          window.location.href = "/admin/";
         });
 
         window.netlifyIdentity.on("logout", () => {
