@@ -179,8 +179,9 @@ export default function App() {
     className="relative h-screen min-h-[640px] w-full overflow-hidden"
     style={{
       backgroundImage: `url(${HERO_BG})`,
-      backgroundSize: "100%",
+      backgroundSize: "cover",
       backgroundPosition: "center bottom",
+      backgroundRepeat: 'no-repeat'
     }}
   >
     {/* Overlay com transparência */}
