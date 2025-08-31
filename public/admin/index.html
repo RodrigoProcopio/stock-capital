@@ -1,5 +1,5 @@
 <!doctype html>
-<html>
+<html lang="pt-BR">
   <head>
     <meta charset="utf-8" />
     <title>Stock Capital – CMS</title>
@@ -16,10 +16,30 @@
     <!-- Decap CMS -->
     <script src="https://unpkg.com/decap-cms@latest/dist/decap-cms.js"></script>
 
+    <!-- Netlify Identity Widget -->
+    <script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
+
     <script>
       /* Estilo do preview (opcional) */
       CMS.registerPreviewStyle("/index.css");
       document.title = "Stock Capital — CMS";
+
+      if (window.netlifyIdentity) {
+        // Evento disparado quando o login é concluído (inclusive via convite com token)
+        window.netlifyIdentity.on("login", (user) => {
+          console.log("Usuário logado:", user);
+          // Se quiser forçar ir para o /admin após login:
+          // window.location.href = "/admin/";
+        });
+
+        window.netlifyIdentity.on("logout", () => {
+          console.log("Usuário saiu");
+        });
+
+        window.netlifyIdentity.on("error", (err) => {
+          console.error("Erro no Identity:", err);
+        });
+      }
     </script>
   </body>
 </html>
