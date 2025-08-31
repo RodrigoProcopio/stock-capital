@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <title>Recuperação de senha - Stock Capital</title>
+  <style>
+    body { font-family: Arial, sans-serif; background: #f4f4f4; padding: 20px; }
+    .container { background: #fff; padding: 20px; border-radius: 8px; max-width: 600px; margin: auto; }
+    a { background: #1c2846; color: #fff; padding: 10px 15px; text-decoration: none; border-radius: 5px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>Recuperação de senha</h2>
+    <p>Olá, {{ .Email }}!</p>
+    <p>Recebemos uma solicitação para redefinir sua senha no Stock Capital. Clique abaixo para criar uma nova senha:</p>
+    <p>
+      <a href="{{ .ConfirmationURL }}">Redefinir senha</a>
+    </p>
+    <p>Se você não pediu para redefinir a senha, apenas ignore este e-mail.</p>
+  </div>
+</body>
+</html>

@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <title>Convite - Stock Capital</title>
+  <style>
+    body { font-family: Arial, sans-serif; background: #f4f4f4; padding: 20px; }
+    .container { background: #fff; padding: 20px; border-radius: 8px; max-width: 600px; margin: auto; }
+    a { background: #1c2846; color: #fff; padding: 10px 15px; text-decoration: none; border-radius: 5px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>Convite para acessar o Stock Capital</h2>
+    <p>Olá, {{ .Email }}!</p>
+    <p>Você foi convidado para acessar o sistema. Para ativar sua conta, clique no botão abaixo:</p>
+    <p>
+      <a href="{{ .ConfirmationURL }}">Ativar conta</a>
+    </p>
+    <p>Se você não solicitou este convite, ignore este e-mail.</p>
+  </div>
+</body>
+</html>

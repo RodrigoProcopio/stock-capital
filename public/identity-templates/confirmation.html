@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <title>Confirmação - Stock Capital</title>
+  <style>
+    body { font-family: Arial, sans-serif; background: #f4f4f4; padding: 20px; }
+    .container { background: #fff; padding: 20px; border-radius: 8px; max-width: 600px; margin: auto; }
+    a { background: #1c2846; color: #fff; padding: 10px 15px; text-decoration: none; border-radius: 5px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>Confirme seu e-mail</h2>
+    <p>Olá, {{ .Email }}!</p>
+    <p>Obrigado por se registrar no Stock Capital. Para confirmar seu endereço de e-mail, clique abaixo:</p>
+    <p>
+      <a href="{{ .ConfirmationURL }}">Confirmar e-mail</a>
+    </p>
+    <p>Se você não fez este cadastro, pode ignorar este e-mail.</p>
+  </div>
+</body>
+</html>
