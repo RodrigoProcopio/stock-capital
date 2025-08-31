@@ -1,0 +1,25 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Stock Capital – CMS</title>
+
+    <!-- Favicon do CMS -->
+    <link rel="icon" href="/favicon.ico" />
+
+    <!-- Estilo do painel (cores, etc.) -->
+    <link rel="stylesheet" href="./brand.css" />
+    <!-- Script que injeta a logo no header do Decap -->
+    <script src="./brand.js" defer></script>
+  </head>
+  <body>
+    <!-- Decap CMS -->
+    <script src="https://unpkg.com/decap-cms@latest/dist/decap-cms.js"></script>
+
+    <script>
+      /* Estilo do preview (opcional) */
+      CMS.registerPreviewStyle("/index.css");
+      document.title = "Stock Capital — CMS";
+    </script>
+  </body>
+</html>

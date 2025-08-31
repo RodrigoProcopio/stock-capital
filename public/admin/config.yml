@@ -1,0 +1,70 @@
+backend:
+  name: git-gateway
+  branch: main
+
+# permite usar npx decap-server em dev (opcional)
+local_backend: true
+
+site_url: "/"
+logo_url: "/admin/logo.png"
+
+media_folder: "public/uploads"   # arquivos físicos no repo
+public_folder: "/uploads"        # como o site acessa os uploads
+
+publish_mode: simple
+
+slug:
+  clean_accents: true
+
+collections:
+  - name: "cartas"
+    label: "Cartas"
+    folder: "src/content/cartas"
+    create: true
+    extension: "json"
+    format: "json"
+    slug: "{{slug}}"
+    fields:
+      - { name: title, label: "Título", widget: string }
+      - { name: date,  label: "Data", widget: datetime }
+      - { name: summary, label: "Resumo", widget: text }
+      - { name: pdf,   label: "PDF", widget: file, media_library: { allow_multiple: false }, allow_types: ["pdf"] }
+
+  - name: "relatorios"
+    label: "Relatórios"
+    folder: "src/content/relatorios"
+    create: true
+    extension: "json"
+    format: "json"
+    slug: "{{slug}}"
+    fields:
+      - { name: title, label: "Título", widget: string }
+      - { name: date,  label: "Data", widget: datetime }
+      - { name: summary, label: "Resumo", widget: text }
+      - { name: pdf,   label: "PDF", widget: file, media_library: { allow_multiple: false }, allow_types: ["pdf"] }
+
+  - name: "insights"
+    label: "Insights"
+    folder: "src/content/insights"
+    create: true
+    extension: "json"
+    format: "json"
+    slug: "{{slug}}"
+    fields:
+      - { name: title, label: "Título", widget: string }
+      - { name: date,  label: "Data", widget: datetime }
+      - { name: summary, label: "Resumo", widget: text }
+      - { name: pdf,   label: "PDF", widget: file, media_library: { allow_multiple: false }, allow_types: ["pdf"] }
+
+  - name: "compliance"
+    label: "Compliance"
+    folder: "src/content/compliance"
+    create: true
+    extension: "json"
+    format: "json"
+    slug: "{{slug}}"
+    fields:
+      - { name: title, label: "Título", widget: string }
+      - { name: date,  label: "Data", widget: datetime }
+      - { name: summary, label: "Resumo", widget: text }
+      - { name: pdf,   label: "PDF", widget: file, media_library: { allow_multiple: false }, allow_types: ["pdf"] }

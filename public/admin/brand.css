@@ -1,0 +1,64 @@
+:root{
+  --brand-primary:#1e2241;
+  --brand-navy:#1c2846;
+}
+
+/* ===== LOGIN ===== */
+.nc-loginPage-logo,
+.login-logo,
+[class*="Login_logo"]{
+  width:220px !important;
+  height:70px !important;
+  background:url("/admin/logo.png") center/contain no-repeat !important;
+  display:block !important;
+}
+.nc-loginPage-logo svg,
+.login-logo svg,
+[class*="Login_logo"] svg{ display:none !important; }
+
+/* ===== HEADER (após login) ===== */
+.nc-appHeader{ 
+  background:#fff !important; 
+  border-bottom:1px solid rgba(0,0,0,.06) !important;
+  min-height:64px;
+  align-items:center;
+  gap:12px;
+}
+
+/* Esconde SVG padrão para dar lugar à sua logo (o JS injeta o fundo) */
+.nc-appHeader-brand svg,
+.nc-appHeader-logo svg,
+[class*="AppHeader_brand"] svg{ display:none !important; }
+
+/* Botões principais nas cores da marca */
+.nc-toolbar button,
+.nc-collectionTopBar button,
+button[class*="Button_root"]{
+  background:var(--brand-navy) !important;
+  color:#fff !important;
+  border:1px solid rgba(0,0,0,.06) !important;
+}
+.nc-toolbar button:hover,
+.nc-collectionTopBar button:hover,
+button[class*="Button_root"]:hover{
+  filter:brightness(1.08);
+}
+
+/* Links */
+a{ color:var(--brand-primary); }
+a:hover{ filter:brightness(1.1); }
+
+/* Cartões/listas */
+[class*="Card_root"],
+.nc-entryListing-card{
+  border:1px solid rgba(0,0,0,.06) !important;
+  box-shadow:0 6px 20px rgba(0,0,0,.04) !important;
+  border-radius:14px !important;
+}
+
+/* Inputs focados */
+input:focus, textarea:focus, select:focus{
+  outline:none !important;
+  box-shadow:0 0 0 3px rgba(28,40,70,.18) !important;
+  border-color:rgba(28,40,70,.45) !important;
+}
