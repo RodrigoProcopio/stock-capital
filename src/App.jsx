@@ -5,6 +5,7 @@ import logo from "./assets/logo.png";
 import augustoImg from "./assets/augusto.png";
 import igorImg from "./assets/igor.png";
 import ScrollToTopButton from "./components/ScrollToTopButton";
+import FloatingWhatsApp from "./components/FloatingWhatsApp";
 
 /**
  * ------------------------------
@@ -172,31 +173,42 @@ export default function App() {
         )}
       </header>
 
-      {/* HERO */}
-      <section id="home" className="relative">
-        <div
-          className="relative h-screen min-h-[640px] w-full overflow-hidden"
-          style={{
-            backgroundImage: `url(${HERO_BG})`,
-            backgroundSize: "cover", // garante cobertura total no container
-            backgroundPosition: "center bottom",
-          }}
-          role="img"
-          aria-label="Fundo institucional da Stock Capital MFO"
-        >
-          {/* Overlay para contraste do texto sobre a imagem */}
-          <div className="absolute inset-0 bg-brand-primary/60" />
+{/* HERO */}
+<section id="home" className="relative">
+  <div
+    className="relative h-screen min-h-[640px] w-full overflow-hidden"
+    style={{
+      backgroundImage: `url(${HERO_BG})`,
+      backgroundSize: "100%",
+      backgroundPosition: "center bottom",
+    }}
+  >
+    {/* Overlay com transparência */}
+    <div className="absolute inset-0 bg-brand-primary/60" />
 
-          {/* Conteúdo centralizado sobre o fundo */}
-          <div className="relative z-10 flex h-full w-full items-center justify-center px-4 text-center text-white">
-            <div className="max-w-3xl">
-              <h1 className="text-4xl font-bold md:text-5xl text-white drop-shadow-lg">
-                Gerenciamos patrimônios com excelência para construir o mundo ao nosso redor.
-              </h1>
-            </div>
-          </div>
-        </div>
-      </section>
+    {/* Conteúdo centralizado */}
+    <div className="relative z-10 flex h-full w-full items-center justify-center px-4 text-center text-white">
+      <div className="max-w-3xl">
+        <h1 className="text-4xl font-bold md:text-5xl text-white drop-shadow-lg">
+          Gerenciamos patrimônios com excelência para construir o mundo ao nosso redor.
+        </h1>
+
+       {/* Botão Fale Conosco */}
+<div className="mt-8 flex justify-center hover:-translate-y-0.5">
+  <a
+    href="https://wa.me/554100000000?text=Olá! Gostaria de saber mais sobre os serviços da Stock Capital."
+    target="_blank"
+    rel="noopener noreferrer"
+    className="mt-6 rounded-xl bg-brand-navy px-6 py-3 text-sm font-semibold text-white 
+               shadow-sm transition hover:bg-brand-primary"
+  >
+    Fale Conosco
+  </a>
+</div>
+      </div>
+    </div>
+  </div>
+</section>
 
       <MainContainer>
         {/* Nosso Propósito */}
@@ -224,9 +236,6 @@ export default function App() {
             <li>Investidores que desejam diversificação internacional e acesso a ativos sofisticados;</li>
             <li>Estruturas societárias complexas que demandam gestão estratégica.</li>
           </ul>
-
-          {/* Linha separadora para consistência visual */}
-          <div className="mt-8 border-t border-brand-navy/10" />
         </Section>
 
         {/* Quem Somos */}
@@ -436,90 +445,81 @@ export default function App() {
             </Link>
           </div>
         </Section>
+        </MainContainer>
 
         {/* Contato */}
-        <Section id="contato" title="Contato" subtitle="Fale com nossa equipe.">
-          <div className="grid gap-10 md:grid-cols-2 items-start">
-            {/* Coluna: Informações */}
-            <div className="space-y-8">
-              {/* Endereço */}
-              <div className="flex items-start gap-4">
-                {/* Ícone */}
-                <svg className="h-6 w-6 text-brand-navy mt-1" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                  <path d="M12 21s7-5.33 7-11a7 7 0 10-14 0c0 5.67 7 11 7 11z" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-                  <circle cx="12" cy="10" r="2.8" stroke="currentColor" strokeWidth="1.8" />
-                </svg>
-                <div>
-                  <h3 className="font-semibold text-brand-navy">Endereço</h3>
-                  <p className="text-slate-600">
-                    Rua Exemplo, 123 — Cidade/UF
-                    <br />
-                    CEP 00000-000
-                  </p>
-                </div>
-              </div>
+      <section
+  id="contato"
+  className="scroll-mt-24 bg-brand-primary border-t border-brand-navy/10 py-24"
+>
+  {/* wrapper para centralizar o conteúdo, igual ao resto do site */}
+  <div className="mx-auto max-w-7xl px-4">
+    <div className="mb-12 text-center text-white">
+      <h2 className="text-3xl font-semibold text-white">Contato</h2>
+      <p className="mt-1">Fale com nossa equipe.</p>
+    </div>
 
-              {/* E-mail */}
-              <div className="flex items-start gap-4">
-                <svg className="h-6 w-6 text-brand-navy mt-1" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                  <path d="M4 6h16v12H4z" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-                  <path d="M4 7l8 6 8-6" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
-                <div>
-                  <h3 className="font-semibold text-brand-navy">E-mail</h3>
-                  <p className="text-slate-600">contato@stockcapital.com.br</p>
-                </div>
-              </div>
-
-              {/* Telefone */}
-              <div className="flex items-start gap-4">
-                <svg className="h-6 w-6 text-brand-navy mt-1" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                  <path d="M22 16.92v2a2 2 0 01-2.18 2 19.8 19.8 0 01-8.63-3.07 19.5 19.5 0 01-6-6A19.8 19.8 0 012.92 4.2 2 2 0 014.86 2h2a2 2 0 012 1.72c.1.76.27 1.5.5 2.21a2 2 0 01-.45 2.11L8 9a16 16 0 006 6l.95-.91a2 2 0 012.11-.45c.71.23 1.45.4 2.21.5A2 2 0 0122 16.92z" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
-                <div>
-                  <h3 className="font-semibold text-brand-navy">Telefone</h3>
-                  <p className="text-slate-600">(41) 0000-0000</p>
-                </div>
-              </div>
-            </div>
-
-            {/* Coluna: Formulário */}
-            <form
-              onSubmit={(e) => {
-                e.preventDefault();
-                alert("Mensagem enviada (demo)");
-              }}
-              className="rounded-2xl border border-brand-navy/15 bg-white p-6 shadow-subtle"
-            >
-              <h3 className="text-base font-semibold text-brand-navy">Envie uma mensagem</h3>
-
-              <div className="mt-4 grid gap-4">
-                <input
-                  type="text"
-                  placeholder="Nome"
-                  className="rounded-lg border border-brand-navy/20 bg-white px-3 py-2 outline-none focus:ring-2 focus:ring-brand-navy/30"
-                />
-                <input
-                  type="email"
-                  placeholder="E-mail"
-                  className="rounded-lg border border-brand-navy/20 bg-white px-3 py-2 outline-none focus:ring-2 focus:ring-brand-navy/30"
-                />
-                <textarea
-                  rows={5}
-                  placeholder="Mensagem"
-                  className="rounded-lg border border-brand-navy/20 bg-white px-3 py-2 outline-none focus:ring-2 focus:ring-brand-navy/30"
-                />
-                <button
-                  type="submit"
-                  className="rounded-xl bg-brand-navy px-5 py-3 text-sm font-semibold text-white hover:bg-brand-navy/90 hover:shadow-md transition-all duration-200"
-                >
-                  Enviar
-                </button>
-              </div>
-            </form>
+    <div className="grid gap-10 md:grid-cols-2 items-start text-white">
+      {/* coluna: informações */}
+      <div className="space-y-8">
+        {/* Endereço */}
+        <div className="flex items-start gap-4">
+          <svg className="h-6 w-6 text-white mt-1" viewBox="0 0 24 24" fill="none">
+            <path d="M12 21s7-5.33 7-11a7 7 0 10-14 0c0 5.67 7 11 7 11z" stroke="currentColor" strokeWidth="1.8"/>
+            <circle cx="12" cy="10" r="2.8" stroke="currentColor" strokeWidth="1.8"/>
+          </svg>
+          <div>
+            <h3 className="font-semibold text-white">Endereço</h3>
+            <p className="text-white/80">
+              Rua Exemplo, 123 — Cidade/UF<br/>CEP 00000-000
+            </p>
           </div>
-        </Section>
-      </MainContainer>
+        </div>
+
+        {/* E-mail */}
+        <div className="flex items-start gap-4">
+          <svg className="h-6 w-6 text-white mt-1" viewBox="0 0 24 24" fill="none">
+            <path d="M4 6h16v12H4z" stroke="currentColor" strokeWidth="1.8"/>
+            <path d="M4 7l8 6 8-6" stroke="currentColor" strokeWidth="1.8"/>
+          </svg>
+          <div>
+            <h3 className="font-semibold text-white">E-mail</h3>
+            <p className="text-white/80">contato@stockcapital.com.br</p>
+          </div>
+        </div>
+
+        {/* Telefone */}
+        <div className="flex items-start gap-4">
+          <svg className="h-6 w-6 text-white mt-1" viewBox="0 0 24 24" fill="none">
+            <path d="M22 16.92v2a2 2 0 01-2.18 2 19.8 19.8 0 01-8.63-3.07 19.5 19.5 0 01-6-6A19.8 19.8 0 012.92 4.2 2 2 0 014.86 2h2a2 2 0 012 1.72c.1.76.27 1.5.5 2.21a2 2 0 01-.45 2.11L8 9a16 16 0 006 6l.95-.91a2 2 0 012.11-.45c.71.23 1.45.4 2.21.5A2 2 0 0122 16.92z" stroke="currentColor" strokeWidth="1.8"/>
+          </svg>
+          <div>
+            <h3 className="font-semibold text-white">Telefone</h3>
+            <p className="text-white/80">(41) 0000-0000</p>
+          </div>
+        </div>
+      </div>
+
+      {/* coluna: formulário */}
+      <form
+        onSubmit={(e) => { e.preventDefault(); alert("Mensagem enviada (demo)"); }}
+        className="rounded-2xl border border-brand-100/15 bg-white p-6 shadow-subtle"
+      >
+        <h3 className="text-base font-semibold text-brand-navy">Envie uma mensagem</h3>
+        <div className="mt-4 grid gap-4">
+          <input className="rounded-lg border border-brand-navy/20 px-3 py-2 outline-none focus:ring-2 focus:ring-brand-navy/30" placeholder="Nome"/>
+          <input type="email" className="rounded-lg border border-brand-navy/20 px-3 py-2 outline-none focus:ring-2 focus:ring-brand-navy/30" placeholder="E-mail"/>
+          <textarea rows={5} className="rounded-lg border border-brand-navy/20 px-3 py-2 outline-none focus:ring-2 focus:ring-brand-navy/30" placeholder="Mensagem"/>
+          <button type="submit"  className="mt-2 w-full rounded-xl bg-brand-navy px-5 py-3 text-sm font-semibold text-white 
+             shadow-sm transition-all duration-300
+             hover:bg-brand-primary hover:-translate-y-0.5 hover:shadow-md">
+            Enviar
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</section>
 
       {/* Rodapé */}
       <footer className="border-t border-brand-navy/10 bg-brand-primary py-10 text-white">
@@ -529,6 +529,7 @@ export default function App() {
       </footer>
 
       {/* Botão de voltar ao topo */}
+      <FloatingWhatsApp />
       <ScrollToTopButton />
     </div>
   );
