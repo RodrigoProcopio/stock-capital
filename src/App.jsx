@@ -511,21 +511,62 @@ export default function App() {
     const telefone = formEl.querySelector('input[name="telefone"]').value;
     const email = formEl.querySelector('input[name="email"]').value;
     const mensagem = formEl.querySelector('textarea[name="mensagem"]').value;
-    const hp = formEl.querySelector('input[name="hp"]').value; // honeypot
+    const hp = formEl.querySelector('input[name="hp"]').value || ""; // honeypot
+    const lgpdChecked = formEl.querySelector('input[name="lgpd"]').checked;
 
-    const res = await fetch("/.netlify/functions/send-contact-to-pipefy", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ nome, telefone, email, mensagem, hp }),
-    });
+    if (!lgpdChecked) {
+      alert("Para enviar, é necessário aceitar a LGPD e o compartilhamento dos dados pessoais.");
+      return;
+    }
 
-    const json = await res.json();
-    if (res.ok && json.ok) {
-      alert("Mensagem enviada com sucesso!");
-      formEl.reset();
-    } else {
-      console.error(json);
+    try {
+      const res = await fetch("/.netlify/functions/send-contact-to-pipefy", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ nome, telefone, email, mensagem, hp }),
+      });
+
+      let json = {};
+      try { json = await res.json(); }
+      catch {
+        const txt = await res.text().catch(() => "");
+        json = { raw: txt };
+      }
+
+      if (res.ok && json.ok) {
+        alert("Mensagem enviada com sucesso!");
+        formEl.reset();
+        return;
+      }
+
+      if (res.status === 400 && json?.error === "Campos obrigatórios ausentes.") {
+        alert(`Preencha: ${json.missing?.join(", ")}`);
+        return;
+      }
+
+      if (res.status === 400 && json?.error === "Alguns valores não correspondem às opções do Pipefy.") {
+        alert("Alguns valores não correspondem às opções do Pipefy.");
+        console.warn(json.detail);
+        return;
+      }
+
+      if (res.status === 502 && json?.error === "Falha ao criar card no Pipefy") {
+        alert(json.message || "Falha ao criar card no Pipefy.");
+        console.error(json.detail);
+        return;
+      }
+
+      if (res.status === 500 && json?.error === "Erro interno") {
+        alert("Erro interno. Tente novamente.");
+        console.error(json.detail);
+        return;
+      }
+
       alert("Não foi possível enviar. Tente novamente.");
+      console.error(res.status, json);
+    } catch (err) {
+      alert("Erro de rede. Verifique sua conexão.");
+      console.error(err);
     }
   }}
   className="rounded-2xl border border-brand-100/15 bg-white p-6 shadow-subtle"
@@ -564,6 +605,21 @@ export default function App() {
       className="rounded-lg border border-brand-navy/20 px-3 py-2 outline-none focus:ring-2 focus:ring-brand-navy/30 text-brand-navy"
       placeholder="Mensagem"
     />
+
+    {/* Aceite LGPD */}
+    <label className="flex items-start gap-3 rounded-lg border border-brand-navy/15 bg-white/80 px-3 py-3">
+      <input
+        type="checkbox"
+        name="lgpd"
+        required
+        className="mt-1 h-4 w-4 rounded border-brand-navy/40 text-brand-navy focus:ring-brand-navy/40"
+      />
+      <span className="text-sm text-brand-navy/90">
+        Autorizo o tratamento e o compartilhamento dos meus dados pessoais para fins de contato e atendimento,
+        conforme a LGPD. <a href="/politica-de-privacidade" className="underline hover:opacity-80">Saiba mais</a>.
+      </span>
+    </label>
+
     <button
       type="submit"
       className="mt-2 w-full rounded-xl bg-brand-navy px-5 py-3 text-sm font-semibold text-white 
@@ -574,6 +630,7 @@ export default function App() {
     </button>
   </div>
 </form>
+
     </div>
   </div>
 </section>
