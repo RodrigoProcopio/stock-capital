@@ -21,7 +21,7 @@ const TOKEN   = process.env.PIPEFY_TOKEN;
     "Access-Control-Allow-Headers": "Content-Type, Authorization",
   };
   
-  export async function handler(event) {
+  exports.handler = async (event) => {
     if (event.httpMethod === "OPTIONS") {
       return { statusCode: 200, headers: CORS, body: "" };
     }
