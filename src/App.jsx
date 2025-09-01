@@ -505,70 +505,75 @@ export default function App() {
 <form
   onSubmit={async (e) => {
     e.preventDefault();
-
+  
     const formEl = e.currentTarget;
     const nome = formEl.querySelector('input[name="nome"]').value;
     const telefone = formEl.querySelector('input[name="telefone"]').value;
     const email = formEl.querySelector('input[name="email"]').value;
     const mensagem = formEl.querySelector('textarea[name="mensagem"]').value;
-    const hp = formEl.querySelector('input[name="hp"]').value || ""; // honeypot
+    const hp = formEl.querySelector('input[name="hp"]').value || "";
     const lgpdChecked = formEl.querySelector('input[name="lgpd"]').checked;
-
+  
     if (!lgpdChecked) {
-      alert("Para enviar, é necessário aceitar a LGPD e o compartilhamento dos dados pessoais.");
+      setToast({
+        open: true,
+        variant: "warning",
+        message: "Para enviar, é necessário aceitar a LGPD e o compartilhamento dos dados pessoais.",
+      });
       return;
     }
-
+  
     try {
       const res = await fetch("/.netlify/functions/send-contact-to-pipefy", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ nome, telefone, email, mensagem, hp }),
       });
-
+  
       let json = {};
       try { json = await res.json(); }
       catch {
         const txt = await res.text().catch(() => "");
         json = { raw: txt };
       }
-
+  
       if (res.ok && json.ok) {
-        alert("Mensagem enviada com sucesso!");
+        setToast({ open: true, variant: "success", message: "Mensagem enviada com sucesso!" });
         formEl.reset();
         return;
       }
-
+  
       if (res.status === 400 && json?.error === "Campos obrigatórios ausentes.") {
-        alert(`Preencha: ${json.missing?.join(", ")}`);
+        setToast({ open: true, variant: "warning", message: `Preencha: ${json.missing?.join(", ")}` });
         return;
       }
-
+  
       if (res.status === 400 && json?.error === "Alguns valores não correspondem às opções do Pipefy.") {
-        alert("Alguns valores não correspondem às opções do Pipefy.");
+        setToast({ open: true, variant: "warning", message: "Alguns valores não correspondem às opções do Pipefy." });
         console.warn(json.detail);
         return;
       }
-
+  
       if (res.status === 502 && json?.error === "Falha ao criar card no Pipefy") {
-        alert(json.message || "Falha ao criar card no Pipefy.");
+        setToast({ open: true, variant: "error", message: json.message || "Falha ao criar card no Pipefy." });
         console.error(json.detail);
         return;
       }
-
+  
       if (res.status === 500 && json?.error === "Erro interno") {
-        alert("Erro interno. Tente novamente.");
+        setToast({ open: true, variant: "error", message: "Erro interno. Tente novamente." });
         console.error(json.detail);
         return;
       }
-
-      alert("Não foi possível enviar. Tente novamente.");
+  
+      setToast({ open: true, variant: "error", message: "Não foi possível enviar. Tente novamente." });
       console.error(res.status, json);
     } catch (err) {
-      alert("Erro de rede. Verifique sua conexão.");
+      setToast({ open: true, variant: "error", message: "Erro de rede. Verifique sua conexão." });
       console.error(err);
     }
   }}
+  
   className="rounded-2xl border border-brand-100/15 bg-white p-6 shadow-subtle"
 >
   <h3 className="text-base font-semibold text-brand-navy">Envie uma mensagem</h3>
