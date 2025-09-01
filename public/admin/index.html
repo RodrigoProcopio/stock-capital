@@ -25,30 +25,21 @@
       document.title = "Stock Capital — CMS";
 
       if (window.netlifyIdentity) {
-        // Inicializa o widget (processa tokens da URL)
         window.netlifyIdentity.init();
 
-        // Detecta tokens especiais e abre o modal apropriado
-        if (/#invite_token=/.test(window.location.hash)) {
-          console.log("Convite detectado:", window.location.hash);
-          // widget processa sozinho ao init()
+        // Debug: mostra se chegou token na URL
+        if (/#(?:invite_token|confirmation_token|recovery_token)=/.test(window.location.hash)) {
+          console.log("Token detectado:", window.location.hash);
         }
 
-        if (/#confirmation_token=/.test(window.location.hash)) {
-          console.log("Confirmação detectada:", window.location.hash);
-          // widget processa sozinho ao init()
-        }
-
-        if (/#recovery_token=/.test(window.location.hash)) {
-          console.log("Token de recuperação detectado:", window.location.hash);
-          // abre modal direto no fluxo de recovery
-          window.netlifyIdentity.open("recovery");
-        }
-
-        // Eventos úteis
+        // Evento login: trata fluxo normal e fluxo de convite/reset
         window.netlifyIdentity.on("login", (user) => {
           console.log("Usuário logado no CMS:", user);
-          // já estamos em /admin; não precisa redirecionar
+
+          if (/#(?:invite_token|confirmation_token|recovery_token)=/.test(window.location.hash)) {
+            // Se login veio de convite/confirm/reset → recarrega limpo sem hash
+            window.location.replace("/admin/");
+          }
         });
 
         window.netlifyIdentity.on("logout", () => {
