@@ -33,7 +33,13 @@
         // ao concluir login mandamos o usuário para o CMS
         window.netlifyIdentity.on("login", function (user) {
           console.log("Usuário logado via home:", user);
-          window.location.href = "/admin/";
+
+          // Se veio de convite/confirm, redireciona limpo para evitar travar botão no admin
+          if (/#(?:invite_token|confirmation_token)=/.test(window.location.hash)) {
+            window.location.href = "/admin/";
+          } else {
+            window.location.href = "/admin/";
+          }
         });
 
         window.netlifyIdentity.on("error", function (err) {
@@ -43,3 +49,4 @@
     </script>
   </body>
 </html>
+
