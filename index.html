@@ -9,30 +9,33 @@
   <body>
     <div id="root"></div>
 
-    <!-- 1) Se houver token (#invite_token ou #confirmation_token), manda direto para /admin mantendo o hash -->
+    <!-- 1) Se houver token (invite/confirmation/recovery), manda direto para /admin mantendo o hash -->
     <script>
       (function () {
         var h = window.location.hash || "";
-        if (/#(?:invite_token|confirmation_token)=/.test(h)) {
-          // replace evita criar histórico extra
+        if (/#(?:invite_token|confirmation_token|recovery_token)=/.test(h)) {
+          // usa replace para não poluir histórico
           window.location.replace("/admin/" + h);
         }
       })();
     </script>
 
-    <!-- 2) Sua SPA -->
+    <!-- 2) Carrega sua SPA React -->
     <script type="module" src="/src/main.jsx"></script>
 
-    <!-- 3) Netlify Identity Widget (fallback na home) -->
+    <!-- 3) Netlify Identity Widget (fallback na home, se precisar processar token aqui) -->
     <script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
     <script>
       if (window.netlifyIdentity) {
         window.netlifyIdentity.init();
+
+        // Se por algum motivo o token for processado na home,
+        // ao concluir login mandamos o usuário para o CMS
         window.netlifyIdentity.on("login", function (user) {
           console.log("Usuário logado via home:", user);
-          // Se o processamento ocorrer aqui, ainda assim levamos ao CMS
           window.location.href = "/admin/";
         });
+
         window.netlifyIdentity.on("error", function (err) {
           console.error("Erro no Netlify Identity (home):", err);
         });

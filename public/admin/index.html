@@ -20,23 +20,35 @@
     <script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
 
     <script>
-      // Estilo do preview (opcional)
+      // Estilo do preview
       CMS.registerPreviewStyle("/index.css");
       document.title = "Stock Capital — CMS";
 
       if (window.netlifyIdentity) {
-        // Inicializa o widget (necessário para processar tokens da URL)
+        // Inicializa o widget (processa tokens da URL)
         window.netlifyIdentity.init();
 
-        // Debug: mostra se chegou token na URL
-        if (/#(?:invite_token|confirmation_token)=/.test(window.location.hash)) {
-          console.log("Token detectado na URL:", window.location.hash);
+        // Detecta tokens especiais e abre o modal apropriado
+        if (/#invite_token=/.test(window.location.hash)) {
+          console.log("Convite detectado:", window.location.hash);
+          // widget processa sozinho ao init()
         }
 
-        // Evento disparado quando o login é concluído
+        if (/#confirmation_token=/.test(window.location.hash)) {
+          console.log("Confirmação detectada:", window.location.hash);
+          // widget processa sozinho ao init()
+        }
+
+        if (/#recovery_token=/.test(window.location.hash)) {
+          console.log("Token de recuperação detectado:", window.location.hash);
+          // abre modal direto no fluxo de recovery
+          window.netlifyIdentity.open("recovery");
+        }
+
+        // Eventos úteis
         window.netlifyIdentity.on("login", (user) => {
           console.log("Usuário logado no CMS:", user);
-          // Aqui não precisa redirecionar, já está no /admin
+          // já estamos em /admin; não precisa redirecionar
         });
 
         window.netlifyIdentity.on("logout", () => {
@@ -46,6 +58,8 @@
         window.netlifyIdentity.on("error", (err) => {
           console.error("Erro no Netlify Identity (admin):", err);
         });
+      } else {
+        console.error("Identity widget não carregou.");
       }
     </script>
   </body>
