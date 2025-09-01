@@ -501,23 +501,79 @@ export default function App() {
         </div>
       </div>
 
-      {/* coluna: formulário */}
-      <form
-        onSubmit={(e) => { e.preventDefault(); alert("Mensagem enviada (demo)"); }}
-        className="rounded-2xl border border-brand-100/15 bg-white p-6 shadow-subtle"
-      >
-        <h3 className="text-base font-semibold text-brand-navy">Envie uma mensagem</h3>
-        <div className="mt-4 grid gap-4">
-          <input className="rounded-lg border border-brand-navy/20 px-3 py-2 outline-none focus:ring-2 focus:ring-brand-navy/30" placeholder="Nome"/>
-          <input type="email" className="rounded-lg border border-brand-navy/20 px-3 py-2 outline-none focus:ring-2 focus:ring-brand-navy/30" placeholder="E-mail"/>
-          <textarea rows={5} className="rounded-lg border border-brand-navy/20 px-3 py-2 outline-none focus:ring-2 focus:ring-brand-navy/30" placeholder="Mensagem"/>
-          <button type="submit"  className="mt-2 w-full rounded-xl bg-brand-navy px-5 py-3 text-sm font-semibold text-white 
-             shadow-sm transition-all duration-300
-             hover:bg-brand-primary hover:-translate-y-0.5 hover:shadow-md">
-            Enviar
-          </button>
-        </div>
-      </form>
+{/* coluna: formulário */}
+<form
+  onSubmit={async (e) => {
+    e.preventDefault();
+
+    const formEl = e.currentTarget;
+    const nome = formEl.querySelector('input[name="nome"]').value;
+    const telefone = formEl.querySelector('input[name="telefone"]').value;
+    const email = formEl.querySelector('input[name="email"]').value;
+    const mensagem = formEl.querySelector('textarea[name="mensagem"]').value;
+    const hp = formEl.querySelector('input[name="hp"]').value; // honeypot
+
+    const res = await fetch("/.netlify/functions/send-contact-to-pipefy", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ nome, telefone, email, mensagem, hp }),
+    });
+
+    const json = await res.json();
+    if (res.ok && json.ok) {
+      alert("Mensagem enviada com sucesso!");
+      formEl.reset();
+    } else {
+      console.error(json);
+      alert("Não foi possível enviar. Tente novamente.");
+    }
+  }}
+  className="rounded-2xl border border-brand-100/15 bg-white p-6 shadow-subtle"
+>
+  <h3 className="text-base font-semibold text-brand-navy">Envie uma mensagem</h3>
+
+  {/* honeypot escondido (anti-spam) */}
+  <input type="text" name="hp" className="hidden" tabIndex="-1" autoComplete="off" />
+
+  <div className="mt-4 grid gap-4">
+    <input
+      type="text"
+      name="nome"
+      required
+      className="rounded-lg border border-brand-navy/20 px-3 py-2 outline-none focus:ring-2 focus:ring-brand-navy/30 text-brand-navy"
+      placeholder="Nome"
+    />
+    <input
+      type="tel"
+      name="telefone"
+      required
+      className="rounded-lg border border-brand-navy/20 px-3 py-2 outline-none focus:ring-2 focus:ring-brand-navy/30 text-brand-navy"
+      placeholder="Telefone"
+    />
+    <input
+      type="email"
+      name="email"
+      required
+      className="rounded-lg border border-brand-navy/20 px-3 py-2 outline-none focus:ring-2 focus:ring-brand-navy/30 text-brand-navy"
+      placeholder="E-mail"
+    />
+    <textarea
+      name="mensagem"
+      rows={5}
+      required
+      className="rounded-lg border border-brand-navy/20 px-3 py-2 outline-none focus:ring-2 focus:ring-brand-navy/30 text-brand-navy"
+      placeholder="Mensagem"
+    />
+    <button
+      type="submit"
+      className="mt-2 w-full rounded-xl bg-brand-navy px-5 py-3 text-sm font-semibold text-white 
+         shadow-sm transition-all duration-300
+         hover:bg-brand-primary hover:-translate-y-0.5 hover:shadow-md"
+    >
+      Enviar
+    </button>
+  </div>
+</form>
     </div>
   </div>
 </section>
