@@ -20,7 +20,7 @@
     <script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
 
     <script>
-      /* Estilo do preview (opcional) */
+      // Estilo do preview (opcional)
       CMS.registerPreviewStyle("/index.css");
       document.title = "Stock Capital — CMS";
 
@@ -28,11 +28,15 @@
         // Inicializa o widget (necessário para processar tokens da URL)
         window.netlifyIdentity.init();
 
-        // Evento disparado quando o login é concluído (inclusive via convite com token)
+        // Debug: mostra se chegou token na URL
+        if (/#(?:invite_token|confirmation_token)=/.test(window.location.hash)) {
+          console.log("Token detectado na URL:", window.location.hash);
+        }
+
+        // Evento disparado quando o login é concluído
         window.netlifyIdentity.on("login", (user) => {
-          console.log("Usuário logado:", user);
-          // Se quiser garantir o redirecionamento para o /admin
-          window.location.href = "/admin/";
+          console.log("Usuário logado no CMS:", user);
+          // Aqui não precisa redirecionar, já está no /admin
         });
 
         window.netlifyIdentity.on("logout", () => {
@@ -40,7 +44,7 @@
         });
 
         window.netlifyIdentity.on("error", (err) => {
-          console.error("Erro no Identity:", err);
+          console.error("Erro no Netlify Identity (admin):", err);
         });
       }
     </script>

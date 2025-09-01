@@ -11,7 +11,7 @@ logo_url: "/admin/logo.png"
 media_folder: "public/uploads"   # arquivos físicos no repo
 public_folder: "/uploads"        # como o site acessa os uploads
 
-publish_mode: simple
+publish_mode: simple             # ou "editorial_workflow" se quiser revisão
 
 slug:
   clean_accents: true
