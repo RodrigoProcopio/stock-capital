@@ -1,3 +1,4 @@
+// src/main.jsx
 import { StrictMode, useEffect } from "react";
 import { createRoot } from "react-dom/client";
 import {
@@ -14,7 +15,13 @@ import Relatorios from "./pages/Relatorios.jsx";
 import Insights from "./pages/Insights.jsx";
 import Compliance from "./pages/Compliance.jsx";
 
-// Componente utilitário: sobe a página ao navegar
+// Novas páginas LGPD/Privacidade
+import PoliticaPrivacidade from "./pages/PoliticaPrivacidade.jsx";
+import TermosUso from "./pages/TermosUso.jsx";
+import SolicitacaoLGPD from "./pages/SolicitacaoLGPD.jsx";
+import PoliticaRetencaoLGPD from "./pages/PoliticaRetencaoLGPD.jsx";
+
+// Utilitário: sobe a página ao navegar
 function ScrollToTop() {
   const { pathname } = useLocation();
   useEffect(() => {
@@ -23,24 +30,37 @@ function ScrollToTop() {
   return null;
 }
 
+// Wrapper para aplicar ScrollToTop em cada rota
+function WithScroll({ children }) {
+  return (
+    <>
+      <ScrollToTop />
+      {children}
+    </>
+  );
+}
+
 const router = createBrowserRouter([
-  { path: "/", element: <App /> }, // Landing
-  { path: "/formulario-api", element: <FormularioApi /> },
+  { path: "/", element: <WithScroll><App /></WithScroll> }, // Landing
+  { path: "/formulario-api", element: <WithScroll><FormularioApi /></WithScroll> },
 
   // Publicações
-  { path: "/publicacoes/cartas", element: <Cartas /> },
-  { path: "/publicacoes/relatorios", element: <Relatorios /> },
-  { path: "/publicacoes/insights", element: <Insights /> },
-  { path: "/publicacoes/compliance", element: <Compliance /> },
+  { path: "/publicacoes/cartas", element: <WithScroll><Cartas /></WithScroll> },
+  { path: "/publicacoes/relatorios", element: <WithScroll><Relatorios /></WithScroll> },
+  { path: "/publicacoes/insights", element: <WithScroll><Insights /></WithScroll> },
+  { path: "/publicacoes/compliance", element: <WithScroll><Compliance /></WithScroll> },
 
+  // LGPD / Privacidade
+  { path: "/privacidade", element: <WithScroll><PoliticaPrivacidade /></WithScroll> },
+  { path: "/termos", element: <WithScroll><TermosUso /></WithScroll> },
+  { path: "/lgpd", element: <WithScroll><SolicitacaoLGPD /></WithScroll> },
+  { path: "/docs/politica-retencao-lgpd", element: <WithScroll><PoliticaRetencaoLGPD /></WithScroll> },
   // Opcional: catch-all de volta pra Home
-  { path: "*", element: <App /> },
+  { path: "*", element: <WithScroll><App /></WithScroll> },
 ]);
 
 createRoot(document.getElementById("root")).render(
   <StrictMode>
-    <RouterProvider router={router}>
-      <ScrollToTop />
-    </RouterProvider>
+    <RouterProvider router={router} />
   </StrictMode>
 );

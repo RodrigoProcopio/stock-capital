@@ -25,6 +25,26 @@ async function fetchStartFormOptions(token, pipeId) {
   return map; // Map<field_id, string[]>
 }
 
+// Também precisamos saber TODOS os IDs dos campos do Start Form (não só os que têm options)
+async function fetchStartFormFieldIds(token, pipeId) {
+  const query = `
+    query ($id: ID!) {
+      pipe(id: $id) {
+        start_form_fields { id type label }
+      }
+    }`;
+  const res = await fetch("https://api.pipefy.com/graphql", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+    body: JSON.stringify({ query, variables: { id: pipeId } }),
+  });
+  const json = await res.json();
+  if (json.errors) throw new Error(JSON.stringify(json.errors));
+  const fields = json.data?.pipe?.start_form_fields || [];
+  const set = new Set(fields.map(f => f.id));
+  return set; // Set<string>
+}
+
 // normalizador simples: tira acentos, trim, e colapsa espaços; compara case-insensitive
 function norm(s) {
   return String(s)
@@ -50,6 +70,47 @@ function normalizeManyToAllowed(values, allowed) {
     if (hit) ok.push(hit); else bad.push(v);
   }
   return { ok, bad };
+}
+
+// -------- LGPD: monta campos de consentimento com CARIMBO DO SERVIDOR --------
+function buildServerConsentFields(event, body, availableIds) {
+  const headers = event?.headers || {};
+  const ipHeader =
+    headers["x-forwarded-for"] ||
+    headers["x-nf-client-connection-ip"] ||
+    headers["client-ip"] ||
+    "";
+  const ipRaw = String(ipHeader).split(",")[0].trim();
+  const ua  = headers["user-agent"] || "";
+  const now = new Date().toISOString();
+
+  // (opcional) mascarar IP para reduzir sensibilidade:
+  const ip = ipRaw; // ou: ipRaw.replace(/(\d+)\.(\d+)\.(\d+)\.(\d+)/, "$1.$2.$3.xxx")
+
+  const policyVersion = String(body?.lgpd?.policyVersion || "v1");
+  const clientTs      = String(body?.lgpd?.consentAtClient || "");
+  const formIdVal     = String(body?.form_id || "FormularioApi");
+
+  const C = {
+    consent_ts: "consent_ts",
+    consent_ip: "consent_ip",
+    consent_ua: "consent_ua",
+    consent_policy_version: "consent_policy_version",
+    consent_client_ts: "consent_client_ts",
+    form_id: "form_id",
+  };
+
+  const out = [];
+  const pushIf = (id, value) => { if (id && availableIds.has(id)) out.push({ field_id: id, field_value: value }); };
+
+  pushIf(C.consent_ts, now);
+  pushIf(C.consent_ip, ip);
+  pushIf(C.consent_ua, ua);
+  pushIf(C.consent_policy_version, policyVersion);
+  pushIf(C.consent_client_ts, clientTs);
+  pushIf(C.form_id, formIdVal);
+
+  return out;
 }
 
 export async function handler(event) {
@@ -116,6 +177,8 @@ export async function handler(event) {
 
     // 2) baixa opções válidas do Pipefy e normaliza tudo que for de lista
     const optionsMap = await fetchStartFormOptions(TOKEN, Number(PIPE_ID));
+    const availableIds = await fetchStartFormFieldIds(TOKEN, Number(PIPE_ID));
+
     const fields_attributes = [];
     const notMatched = []; // para reportar o que não casou
 
@@ -152,6 +215,9 @@ export async function handler(event) {
 
     // multis
     MULTI_FIELDS.forEach(pushMulti);
+
+    // LGPD: ANEXA CAMPOS DE CONSENTIMENTO (TS/IP/UA/versão/TS do cliente/Form ID)
+    fields_attributes.push(...buildServerConsentFields(event, body, availableIds));
 
     // se algo não casou, devolve 400 explicando (para você alinhar front x pipe)
     if (notMatched.length) {
@@ -205,7 +271,12 @@ export async function handler(event) {
     return {
       statusCode: 200,
       headers: { ...CORS, "Content-Type": "application/json" },
-      body: JSON.stringify({ ok: true, card: json.data.createCard.card })
+      body: JSON.stringify({
+        ok: true,
+        card: json.data.createCard.card,
+        // opcional: lista os campos de consentimento que realmente foram preenchidos
+        consentFilled: buildServerConsentFields(event, body, availableIds).map(f => f.field_id)
+      })
     };
 
   } catch (err) {

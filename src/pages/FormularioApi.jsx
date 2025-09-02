@@ -1,7 +1,10 @@
 // src/pages/FormularioApi.jsx
 import React, { useMemo, useState, useEffect } from "react";
+import { Link } from "react-router-dom"; // para linkar sem recarregar
+const POLICY_VERSION = "v1";
 import { useNavigate } from "react-router-dom";
 import PageLayout from "../components/PageLayout";
+import LgpdConsent from "../components/LgpdConsent";
 
 /* --------------------------------- helpers -------------------------------- */
 const cx = (...c) => c.filter(Boolean).join(" ");
@@ -512,14 +515,22 @@ function StepReview({ form, set }) {
         ))}
       </div>
 
-      <label className="flex items-center gap-2 text-sm text-slate-700 pt-6">
-        <input
-          type="checkbox"
-          checked={form.lgpd}
-          onChange={(e) => set("lgpd", e.target.checked)}
-        />
-        Concordo com os termos de uso e a política de privacidade (LGPD)
-      </label>
+      {/* LGPD Consent */}
+      <label className="flex items-start gap-3 rounded-lg border border-brand-navy/15 bg-white/80 px-3 py-3">
+  <input
+    type="checkbox"
+    checked={form.lgpd}
+    onChange={(e) => set("lgpd", e.target.checked)}
+    className="mt-1 h-4 w-4 rounded border-brand-navy/40 text-brand-navy focus:ring-brand-navy/40"
+  />
+  <span className="text-sm text-brand-navy/90">
+    Autorizo o tratamento dos meus dados para: (i) contato e atendimento; (ii) avaliação de perfil/suitability; e (iii) cumprimento de obrigações legais/regulatórias.
+    Retenção: contatos por até <strong>18 meses</strong> e registros de consentimento por até <strong>5 anos</strong>.
+    Posso revogar a qualquer tempo em <Link to="/lgpd" className="underline hover:opacity-80">/lgpd</Link>.
+    Consulte a <Link to="/privacidade" className="underline hover:opacity-80">Política de Privacidade</Link> e a
+    <Link to="/docs/politica-retencao-lgpd" className="underline hover:opacity-80"> Política de Retenção</Link>.
+  </span>
+</label>
     </Section>
   );
 }
@@ -569,6 +580,9 @@ export default function FormularioApi() {
     lgpd: false,
   });
 
+  // versionamento da política (exibida e enviada ao backend)
+  const policyVersion = "v1";
+
   const set = (key, val) => setForm((s) => ({ ...s, [key]: val }));
 
   const validators = [
@@ -608,9 +622,36 @@ export default function FormularioApi() {
 
     setLoading(true);
     try {
-      const payload = { ...form };
-      delete payload.lgpd;
+      // monta payload principal
+      const payload = {
+        ...form,
+        lgpd: {
+          accepted: true,
+          policyVersion: POLICY_VERSION,
+          consentAtClient: new Date().toISOString(),
+       },   
+     }; 
 
+      // Registro autoritativo no servidor (timestamp/IP/UA do server)
+      try {
+        await fetch("/.netlify/functions/consent", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            action: "consent",
+            policyVersion,
+            formId: "FormularioApi",
+            nome: payload[F.nome],
+            email: payload[F.email],
+            telefone: payload[F.tel],
+            context: { page: window.location.pathname },
+          }),
+        });
+      } catch (e) {
+        console.warn("Falha ao registrar consentimento no backend", e);
+      }
+
+      // Envio ao endpoint da sua API
       const res = await fetch("/api/form", {
         method: "POST",
         headers: { "Content-Type": "application/json" },

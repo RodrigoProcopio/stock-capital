@@ -217,19 +217,20 @@ export default function App() {
         {/* Nosso Propósito */}
         <Section id="nosso-proposito" title="Nosso Propósito" subtitle="">
           <p className="text-justify">
-            Na <strong>Stock Capital Multi Family Office</strong>, gerimos patrimônios com excelência,
-            conectando crescimento, proteção e propósito. Acreditamos que um patrimônio bem administrado vai além dos
-            resultados financeiros: ele constrói legados, fortalece vínculos familiares e transforma o ambiente em que
-            vivemos. Com independência, técnica e visão de longo prazo, estruturamos soluções patrimoniais que integram
-            rentabilidade, segurança e impacto positivo para as próximas gerações.
+            Na <strong>Stock Capital Multi Family Office</strong>, gerimos patrimônios com excelência, 
+            conectando crescimento, proteção e propósito. Acreditamos que um patrimônio bem administrado 
+            vai além dos resultados financeiros: ele constrói legados, fortalece vínculos familiares e 
+            transforma o ambiente em que vivemos. Com independência, técnica e visão de longo prazo, 
+            estruturamos soluções patrimoniais que unem rentabilidade, segurança e impacto positivo 
+            para as próximas gerações.
           </p>
         </Section>
 
         {/* Quem Beneficiamos */}
         <Section id="para-quem-atuamos" title="Quem Beneficiamos" subtitle="">
           <p className="text-justify">
-            Nossas soluções atendem famílias e indivíduos que compartilham a visão de construir e preservar legados
-            duradouros:
+            Nossas soluções atendem famílias e indivíduos que compartilham a visão de construir e 
+            preservar legados duradouros:
           </p>
 
           <ul className="mt-4 list-disc space-y-2 pl-6 text-justify text-slate-ink">
@@ -244,17 +245,17 @@ export default function App() {
         {/* Quem Somos */}
         <Section id="quem-somos" title="Quem Somos" subtitle="">
           <p className="text-justify">
-            Atuamos com total independência na construção de estratégias financeiras, sucessórias e fiduciárias para
-            famílias e investidores que desejam preservar e expandir seu patrimônio com governança e sofisticação. Nossa
-            abordagem combina:
+            A <strong>Stock Capital Multi Family Office</strong>, apoia famílias e investidores na
+             proteção e crescimento de seu patrimônio. Com uma equipe multidisciplinar, unimos rigor
+              técnico e visão estratégica para oferecer soluções alinhadas aos objetivos de cada cliente, 
+              gerando segurança e confiança. Nossa abordagem inclui: 
           </p>
-
           <ul className="mt-4 list-disc space-y-2 pl-6 text-justify text-slate-ink">
-            <li>Independência absoluta, sem vínculo com bancos ou produtos;</li>
-            <li>Transparência e alinhamento, com modelo de remuneração claro;</li>
+            <li>Independência total: sem vínculo com bancos ou produtos;</li>
+            <li>Transparência e alinhamento: modelo de remuneração claro;</li>
             <li>
-              Atuação multidisciplinar, com profissionais experientes em finanças, direito, sucessão e investimentos de
-              impacto.
+            Atuação multidisciplinar: profissionais experientes em finanças, direito, sucessão e investimentos 
+            de impacto.
             </li>
           </ul>
         </Section>
@@ -262,20 +263,21 @@ export default function App() {
         {/* Nossa Filosofia */}
         <Section id="nossa-filosofia" title="Nossa Filosofia" subtitle="">
           <p className="text-justify">
-            Nossa filosofia de investimentos combina resiliência, inovação e impacto. Construímos carteiras com visão de
-            longo prazo, que conciliam retorno financeiro e responsabilidade socioambiental.
+          Nossa gestão une resiliência, inovação e responsabilidade, reconhecendo que investir é, ao mesmo tempo, 
+          proteger o presente e preparar o futuro. Estruturamos portfólios sólidos e sustentáveis, capazes de 
+          atravessar ciclos econômicos. Buscamos garantir solidez patrimonial sem perder de vista a evolução constante. 
+          Nosso modelo de investimento abrange:
           </p>
 
           <p className="mt-4 text-justify">Nosso modelo de investimento abrange:</p>
 
           <ul className="mt-4 list-disc space-y-2 pl-6 text-justify text-slate-ink">
-            <li>Alocação estratégica e tática de ativos;</li>
-            <li>Integração de critérios ESG e impacto mensurável;</li>
+            <li>Alocação estratégica e tática de ativos, equilibrando segurança e crescimento;</li>
+            <li>Integração de critérios ESG; </li>
             <li>
-              Acesso a fundos globais e ativos alternativos (Private Equity, Real Estate, Venture Capital, Crédito
-              Estruturado);
+            Acesso a fundos globais e ativos alternativos (Private Equity, Real Estate, Venture Capital e Crédito Estruturado);
             </li>
-            <li>Gestão de risco e acompanhamento contínuo de performance.</li>
+            <li>Monitoramento constante de riscos e resultados.</li>
           </ul>
         </Section>
 
@@ -324,17 +326,8 @@ export default function App() {
   </div>
 </Section>
 
-        {/* seção de desempenho */}
-        <section id="desempenho" className="pt-20 pb-64">
-  <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-    <div className="h-[420px]">
-      <DesempenhoChart />
-    </div>
-  </div>
-</section>
-
-        {/* Multi Family Office (cards com overlay local) */}
-        <Section id="multi-family-office" title="Multi Family Office">
+        {/* Nossos Serviços (cards com overlay local) */}
+        <Section id="nossos-servicos" title="Nossos Serviços">
           <ServiceCards
             cols="3"
             items={[
@@ -376,35 +369,45 @@ export default function App() {
             ]}
           />
         </Section>
+        
+               {/* seção de desempenho */}
+               <section id="desempenho" className="pt-20 pb-64">
+  <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div className="h-[420px]">
+      <DesempenhoChart />
+    </div>
+  </div>
+</section>
 
         {/* Governança e Confiança */}
         <Section id="governanca" title="Governança e Confiança" subtitle="">
           <p className="text-justify">
-            A governança é o eixo central da nossa atuação. Gerimos com rigor, sigilo e metodologia. Processos
-            institucionais, decisões fundamentadas e ética inegociável sustentam cada ação, refletindo o compromisso com
-            a confiança depositada por nossos clientes. Nossa governança se destaca por:
+          A governança é o pilar da nossa atuação. Gerimos patrimônio com rigor, sigilo e processos estruturados, 
+          garantindo que cada decisão seja fundamentada, ética e auditável. Nossa atuação combina disciplina técnica
+           e transparência, reforçando o compromisso com a confiança que nossos clientes depositam em nós. 
+           Nossa governança inclui:
           </p>
 
           <ul className="mt-4 list-disc space-y-2 pl-6 text-justify text-slate-ink">
-            <li>Estrutura fiduciária com comitês internos e processos auditáveis;</li>
+            <li>Estrutura fiduciária sólida, com comitês internos e processos auditáveis;</li>
             <li>Política de prevenção a conflitos de interesse;</li>
-            <li>Compliance contínuo e acompanhamento regulatório;</li>
-            <li>Relatórios gerenciais e reuniões periódicas de alinhamento com os clientes.</li>
+            <li>Compliance constante, com acompanhamento regulatório contínuo;</li>
+            <li>Relatórios gerenciais e reuniões periódicas para alinhamento e tomada de decisão.</li>
           </ul>
         </Section>
 
         {/* Sustentabilidade e Impacto */}
         <Section id="sustentabilidade" title="Sustentabilidade e Impacto" subtitle="">
           <p className="text-justify">
-            Todo investimento molda o mundo – por isso, seu patrimônio pode transformar realidades. Acreditamos na união
-            entre prosperidade e propósito, incorporando impacto ao planejamento de capital sem comprometer o desempenho.
-            As diretrizes que norteiam nossas decisões são:
+          Todo investimento molda o mundo — por isso, seu patrimônio pode gerar transformações concretas. 
+          Acreditamos na união entre prosperidade e propósito, incorporando impacto ao planejamento de capital 
+          sem comprometer desempenho. Nossas diretrizes incluem:
           </p>
 
           <ul className="mt-4 list-disc space-y-2 pl-6 text-justify text-slate-ink">
-            <li>Investimentos temáticos em mudanças climáticas, educação, saúde e tecnologia limpa;</li>
+            <li>Investimentos direcionados a mudanças climáticas, educação, saúde e tecnologia limpa;</li>
             <li>Curadoria rigorosa de fundos com mandatos ESG e impacto direto;</li>
-            <li>Estruturação de capital catalítico;</li>
+            <li>Estruturação de capital catalítico para potencializar resultados;</li>
             <li>Avaliação e reporte de impacto ambiental e social.</li>
           </ul>
         </Section>
@@ -632,7 +635,7 @@ export default function App() {
       />
       <span className="text-sm text-brand-navy/90">
         Autorizo o tratamento e o compartilhamento dos meus dados pessoais para fins de contato e atendimento,
-        conforme a LGPD. <a href="/politica-de-privacidade" className="underline hover:opacity-80">Saiba mais</a>.
+        conforme a LGPD. <a href="/privacidade" className="underline hover:opacity-80">Saiba mais</a>.
       </span>
     </label>
 
