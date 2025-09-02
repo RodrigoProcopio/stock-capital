@@ -38,6 +38,23 @@ function cx(...c) {
   return c.filter(Boolean).join(" ");
 }
 
+function Toast({ open, message, variant = "error", onClose }) {
+  if (!open) return null;
+  const colors =
+    variant === "success" ? "bg-emerald-600 border-emerald-400"
+    : variant === "warning" ? "bg-amber-500 border-amber-300"
+    : "bg-red-600 border-red-400";
+  return (
+    <div className="fixed top-4 inset-x-0 z-50 flex justify-center px-4">
+      <div className={`w-full max-w-md text-white border rounded-xl shadow-lg px-4 py-3 flex items-start gap-3 ${colors}`} role="alert">
+        <span className="mt-0.5 text-sm whitespace-pre-line">{message}</span>
+        <button onClick={onClose} className="ml-auto inline-flex h-6 w-6 items-center justify-center rounded-md bg-white/10 hover:bg-white/20" aria-label="Fechar">×</button>
+      </div>
+    </div>
+  );
+}
+
+
 /**
  * Componente principal da página.
  * - Header "auto-hide" ao rolar para baixo
@@ -46,6 +63,10 @@ function cx(...c) {
  * - Navegação com smooth scroll para âncoras
  */
 export default function App() {
+
+  const [toast, setToast] = useState({ open: false, message: "", variant: "error" });
+  const [sending, setSending] = useState(false);
+
   // Estado: controle do drawer do menu
   const [menuOpen, setMenuOpen] = useState(false);
   // Estado: seção ativa com base no scroll
@@ -108,6 +129,12 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-gray-50 text-slate-ink">
+      <Toast
+  open={toast.open}
+  message={toast.message}
+  variant={toast.variant}
+  onClose={() => setToast(t => ({ ...t, open: false }))}
+/>
       {/* Header (auto-hide) */}
       <header
         className={cx(
@@ -369,10 +396,10 @@ export default function App() {
             ]}
           />
         </Section>
-        
-               {/* seção de desempenho */}
-               <section id="desempenho" className="pt-20 pb-64">
-  <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+
+{/* seção de desempenho */}
+<section id="desempenho" className="scroll-mt-24 border-t border-brand-navy/10 bg-gray-50 pt-20 pb-64">
+  <div className="mt-4 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
     <div className="h-[420px]">
       <DesempenhoChart />
     </div>
@@ -529,26 +556,24 @@ export default function App() {
     const lgpdChecked = formEl.querySelector('input[name="lgpd"]').checked;
   
     if (!lgpdChecked) {
-      setToast({
-        open: true,
-        variant: "warning",
-        message: "Para enviar, é necessário aceitar a LGPD e o compartilhamento dos dados pessoais.",
-      });
+      setToast({ open: true, variant: "warning", message: "Para enviar, é necessário aceitar a LGPD e o compartilhamento dos dados pessoais." });
       return;
     }
   
-    try {
-      const res = await fetch("/.netlify/functions/send-contact-to-pipefy", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ nome, telefone, email, mensagem, hp }),
-      });
+    const payload = {
+      nome, telefone, email, mensagem, hp,
+      form_id: "Contato",
+      lgpd: { accepted: true, policyVersion: "v1", consentAtClient: new Date().toISOString() },
+    };
   
+    const url = import.meta.env.PROD ? "/api/send-contact" : "/.netlify/functions/send-contact-to-pipefy";
+  
+    setSending(true);
+    try {
+      const res = await fetch(url, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
       let json = {};
-      try { json = await res.json(); }
-      catch {
-        const txt = await res.text().catch(() => "");
-        json = { raw: txt };
+      try { json = await res.json(); } catch {
+        const txt = await res.text().catch(() => ""); json = { raw: txt };
       }
   
       if (res.ok && json.ok) {
@@ -556,37 +581,34 @@ export default function App() {
         formEl.reset();
         return;
       }
-  
       if (res.status === 400 && json?.error === "Campos obrigatórios ausentes.") {
         setToast({ open: true, variant: "warning", message: `Preencha: ${json.missing?.join(", ")}` });
         return;
       }
-  
       if (res.status === 400 && json?.error === "Alguns valores não correspondem às opções do Pipefy.") {
         setToast({ open: true, variant: "warning", message: "Alguns valores não correspondem às opções do Pipefy." });
         console.warn(json.detail);
         return;
       }
-  
       if (res.status === 502 && json?.error === "Falha ao criar card no Pipefy") {
         setToast({ open: true, variant: "error", message: json.message || "Falha ao criar card no Pipefy." });
         console.error(json.detail);
         return;
       }
-  
       if (res.status === 500 && json?.error === "Erro interno") {
         setToast({ open: true, variant: "error", message: "Erro interno. Tente novamente." });
         console.error(json.detail);
         return;
       }
-  
       setToast({ open: true, variant: "error", message: "Não foi possível enviar. Tente novamente." });
       console.error(res.status, json);
     } catch (err) {
       setToast({ open: true, variant: "error", message: "Erro de rede. Verifique sua conexão." });
       console.error(err);
+    } finally {
+      setSending(false);
     }
-  }}
+  }}  
   
   className="rounded-2xl border border-brand-100/15 bg-white p-6 shadow-subtle"
 >
@@ -633,20 +655,21 @@ export default function App() {
         required
         className="mt-1 h-4 w-4 rounded border-brand-navy/40 text-brand-navy focus:ring-brand-navy/40"
       />
-      <span className="text-sm text-brand-navy/90">
-        Autorizo o tratamento e o compartilhamento dos meus dados pessoais para fins de contato e atendimento,
-        conforme a LGPD. <a href="/privacidade" className="underline hover:opacity-80">Saiba mais</a>.
-      </span>
+<span className="text-sm text-brand-navy/90">
+  Autorizo o tratamento e o compartilhamento dos meus dados pessoais para fins de contato e atendimento,
+  conforme a LGPD. <Link to="/privacidade" className="underline hover:opacity-80">Saiba mais</Link>.
+</span>
     </label>
 
     <button
-      type="submit"
-      className="mt-2 w-full rounded-xl bg-brand-navy px-5 py-3 text-sm font-semibold text-white 
-         shadow-sm transition-all duration-300
-         hover:bg-brand-primary hover:-translate-y-0.5 hover:shadow-md"
-    >
-      Enviar
-    </button>
+  type="submit"
+  disabled={sending}
+  className="mt-2 w-full rounded-xl bg-brand-navy px-5 py-3 text-sm font-semibold text-white 
+     shadow-sm transition-all duration-300 hover:bg-brand-primary hover:-translate-y-0.5 hover:shadow-md disabled:opacity-50"
+>
+  {sending ? "Enviando..." : "Enviar"}
+</button>
+
   </div>
 </form>
 

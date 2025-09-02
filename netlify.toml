@@ -17,3 +17,9 @@
   from = "/*"
   to = "/index.html"
   status = 200
+
+[[redirects]]
+  from = "/api/send-contact"
+  to   = "/.netlify/functions/send-contact-to-pipefy"
+  status = 200
+
