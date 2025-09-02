@@ -1,6 +1,6 @@
 /* global CMS, Papa */
 (function () {
-    // ---- helpers ----
+    // -------- helpers --------
     function normalizeYYYYMM(s) {
       if (!s) return s;
       const m = String(s).match(/^(\d{4})[-/](\d{1,2})/);
@@ -29,97 +29,271 @@
   
     console.log("admin/index.js carregado");
   
-    // ---- React via UMD (não usar CMS.getLib) ----
+    // -------- React via UMD --------
     const React = window.React;
-    const { useState, useEffect } = React;
   
-    // ---- Control ----
-    const SeriesImportControl = ({ value, onChange, forID, classNameWrapper }) => {
-      const initial = Array.isArray(value?.toJS?.()) ? value.toJS() : value || [];
-      const [rows, setRows] = useState(initial);
-      const [overwrite, setOverwrite] = useState(true);
-      const [status, setStatus] = useState("");
+    class SeriesImportControl extends React.Component {
+      constructor(props) {
+        super(props);
+        const initial = Array.isArray(props.value?.toJS?.())
+          ? props.value.toJS()
+          : props.value || [];
+        this.state = {
+          rows: initial,
+          overwrite: true,
+          status: "",
+        };
+        // bind
+        this.onFile = this.onFile.bind(this);
+        this.addRow = this.addRow.bind(this);
+        this.delRow = this.delRow.bind(this);
+        this.updRow = this.updRow.bind(this);
+        this.push = this.push.bind(this);
+      }
   
-      useEffect(() => {
-        const v = Array.isArray(value?.toJS?.()) ? value.toJS() : value || [];
-        setRows(v);
-      }, [value]);
+      componentDidUpdate(prevProps) {
+        // se o valor vindo do CMS mudar (abrir item salvo etc), sincroniza
+        if (prevProps.value !== this.props.value) {
+          const v = Array.isArray(this.props.value?.toJS?.())
+            ? this.props.value.toJS()
+            : this.props.value || [];
+          this.setState({ rows: v });
+        }
+      }
   
-      function push(next) { setRows(next); onChange(next); }
+      push(next) {
+        this.setState({ rows: next });
+        this.props.onChange(next);
+      }
   
-      function onFile(e) {
-        const file = e.target.files?.[0];
+      onFile(e) {
+        const file = e.target.files && e.target.files[0];
         if (!file) return;
-        setStatus("Importando CSV...");
+        this.setState({ status: "Importando CSV..." });
+  
         Papa.parse(file, {
-          header: true, skipEmptyLines: true,
+          header: true,
+          skipEmptyLines: true,
           complete: (res) => {
             const imported = (res.data || [])
               .map((r) => ({
-                date: normalizeYYYYMM(r.date || r.mes || r["mês"] || r.Mes || r["Mês"] || r.AnoMes || r["AnoMes"]),
-                rendimento: toNumberPt(r.rendimento ?? r.retorno ?? r.rentabilidade ?? r.rtn),
+                date: normalizeYYYYMM(
+                  r.date || r.mes || r["mês"] || r.Mes || r["Mês"] || r.AnoMes || r["AnoMes"]
+                ),
+                rendimento: toNumberPt(
+                  r.rendimento ?? r.retorno ?? r.rentabilidade ?? r.rtn
+                ),
               }))
               .filter((r) => r.date && r.rendimento != null);
   
-            push(mergeSeries(rows, imported, overwrite));
-            setStatus(`Importados ${imported.length} meses (${overwrite ? "sobrescrevendo" : "mantendo"} existentes).`);
+            const merged = mergeSeries(
+              this.state.rows,
+              imported,
+              this.state.overwrite
+            );
+            this.push(merged);
+            this.setState({
+              status: `Importados ${imported.length} meses (${this.state.overwrite ? "sobrescrevendo" : "mantendo"} existentes).`,
+            });
           },
-          error: (err) => setStatus("Erro CSV: " + err?.message),
+          error: (err) => this.setState({ status: "Erro CSV: " + (err?.message || err) }),
         });
       }
   
-      function addRow() { push(sortByDateAsc([...rows, { date: "2025-01", rendimento: 0 }])); }
-      function delRow(i) { const n = rows.slice(); n.splice(i, 1); push(n); }
-      function updRow(i, key, val) {
-        const n = rows.slice();
-        n[i] = key === "date" ? { ...n[i], date: normalizeYYYYMM(val) }
-                              : { ...n[i], rendimento: toNumberPt(val) ?? "" };
-        push(n);
+      addRow() {
+        this.push(sortByDateAsc([...this.state.rows, { date: "2025-01", rendimento: 0 }]));
       }
   
-      return React.createElement("div", { id: forID, className: classNameWrapper }, [
-        React.createElement("div", { key: "toolbar", style: { display: "flex", gap: 12, alignItems: "center", marginBottom: 12 } }, [
-          React.createElement("input", { key: "file", type: "file", accept: ".csv", onChange: onFile }),
-          React.createElement("label", { key: "ow" }, [
-            React.createElement("input", { type: "checkbox", checked: overwrite, onChange: (e) => setOverwrite(e.target.checked), style: { marginRight: 6 } }),
-            "Sobrescrever meses existentes",
-          ]),
-          React.createElement("button", { key: "add", type: "button", onClick: addRow, style: { padding: "6px 10px", border: "1px solid #ccc", borderRadius: 8, cursor: "pointer" } }, "+ Adicionar mês"),
-        ]),
-        status && React.createElement("div", { key: "status", style: { color: "#555", marginBottom: 8 } }, status),
+      delRow(i) {
+        const next = this.state.rows.slice();
+        next.splice(i, 1);
+        this.push(next);
+      }
   
-        React.createElement("table", { key: "table", style: { width: "100%", borderCollapse: "collapse" } }, [
-          React.createElement("thead", { key: "th" }, React.createElement("tr", null, [
-            React.createElement("th", { style: { textAlign: "left", padding: 6, borderBottom: "1px solid #eee" } }, "Mês (YYYY-MM)"),
-            React.createElement("th", { style: { textAlign: "left", padding: 6, borderBottom: "1px solid #eee" } }, "Rendimento (%)"),
-            React.createElement("th", { style: { width: 80 } }, ""),
-          ])),
-          React.createElement("tbody", { key: "tb" },
-            rows.map((r, i) =>
-              React.createElement("tr", { key: i }, [
-                React.createElement("td", { style: { padding: 6, borderBottom: "1px solid #f3f3f3" } },
-                  React.createElement("input", { type: "text", value: r.date || "", placeholder: "YYYY-MM", onChange: (e) => updRow(i, "date", e.target.value), style: { width: "100%" } })
-                ),
-                React.createElement("td", { style: { padding: 6, borderBottom: "1px solid #f3f3f3" } },
-                  React.createElement("input", { type: "text", value: r.rendimento ?? "", placeholder: "0,00", onChange: (e) => updRow(i, "rendimento", e.target.value), style: { width: "100%" } })
-                ),
-                React.createElement("td", { style: { textAlign: "right" } },
-                  React.createElement("button", { type: "button", onClick: () => delRow(i), style: { padding: "6px 10px", border: "1px solid #ccc", borderRadius: 8, cursor: "pointer" } }, "Remover")
-                ),
-              ])
-            )
+      updRow(i, key, val) {
+        const next = this.state.rows.slice();
+        if (key === "date") {
+          next[i] = { ...next[i], date: normalizeYYYYMM(val) };
+        } else {
+          next[i] = { ...next[i], rendimento: toNumberPt(val) ?? "" };
+        }
+        this.push(next);
+      }
+  
+      render() {
+        const h = React.createElement;
+        const { forID, classNameWrapper } = this.props;
+        const { rows, overwrite, status } = this.state;
+  
+        return h("div", { id: forID, className: classNameWrapper }, [
+          // toolbar
+          h(
+            "div",
+            {
+              key: "toolbar",
+              style: {
+                display: "flex",
+                gap: 12,
+                alignItems: "center",
+                marginBottom: 12,
+              },
+            },
+            [
+              h("input", {
+                key: "file",
+                type: "file",
+                accept: ".csv",
+                onChange: this.onFile,
+              }),
+              h(
+                "label",
+                { key: "ow" },
+                [
+                  h("input", {
+                    type: "checkbox",
+                    checked: overwrite,
+                    onChange: (e) => this.setState({ overwrite: e.target.checked }),
+                    style: { marginRight: 6 },
+                  }),
+                  "Sobrescrever meses existentes",
+                ]
+              ),
+              h(
+                "button",
+                {
+                  key: "add",
+                  type: "button",
+                  onClick: this.addRow,
+                  style: {
+                    padding: "6px 10px",
+                    border: "1px solid #ccc",
+                    borderRadius: 8,
+                    cursor: "pointer",
+                  },
+                },
+                "+ Adicionar mês"
+              ),
+            ]
           ),
-        ]),
-      ]);
-    };
   
-    // ---- Preview (opcional) ----
+          status &&
+            h(
+              "div",
+              { key: "status", style: { color: "#555", marginBottom: 8 } },
+              status
+            ),
+  
+          // tabela
+          h(
+            "table",
+            { key: "table", style: { width: "100%", borderCollapse: "collapse" } },
+            [
+              h(
+                "thead",
+                { key: "th" },
+                h("tr", null, [
+                  h(
+                    "th",
+                    {
+                      style: {
+                        textAlign: "left",
+                        padding: 6,
+                        borderBottom: "1px solid #eee",
+                      },
+                    },
+                    "Mês (YYYY-MM)"
+                  ),
+                  h(
+                    "th",
+                    {
+                      style: {
+                        textAlign: "left",
+                        padding: 6,
+                        borderBottom: "1px solid #eee",
+                      },
+                    },
+                    "Rendimento (%)"
+                  ),
+                  h("th", { style: { width: 80 } }, ""),
+                ])
+              ),
+              h(
+                "tbody",
+                { key: "tb" },
+                rows.map((r, i) =>
+                  h("tr", { key: i }, [
+                    h(
+                      "td",
+                      {
+                        style: {
+                          padding: 6,
+                          borderBottom: "1px solid #f3f3f3",
+                        },
+                      },
+                      h("input", {
+                        type: "text",
+                        value: r.date || "",
+                        placeholder: "YYYY-MM",
+                        onChange: (e) => this.updRow(i, "date", e.target.value),
+                        style: { width: "100%" },
+                      })
+                    ),
+                    h(
+                      "td",
+                      {
+                        style: {
+                          padding: 6,
+                          borderBottom: "1px solid #f3f3f3",
+                        },
+                      },
+                      h("input", {
+                        type: "text",
+                        value: r.rendimento ?? "",
+                        placeholder: "0,00",
+                        onChange: (e) =>
+                          this.updRow(i, "rendimento", e.target.value),
+                        style: { width: "100%" },
+                      })
+                    ),
+                    h(
+                      "td",
+                      { style: { textAlign: "right" } },
+                      h(
+                        "button",
+                        {
+                          type: "button",
+                          onClick: () => this.delRow(i),
+                          style: {
+                            padding: "6px 10px",
+                            border: "1px solid #ccc",
+                            borderRadius: 8,
+                            cursor: "pointer",
+                          },
+                        },
+                        "Remover"
+                      )
+                    ),
+                  ])
+                )
+              ),
+            ]
+          ),
+        ]);
+      }
+    }
+  
+    // preview simples (opcional)
     const SeriesImportPreview = (props) => {
-      const rows = Array.isArray(props.value?.toJS?.()) ? props.value.toJS() : props.value || [];
-      return React.createElement("pre", null, JSON.stringify(sortByDateAsc(rows), null, 2));
+      const rows = Array.isArray(props.value?.toJS?.())
+        ? props.value.toJS()
+        : props.value || [];
+      return React.createElement(
+        "pre",
+        null,
+        JSON.stringify(sortByDateAsc(rows), null, 2)
+      );
     };
   
-    // ---- register ----
     CMS.registerWidget("series-import", SeriesImportControl, SeriesImportPreview);
     console.log("series-import widget registrado");
   })();
