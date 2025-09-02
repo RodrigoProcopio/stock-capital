@@ -74,7 +74,13 @@ const F = {
 /* ------------------------------ opções estáticas ----------------------------- */
 const OPT = {
   estado_civil: ["Solteiro (a)", "Casado(a)", "Divorciado (a)", "Morando Junto"],
-  faixa_etaria: ["Até 25 anos", "Entre 26 e 35 anos", "Entre 36 e 45 anos", "Entre 46 e 55 anos", "Acima de 56 anos"],
+  faixa_etaria: [
+    "Até 25 anos",
+    "Entre 26 e 35 anos",
+    "Entre 36 e 45 anos",
+    "Entre 46 e 55 anos",
+    "Acima de 56 anos",
+  ],
 
   fonte_renda: [
     "Salário (emprego CLT)",
@@ -180,14 +186,16 @@ const pretty = (v) =>
 /* --------------------- campos obrigatórios por cada etapa --------------------- */
 const REQUIRED_BY_STEP = [
   [F.nome, F.tel, F.email, F.estadoCivil, F.faixaEtaria], // 0 – Dados
-  [F.fonteRenda, F.disponibilidade, F.dependentesQtd],    // 1 – Renda
-  [F.interesseEco],                                       // 2 – Preferências
+  [F.fonteRenda, F.disponibilidade, F.dependentesQtd], // 1 – Renda
+  [F.interesseEco, F.inv24m, F.tiposInvest], // 2 – Preferências (agora exige os 2 checklists)
   [F.chave01, F.chave02, F.necessidadeRend, F.horizonte, F.volatilidade, F.reacao10, F.reacao30, F.marcacaoMercado], // 3 – Risco
-  [],                                                     // 4 – Revisão
+  [], // 4 – Revisão
 ];
 
-const isEmpty = (val) => (Array.isArray(val) ? val.length === 0 : String(val ?? "").trim() === "");
-const getMissingInStep = (step, form) => (REQUIRED_BY_STEP[step] || []).filter((key) => isEmpty(form[key]));
+const isEmpty = (val) =>
+  Array.isArray(val) ? val.length === 0 : String(val ?? "").trim() === "";
+const getMissingInStep = (step, form) =>
+  (REQUIRED_BY_STEP[step] || []).filter((key) => isEmpty(form[key]));
 
 /* --------------------------------- UI blocks -------------------------------- */
 // Agora todos os blocos seguem o tema claro (mesmo padrão das páginas internas)
@@ -402,6 +410,7 @@ function StepPreferencias({ form, set }) {
         idPrefix="moeda"
       />
       <CheckGroup
+        required
         label="Quais investimentos você realizou nos últimos 24 meses?"
         options={OPT.investimentos_24m}
         values={form[F.inv24m]}
@@ -416,6 +425,7 @@ function StepPreferencias({ form, set }) {
         onChange={(v) => set(F.interesseEco, v)}
       />
       <CheckGroup
+        required
         label="Quais os tipos de investimentos que você mais se identifica?"
         options={OPT.tipos_invest}
         values={form[F.tiposInvest]}
@@ -493,8 +503,24 @@ function StepReview({ form, set }) {
   const grupos = [
     { titulo: "Dados do Cliente", campos: [F.nome, F.tel, F.email, F.estadoCivil, F.faixaEtaria] },
     { titulo: "Renda e Disponibilidade", campos: [F.fonteRenda, F.compRenda, F.disponibilidade] },
-    { titulo: "Preferências e Objetivos", campos: [F.finalidade, F.dependentesQtd, F.dependentesPerfil, F.moeda, F.inv24m, F.tiposInvest] },
-    { titulo: "Perfil de Risco", campos: [F.chave01, F.chave02, F.interesseEco, F.necessidadeRend, F.horizonte, F.volatilidade, F.reacao10, F.reacao30, F.marcacaoMercado] },
+    {
+      titulo: "Preferências e Objetivos",
+      campos: [F.finalidade, F.dependentesQtd, F.dependentesPerfil, F.moeda, F.inv24m, F.tiposInvest],
+    },
+    {
+      titulo: "Perfil de Risco",
+      campos: [
+        F.chave01,
+        F.chave02,
+        F.interesseEco,
+        F.necessidadeRend,
+        F.horizonte,
+        F.volatilidade,
+        F.reacao10,
+        F.reacao30,
+        F.marcacaoMercado,
+      ],
+    },
   ];
 
   return (
@@ -517,20 +543,30 @@ function StepReview({ form, set }) {
 
       {/* LGPD Consent */}
       <label className="flex items-start gap-3 rounded-lg border border-brand-navy/15 bg-white/80 px-3 py-3">
-  <input
-    type="checkbox"
-    checked={form.lgpd}
-    onChange={(e) => set("lgpd", e.target.checked)}
-    className="mt-1 h-4 w-4 rounded border-brand-navy/40 text-brand-navy focus:ring-brand-navy/40"
-  />
-  <span className="text-sm text-brand-navy/90">
-    Autorizo o tratamento dos meus dados para: (i) contato e atendimento; (ii) avaliação de perfil/suitability; e (iii) cumprimento de obrigações legais/regulatórias.
-    Retenção: contatos por até <strong>18 meses</strong> e registros de consentimento por até <strong>5 anos</strong>.
-    Posso revogar a qualquer tempo em <Link to="/lgpd" className="underline hover:opacity-80">/lgpd</Link>.
-    Consulte a <Link to="/privacidade" className="underline hover:opacity-80">Política de Privacidade</Link> e a
-    <Link to="/docs/politica-retencao-lgpd" className="underline hover:opacity-80"> Política de Retenção</Link>.
-  </span>
-</label>
+        <input
+          type="checkbox"
+          checked={form.lgpd}
+          onChange={(e) => set("lgpd", e.target.checked)}
+          className="mt-1 h-4 w-4 rounded border-brand-navy/40 text-brand-navy focus:ring-brand-navy/40"
+        />
+        <span className="text-sm text-brand-navy/90">
+          Autorizo o tratamento dos meus dados para: (i) contato e atendimento; (ii) avaliação de perfil/suitability; e
+          (iii) cumprimento de obrigações legais/regulatórias. Retenção: contatos por até <strong>18 meses</strong> e
+          registros de consentimento por até <strong>5 anos</strong>. Posso revogar a qualquer tempo em{" "}
+          <Link to="/lgpd" className="underline hover:opacity-80">
+            /lgpd
+          </Link>
+          . Consulte a{" "}
+          <Link to="/privacidade" className="underline hover:opacity-80">
+            Política de Privacidade
+          </Link>{" "}
+          e a{" "}
+          <Link to="/docs/politica-retencao-lgpd" className="underline hover:opacity-80">
+            Política de Retenção
+          </Link>
+          .
+        </span>
+      </label>
     </Section>
   );
 }
@@ -580,9 +616,6 @@ export default function FormularioApi() {
     lgpd: false,
   });
 
-  // versionamento da política (exibida e enviada ao backend)
-  const policyVersion = "v1";
-
   const set = (key, val) => setForm((s) => ({ ...s, [key]: val }));
 
   const validators = [
@@ -608,7 +641,10 @@ export default function FormularioApi() {
       const missing = getMissingInStep(i, form);
       if (missing.length) {
         setStep(i);
-        const msg = missing.slice(0, 3).map((k) => `• ${labelOf(k)}`).join("\n");
+        const msg = missing
+          .slice(0, 3)
+          .map((k) => `• ${labelOf(k)}`)
+          .join("\n");
         showToast(`Antes de enviar, responda:\n${msg}`, "warning", 4800);
         window.scrollTo({ top: 0 });
         return;
@@ -629,8 +665,8 @@ export default function FormularioApi() {
           accepted: true,
           policyVersion: POLICY_VERSION,
           consentAtClient: new Date().toISOString(),
-       },   
-     }; 
+        },
+      };
 
       // Registro autoritativo no servidor (timestamp/IP/UA do server)
       try {
@@ -639,7 +675,7 @@ export default function FormularioApi() {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             action: "consent",
-            policyVersion,
+            policyVersion: POLICY_VERSION,
             formId: "FormularioApi",
             nome: payload[F.nome],
             email: payload[F.email],
@@ -704,10 +740,7 @@ export default function FormularioApi() {
         <div className="mx-auto max-w-3xl px-4 pt-3">
           {/* barra de progresso */}
           <div className="w-full h-2 rounded bg-brand-100 overflow-hidden">
-            <div
-              className="h-2 bg-brand-navy transition-all"
-              style={{ width: `${progressPct}%` }}
-            />
+            <div className="h-2 bg-brand-navy transition-all" style={{ width: `${progressPct}%` }} />
           </div>
 
           {/* controles */}
@@ -746,9 +779,7 @@ export default function FormularioApi() {
                 }}
                 className={cx(
                   "ml-auto rounded-xl px-4 py-2 text-sm font-semibold shadow-sm",
-                  canContinue
-                    ? "bg-brand-navy text-white hover:brightness-110"
-                    : "bg-gray-200 text-gray-500 cursor-not-allowed"
+                  canContinue ? "bg-brand-navy text-white hover:brightness-110" : "bg-gray-200 text-gray-500 cursor-not-allowed"
                 )}
                 disabled={!canContinue || loading}
               >
@@ -759,9 +790,7 @@ export default function FormularioApi() {
                 onClick={submit}
                 className={cx(
                   "ml-auto rounded-xl px-4 py-2 text-sm font-semibold shadow-sm",
-                  validators[step]()
-                    ? "bg-brand-navy text-white hover:brightness-110"
-                    : "bg-gray-200 text-gray-500 cursor-not-allowed"
+                  validators[step]() ? "bg-brand-navy text-white hover:brightness-110" : "bg-gray-200 text-gray-500 cursor-not-allowed"
                 )}
                 disabled={!validators[step]() || loading}
               >

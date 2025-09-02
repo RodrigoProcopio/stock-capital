@@ -1,6 +1,5 @@
 // netlify/functions/send-contact-to-pipefy.js
-// Padrão de respostas alinhado ao seu send-to-pipefy.js
-// Agora com CONSENTIMENTO server-side (timestamp/IP/UA) no MESMO card.
+// Cria card de contato no Pipefy + carimbo LGPD (TS/IP/UA/versão/clientTS)
 
 const PIPE_ID = Number(process.env.PIPEFY_PIPE_ID_CONTACT || process.env.PIPEFY_PIPE_ID);
 const TOKEN   = process.env.PIPEFY_TOKEN;
@@ -20,8 +19,7 @@ function norm(s) {
     .toLowerCase();
 }
 
-// Busca os campos do Start Form e resolve IDs por label/ID.
-// Inclui mapeamento para os CAMPOS DE CONSENTIMENTO (opcionais).
+// busca os campos do start form e resolve IDs pelos labels
 async function fetchStartFormFieldIdsByLabel() {
   const query = `
     query ($id: ID!) {
@@ -44,60 +42,38 @@ async function fetchStartFormFieldIdsByLabel() {
   const fields = json?.data?.pipe?.start_form_fields || [];
   const table  = new Map(fields.map(f => [norm(f.label), f.id]));
 
-  const byLabel = (label) => table.get(norm(label)) || null;
-  const byIdLike = (re) => fields.find(f => re.test(String(f.id)))?.id || null;
-
   const ids = {
     // ajuste os labels abaixo se no seu Pipe estiverem diferentes
-    nome:     byLabel("Nome"),
-    telefone: byLabel("Telefone") || fields.find(f => /telef|whats/i.test(f.id))?.id || null,
-    email:    byLabel("E-mail")   || byLabel("Email") || fields.find(f => /email/i.test(f.id))?.id || null,
-    mensagem: byLabel("Mensagem") || fields.find(f => /mensag|descri/i.test(f.id))?.id || null,
+    nome:     table.get(norm("Nome")),
+    telefone: table.get(norm("Telefone")) || fields.find(f => /telef|whats/i.test(f.id))?.id || null,
+    email:    table.get(norm("E-mail"))   || table.get(norm("Email")) || fields.find(f => /email/i.test(f.id))?.id || null,
+    mensagem: table.get(norm("Mensagem")) || fields.find(f => /mensag|descri/i.test(f.id))?.id || null,
 
-    // ----- Campos de CONSENTIMENTO (opcionais, mas recomendados no Start Form) -----
-    // Tente pelos labels sugeridos:
-    consent_ts:            byLabel("Consent TS") || byLabel("Timestamp do Consentimento") || byIdLike(/consent.*ts|timestamp/i),
-    consent_ip:            byLabel("Consent IP") || byLabel("IP do Consentimento")        || byIdLike(/consent.*ip|ip.*consent/i),
-    consent_ua:            byLabel("Consent UA") || byLabel("User Agent do Consentimento")|| byIdLike(/consent.*ua|user.*agent/i),
-    consent_policy_version:byLabel("Consent Policy Version") || byLabel("Versão da Política") || byIdLike(/policy.*version|consent.*policy/i),
-    consent_client_ts:     byLabel("Consent Client TS") || byLabel("TS Cliente do Consentimento") || byIdLike(/client.*ts|ts.*client/i),
-    form_id:               byLabel("Form ID") || byLabel("Origem do Formulário") || byIdLike(/form[_-]?id/i),
+    // LGPD / Consentimento (opcionais; se não existirem, são ignorados)
+    consent_ts:             table.get(norm("Consent TS")),
+    consent_ip:             table.get(norm("Consent IP")),
+    consent_ua:             table.get(norm("Consent UA")),
+    consent_policy_version: table.get(norm("Consent Policy Version")),
+    consent_client_ts:      table.get(norm("Consent Client TS")),
+    form_id:                table.get(norm("Form ID")),
   };
 
   return { ids, fields };
 }
 
-// Monta os fields de consentimento com CARIMBO DO SERVIDOR (TS/IP/UA)
-function buildServerConsentFields(event, body, ids) {
-  const headers = event?.headers || {};
-  const ipHeader =
-    headers["x-forwarded-for"] ||
-    headers["x-nf-client-connection-ip"] ||
-    headers["client-ip"] ||
+function getIpFromHeaders(headers = {}) {
+  const h = headers || {};
+  const v =
+    h["x-forwarded-for"] ||
+    h["X-Forwarded-For"] ||
+    h["x-real-ip"] ||
+    h["X-Real-IP"] ||
+    h["client-ip"] ||
+    h["Client-IP"] ||
     "";
-  const ipRaw = String(ipHeader).split(",")[0].trim();
-  const ua    = headers["user-agent"] || "";
-  const now   = new Date().toISOString();
-
-  // (opcional) mascarar IP para reduzir sensibilidade
-  const ip = ipRaw; // ou: ipRaw.replace(/(\d+)\.(\d+)\.(\d+)\.(\d+)/, "$1.$2.$3.xxx")
-
-  // metadata vinda do front, mas NÃO confiamos em timestamp de cliente (guardamos só como referência)
-  const policyVersion = String(body?.lgpd?.policyVersion || "v1");
-  const clientTs      = String(body?.lgpd?.consentAtClient || "");
-  const formIdVal     = String(body?.form_id || "FormularioApi");
-
-  const out = [];
-  const pushIf = (id, value) => { if (id) out.push({ field_id: id, field_value: value }); };
-
-  pushIf(ids.consent_ts,            now);
-  pushIf(ids.consent_ip,            ip);
-  pushIf(ids.consent_ua,            ua);
-  pushIf(ids.consent_policy_version,policyVersion);
-  pushIf(ids.consent_client_ts,     clientTs);
-  pushIf(ids.form_id,               formIdVal);
-
-  return out;
+  if (!v) return "unknown";
+  const first = String(v).split(",")[0].trim();
+  return first || "unknown";
 }
 
 exports.handler = async (event) => {
@@ -110,7 +86,7 @@ exports.handler = async (event) => {
     }
 
     const body = JSON.parse(event.body || "{}");
-    const { nome, telefone, email, mensagem, hp } = body;
+    const { nome, telefone, email, mensagem, hp, lgpd = {}, form_id = "Contato" } = body;
 
     // honeypot
     if (typeof hp === "string" && hp.trim() !== "") {
@@ -132,39 +108,48 @@ exports.handler = async (event) => {
       };
     }
 
-    // resolve IDs por label/id
+    // resolve IDs por label
     const { ids, fields } = await fetchStartFormFieldIdsByLabel();
-    const notFoundBase = [
-      ["nome", ids.nome],
-      ["telefone", ids.telefone],
-      ["email", ids.email],
-      ["mensagem", ids.mensagem],
-    ].filter(([, id]) => !id).map(([k]) => k);
 
-    if (notFoundBase.length) {
-      // mantém o mesmo padrão de erro 502 (falha ao criar) com detalhe
+    // só exigimos os 4 de contato; consent.* são opcionais
+    const requiredIds = ["nome", "telefone", "email", "mensagem"];
+    const notFound = requiredIds.filter((k) => !ids[k]);
+
+    if (notFound.length) {
       return {
         statusCode: 502,
         headers: CORS,
         body: JSON.stringify({
           error: "Falha ao criar card no Pipefy",
-          message: `Fields not found with ids: ${notFoundBase.join(", ")}`,
+          message: `Fields not found with ids: ${notFound.join(", ")}`,
           detail: { available: fields }
         })
       };
     }
 
-    // monta os atributos do contato
+    // carimbo do servidor
+    const consentTS = new Date().toISOString();
+    const ip = getIpFromHeaders(event.headers);
+    const ua = event.headers?.["user-agent"] || event.headers?.["User-Agent"] || "";
+    const policyVersion = lgpd.policyVersion || "v1";
+    const clientTS = lgpd.consentAtClient || null;
+
+    // monta os atributos
     const fields_attributes = [
+      // LGPD (se os campos existirem no Pipe)
+      ...(ids.consent_ts ?             [{ field_id: ids.consent_ts,             field_value: consentTS }] : []),
+      ...(ids.consent_ip ?             [{ field_id: ids.consent_ip,             field_value: ip }] : []),
+      ...(ids.consent_ua ?             [{ field_id: ids.consent_ua,             field_value: ua }] : []),
+      ...(ids.consent_policy_version ? [{ field_id: ids.consent_policy_version, field_value: policyVersion }] : []),
+      ...(ids.consent_client_ts && clientTS ? [{ field_id: ids.consent_client_ts, field_value: clientTS }] : []),
+      ...(ids.form_id ?                [{ field_id: ids.form_id,                field_value: form_id }] : []),
+
+      // dados do contato
       { field_id: ids.nome,     field_value: String(nome) },
       { field_id: ids.telefone, field_value: String(telefone) },
       { field_id: ids.email,    field_value: String(email) },
       { field_id: ids.mensagem, field_value: String(mensagem) },
     ];
-
-    // >>> CONSENTIMENTO server-side (opcional, só entra se os campos existirem no Start Form)
-    const consentFields = buildServerConsentFields(event, body, ids);
-    const fields_with_consent = [...fields_attributes, ...consentFields];
 
     const mutation = `
       mutation ($input: CreateCardInput!) {
@@ -177,7 +162,7 @@ exports.handler = async (event) => {
       input: {
         pipe_id: PIPE_ID,
         title: `Contato • ${String(nome).slice(0,80)}`,
-        fields_attributes: fields_with_consent
+        fields_attributes
       }
     };
 
@@ -205,12 +190,7 @@ exports.handler = async (event) => {
     return {
       statusCode: 200,
       headers: { ...CORS, "Content-Type": "application/json" },
-      body: JSON.stringify({
-        ok: true,
-        card: json.data?.createCard?.card,
-        // dica: para auditoria você pode retornar o que foi preenchido de consent
-        consentFilled: consentFields.map(f => f.field_id)
-      })
+      body: JSON.stringify({ ok: true, card: json.data.createCard.card })
     };
 
   } catch (err) {
