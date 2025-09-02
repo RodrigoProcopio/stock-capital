@@ -84,9 +84,7 @@ collections:
             name: "series"
             widget: "series-import"
             summary: "{{fields.date}} — {{fields.rendimento}}%"
-            fields:
-              - { label: "Mês", name: "date", widget: "datetime", format: "YYYY-MM", date_format: "YYYY-MM", time_format: false }
-              - { label: "Rendimento (%)", name: "rendimento", widget: "number", value_type: "float", step: 0.01, min: -100, max: 100 }
+            hint: "Edite mês a mês ou use 'Escolher arquivo' para importar CSV."
 
       - name: "carteira2"
         label: "Carteira 2"
@@ -98,9 +96,7 @@ collections:
             name: "series"
             widget: "series-import"
             summary: "{{fields.date}} — {{fields.rendimento}}%"
-            fields:
-              - { label: "Mês", name: "date", widget: "datetime", format: "YYYY-MM", date_format: "YYYY-MM", time_format: false }
-              - { label: "Rendimento (%)", name: "rendimento", widget: "number", value_type: "float", step: 0.01, min: -100, max: 100 }
+            hint: "Edite mês a mês ou use 'Escolher arquivo' para importar CSV."            
 
       - name: "carteira3"
         label: "Carteira 3"
@@ -112,9 +108,7 @@ collections:
             name: "series"
             widget: "series-import"
             summary: "{{fields.date}} — {{fields.rendimento}}%"
-            fields:
-              - { label: "Mês", name: "date", widget: "datetime", format: "YYYY-MM", date_format: "YYYY-MM", time_format: false }
-              - { label: "Rendimento (%)", name: "rendimento", widget: "number", value_type: "float", step: 0.01, min: -100, max: 100 }
+            hint: "Edite mês a mês ou use 'Escolher arquivo' para importar CSV."
 
       - name: "carteira4"
         label: "Carteira 4"
@@ -126,9 +120,7 @@ collections:
             name: "series"
             widget: "series-import"
             summary: "{{fields.date}} — {{fields.rendimento}}%"
-            fields:
-              - { label: "Mês", name: "date", widget: "datetime", format: "YYYY-MM", date_format: "YYYY-MM", time_format: false }
-              - { label: "Rendimento (%)", name: "rendimento", widget: "number", value_type: "float", step: 0.01, min: -100, max: 100 }
+            hint: "Edite mês a mês ou use 'Escolher arquivo' para importar CSV."
 
       - name: "carteira5"
         label: "Carteira 5"
@@ -140,9 +132,7 @@ collections:
             name: "series"
             widget: "series-import"
             summary: "{{fields.date}} — {{fields.rendimento}}%"
-            fields:
-              - { label: "Mês", name: "date", widget: "datetime", format: "YYYY-MM", date_format: "YYYY-MM", time_format: false }
-              - { label: "Rendimento (%)", name: "rendimento", widget: "number", value_type: "float", step: 0.01, min: -100, max: 100 }
+            hint: "Edite mês a mês ou use 'Escolher arquivo' para importar CSV."
 
   # >>> Qual delas aparece no gráfico (ligar/desligar)
   - name: "rentabilidade_dashboard"
