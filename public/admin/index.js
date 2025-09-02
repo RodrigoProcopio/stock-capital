@@ -1,5 +1,12 @@
 /* global CMS, Papa */
 
+console.log("admin/index.js carregado");
+
+// use o React UMD que carregamos no index.html
+const React = window.React;
+const { useState, useEffect } = React;
+
+
 // ---- helpers ----
 function normalizeYYYYMM(s) {
     if (!s) return s;
@@ -28,10 +35,6 @@ function normalizeYYYYMM(s) {
   }
   
   console.log("admin/index.js carregado");
-  
-  // ---- React (Decap v3) ----
-  const React = CMS.getLib("react");
-  const { useState, useEffect } = React;
   
   // ---- Control ----
   const SeriesImportControl = ({ value, onChange, forID, classNameWrapper }) => {

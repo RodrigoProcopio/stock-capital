@@ -1,4 +1,9 @@
 /* /public/admin/preview.js */
+/* global CMS */
+const React = window.React;
+// … seu código de preview usando React.createElement …
+
+
 (() => {
   const CMS = window.CMS;
   const React = window.React;
