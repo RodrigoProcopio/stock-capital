@@ -1,10 +1,22 @@
 {
-    "nome": "CDI",
-    "slug": "carteira1",
-    "series": [
-      { "date": "2025-01", "rendimento": 0.93 },
-      { "date": "2025-02", "rendimento": 0.88 },
-      { "date": "2025-03", "rendimento": 0.92 }
-    ]
-  }
-  
+  "nome": "CDI",
+  "slug": "carteira1",
+  "series": [
+    {
+      "date": "2025-01",
+      "rendimento": 0.93
+    },
+    {
+      "date": "2025-02",
+      "rendimento": 0.88
+    },
+    {
+      "date": "2025-03",
+      "rendimento": 0.92
+    },
+    {
+      "date": "2025-09",
+      "rendimento": 10
+    }
+  ]
+}
