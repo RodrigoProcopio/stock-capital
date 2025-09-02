@@ -69,7 +69,7 @@ collections:
       - { name: summary, label: "Resumo", widget: text }
       - { name: pdf,   label: "PDF", widget: file, media_library: { allow_multiple: false }, allow_types: ["pdf"] }
 
-  # >>> Rentabilidade: 5 carteiras fixas (editor altera NOME, MÊS e RENDIMENTO)
+    # >>> Rentabilidade: 5 carteiras fixas (editor altera NOME, MÊS e RENDIMENTO)
   - name: "rentabilidade_carteiras"
     label: "Rentabilidade • Carteiras (dados)"
     format: "json"
@@ -82,8 +82,11 @@ collections:
           - { label: "Slug (fixo)", name: "slug", widget: "hidden", default: "carteira1" }
           - label: "Dados mensais"
             name: "series"
-            widget: "series-import"
-            hint: "Edite mês a mês ou use 'Escolher arquivo' para importar CSV."
+            widget: "list"
+            summary: "{{fields.date}} — {{fields.rendimento}}%"
+            fields:
+              - { label: "Mês", name: "date", widget: "datetime", format: "YYYY-MM", date_format: "YYYY-MM", time_format: false }
+              - { label: "Rendimento (%)", name: "rendimento", widget: "number", value_type: "float", step: 0.01, min: -100, max: 100 }
 
       - name: "carteira2"
         label: "Carteira 2"
@@ -93,8 +96,11 @@ collections:
           - { label: "Slug (fixo)", name: "slug", widget: "hidden", default: "carteira2" }
           - label: "Dados mensais"
             name: "series"
-            widget: "series-import"
-            hint: "Edite mês a mês ou use 'Escolher arquivo' para importar CSV."            
+            widget: "list"
+            summary: "{{fields.date}} — {{fields.rendimento}}%"
+            fields:
+              - { label: "Mês", name: "date", widget: "datetime", format: "YYYY-MM", date_format: "YYYY-MM", time_format: false }
+              - { label: "Rendimento (%)", name: "rendimento", widget: "number", value_type: "float", step: 0.01, min: -100, max: 100 }
 
       - name: "carteira3"
         label: "Carteira 3"
@@ -104,8 +110,11 @@ collections:
           - { label: "Slug (fixo)", name: "slug", widget: "hidden", default: "carteira3" }
           - label: "Dados mensais"
             name: "series"
-            widget: "series-import"
-            hint: "Edite mês a mês ou use 'Escolher arquivo' para importar CSV."
+            widget: "list"
+            summary: "{{fields.date}} — {{fields.rendimento}}%"
+            fields:
+              - { label: "Mês", name: "date", widget: "datetime", format: "YYYY-MM", date_format: "YYYY-MM", time_format: false }
+              - { label: "Rendimento (%)", name: "rendimento", widget: "number", value_type: "float", step: 0.01, min: -100, max: 100 }
 
       - name: "carteira4"
         label: "Carteira 4"
@@ -115,8 +124,11 @@ collections:
           - { label: "Slug (fixo)", name: "slug", widget: "hidden", default: "carteira4" }
           - label: "Dados mensais"
             name: "series"
-            widget: "series-import"
-            hint: "Edite mês a mês ou use 'Escolher arquivo' para importar CSV."
+            widget: "list"
+            summary: "{{fields.date}} — {{fields.rendimento}}%"
+            fields:
+              - { label: "Mês", name: "date", widget: "datetime", format: "YYYY-MM", date_format: "YYYY-MM", time_format: false }
+              - { label: "Rendimento (%)", name: "rendimento", widget: "number", value_type: "float", step: 0.01, min: -100, max: 100 }
 
       - name: "carteira5"
         label: "Carteira 5"
@@ -126,8 +138,11 @@ collections:
           - { label: "Slug (fixo)", name: "slug", widget: "hidden", default: "carteira5" }
           - label: "Dados mensais"
             name: "series"
-            widget: "series-import"
-            hint: "Edite mês a mês ou use 'Escolher arquivo' para importar CSV."
+            widget: "list"
+            summary: "{{fields.date}} — {{fields.rendimento}}%"
+            fields:
+              - { label: "Mês", name: "date", widget: "datetime", format: "YYYY-MM", date_format: "YYYY-MM", time_format: false }
+              - { label: "Rendimento (%)", name: "rendimento", widget: "number", value_type: "float", step: 0.01, min: -100, max: 100 }
 
   # >>> Qual delas aparece no gráfico (ligar/desligar)
   - name: "rentabilidade_dashboard"
