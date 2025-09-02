@@ -566,7 +566,7 @@ export default function App() {
       lgpd: { accepted: true, policyVersion: "v1", consentAtClient: new Date().toISOString() },
     };
   
-    const url = import.meta.env.PROD ? "/api/send-contact" : "/.netlify/functions/send-contact-to-pipefy";
+    const url = "/.netlify/functions/send-contact-to-pipefy";
   
     setSending(true);
     try {

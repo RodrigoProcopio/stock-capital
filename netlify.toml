@@ -6,16 +6,10 @@
   directory = "netlify/functions"
   node_bundler = "esbuild"
 
-# API -> Function
+# API -> Functions
 [[redirects]]
   from = "/api/form"
-  to = "/.netlify/functions/send-to-pipefy"
-  status = 200
-
-# SPA -> sempre servir index.html
-[[redirects]]
-  from = "/*"
-  to = "/index.html"
+  to   = "/.netlify/functions/send-to-pipefy"
   status = 200
 
 [[redirects]]
@@ -23,3 +17,8 @@
   to   = "/.netlify/functions/send-contact-to-pipefy"
   status = 200
 
+# SPA fallback (deixe por último!)
+[[redirects]]
+  from = "/*"
+  to   = "/index.html"
+  status = 200
