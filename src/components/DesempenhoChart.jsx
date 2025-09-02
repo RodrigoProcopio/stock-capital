@@ -83,7 +83,7 @@ export default function DesempenhoChart() {
   return (
     <div className="w-full rounded-2xl p-6" style={{ background: SITE_BG }}>
       {/* títulos centralizados */}
-      <h2 className="text-black text-3xl font-semibold text-center">Portfólio Moderado | Brasil</h2>
+      <h2 className="text-black text-3xl font-semibold text-center">Desempenho Consolidado | Multi-Family Office</h2>
       <p className="text-black/70 text-base mt-1 text-center">Retorno acumulado</p>
 
       <div style={{ width: "100%", height: 420 }} className="mt-4">
