@@ -83,7 +83,6 @@ collections:
           - label: "Dados mensais"
             name: "series"
             widget: "series-import"
-            summary: "{{fields.date}} — {{fields.rendimento}}%"
             hint: "Edite mês a mês ou use 'Escolher arquivo' para importar CSV."
 
       - name: "carteira2"
@@ -95,7 +94,6 @@ collections:
           - label: "Dados mensais"
             name: "series"
             widget: "series-import"
-            summary: "{{fields.date}} — {{fields.rendimento}}%"
             hint: "Edite mês a mês ou use 'Escolher arquivo' para importar CSV."            
 
       - name: "carteira3"
@@ -107,7 +105,6 @@ collections:
           - label: "Dados mensais"
             name: "series"
             widget: "series-import"
-            summary: "{{fields.date}} — {{fields.rendimento}}%"
             hint: "Edite mês a mês ou use 'Escolher arquivo' para importar CSV."
 
       - name: "carteira4"
@@ -119,7 +116,6 @@ collections:
           - label: "Dados mensais"
             name: "series"
             widget: "series-import"
-            summary: "{{fields.date}} — {{fields.rendimento}}%"
             hint: "Edite mês a mês ou use 'Escolher arquivo' para importar CSV."
 
       - name: "carteira5"
@@ -131,7 +127,6 @@ collections:
           - label: "Dados mensais"
             name: "series"
             widget: "series-import"
-            summary: "{{fields.date}} — {{fields.rendimento}}%"
             hint: "Edite mês a mês ou use 'Escolher arquivo' para importar CSV."
 
   # >>> Qual delas aparece no gráfico (ligar/desligar)
