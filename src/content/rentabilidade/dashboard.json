@@ -1,0 +1,10 @@
+{
+    "exibir": {
+      "carteira1": true,   
+      "carteira2": true,   
+      "carteira3": true,   
+      "carteira4": false,  
+      "carteira5": false   
+    }
+  }
+  

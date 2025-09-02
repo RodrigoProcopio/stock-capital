@@ -6,6 +6,8 @@ import augustoImg from "./assets/augusto.png";
 import igorImg from "./assets/igor.png";
 import ScrollToTopButton from "./components/ScrollToTopButton";
 import FloatingWhatsApp from "./components/FloatingWhatsApp";
+import DesempenhoChart from "./components/DesempenhoChart";
+
 
 /**
  * ------------------------------
@@ -210,8 +212,8 @@ export default function App() {
     </div>
   </div>
 </section>
-
       <MainContainer>
+
         {/* Nosso Propósito */}
         <Section id="nosso-proposito" title="Nosso Propósito" subtitle="">
           <p className="text-justify">
@@ -321,6 +323,15 @@ export default function App() {
     </div>
   </div>
 </Section>
+
+        {/* seção de desempenho */}
+        <section id="desempenho" className="pt-20 pb-64">
+  <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div className="h-[420px]">
+      <DesempenhoChart />
+    </div>
+  </div>
+</section>
 
         {/* Multi Family Office (cards com overlay local) */}
         <Section id="multi-family-office" title="Multi Family Office">

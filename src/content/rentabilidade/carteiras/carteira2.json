@@ -1,0 +1,10 @@
+{
+    "nome": "IHFA",
+    "slug": "carteira2",
+    "series": [
+      { "date": "2025-01", "rendimento": 0.75 },
+      { "date": "2025-02", "rendimento": 0.40 },
+      { "date": "2025-03", "rendimento": 0.62 }
+    ]
+  }
+  

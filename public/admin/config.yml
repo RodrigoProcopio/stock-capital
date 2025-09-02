@@ -68,3 +68,97 @@ collections:
       - { name: date,  label: "Data", widget: datetime }
       - { name: summary, label: "Resumo", widget: text }
       - { name: pdf,   label: "PDF", widget: file, media_library: { allow_multiple: false }, allow_types: ["pdf"] }
+
+  # >>> Rentabilidade: 5 carteiras fixas (editor altera NOME, MÊS e RENDIMENTO)
+  - name: "rentabilidade_carteiras"
+    label: "Rentabilidade • Carteiras (dados)"
+    format: "json"
+    files:
+      - name: "carteira1"
+        label: "Carteira 1"
+        file: "src/content/rentabilidade/carteiras/carteira1.json"
+        fields:
+          - { label: "Nome (exibição)", name: "nome", widget: "string", hint: "Ex.: CDI, IHFA, IBOV..." }
+          - { label: "Slug (fixo)", name: "slug", widget: "hidden", default: "carteira1" }
+          - label: "Dados mensais"
+            name: "series"
+            widget: "list"
+            summary: "{{fields.date}} — {{fields.rendimento}}%"
+            fields:
+              - { label: "Mês", name: "date", widget: "datetime", format: "YYYY-MM", date_format: "YYYY-MM", time_format: false }
+              - { label: "Rendimento (%)", name: "rendimento", widget: "number", value_type: "float", step: 0.01, min: -100, max: 100 }
+
+      - name: "carteira2"
+        label: "Carteira 2"
+        file: "src/content/rentabilidade/carteiras/carteira2.json"
+        fields:
+          - { label: "Nome (exibição)", name: "nome", widget: "string" }
+          - { label: "Slug (fixo)", name: "slug", widget: "hidden", default: "carteira2" }
+          - label: "Dados mensais"
+            name: "series"
+            widget: "list"
+            summary: "{{fields.date}} — {{fields.rendimento}}%"
+            fields:
+              - { label: "Mês", name: "date", widget: "datetime", format: "YYYY-MM", date_format: "YYYY-MM", time_format: false }
+              - { label: "Rendimento (%)", name: "rendimento", widget: "number", value_type: "float", step: 0.01, min: -100, max: 100 }
+
+      - name: "carteira3"
+        label: "Carteira 3"
+        file: "src/content/rentabilidade/carteiras/carteira3.json"
+        fields:
+          - { label: "Nome (exibição)", name: "nome", widget: "string" }
+          - { label: "Slug (fixo)", name: "slug", widget: "hidden", default: "carteira3" }
+          - label: "Dados mensais"
+            name: "series"
+            widget: "list"
+            summary: "{{fields.date}} — {{fields.rendimento}}%"
+            fields:
+              - { label: "Mês", name: "date", widget: "datetime", format: "YYYY-MM", date_format: "YYYY-MM", time_format: false }
+              - { label: "Rendimento (%)", name: "rendimento", widget: "number", value_type: "float", step: 0.01, min: -100, max: 100 }
+
+      - name: "carteira4"
+        label: "Carteira 4"
+        file: "src/content/rentabilidade/carteiras/carteira4.json"
+        fields:
+          - { label: "Nome (exibição)", name: "nome", widget: "string" }
+          - { label: "Slug (fixo)", name: "slug", widget: "hidden", default: "carteira4" }
+          - label: "Dados mensais"
+            name: "series"
+            widget: "list"
+            summary: "{{fields.date}} — {{fields.rendimento}}%"
+            fields:
+              - { label: "Mês", name: "date", widget: "datetime", format: "YYYY-MM", date_format: "YYYY-MM", time_format: false }
+              - { label: "Rendimento (%)", name: "rendimento", widget: "number", value_type: "float", step: 0.01, min: -100, max: 100 }
+
+      - name: "carteira5"
+        label: "Carteira 5"
+        file: "src/content/rentabilidade/carteiras/carteira5.json"
+        fields:
+          - { label: "Nome (exibição)", name: "nome", widget: "string" }
+          - { label: "Slug (fixo)", name: "slug", widget: "hidden", default: "carteira5" }
+          - label: "Dados mensais"
+            name: "series"
+            widget: "list"
+            summary: "{{fields.date}} — {{fields.rendimento}}%"
+            fields:
+              - { label: "Mês", name: "date", widget: "datetime", format: "YYYY-MM", date_format: "YYYY-MM", time_format: false }
+              - { label: "Rendimento (%)", name: "rendimento", widget: "number", value_type: "float", step: 0.01, min: -100, max: 100 }
+
+  # >>> Qual delas aparece no gráfico (ligar/desligar)
+  - name: "rentabilidade_dashboard"
+    label: "Rentabilidade • Dashboard"
+    format: "json"
+    files:
+      - name: "dashboard"
+        label: "Configuração do Gráfico"
+        file: "src/content/rentabilidade/dashboard.json"
+        fields:
+          - label: "Carteiras exibidas"
+            name: "exibir"
+            widget: "object"
+            fields:
+              - { label: "Mostrar Carteira 1", name: "carteira1", widget: "boolean", default: true }
+              - { label: "Mostrar Carteira 2", name: "carteira2", widget: "boolean", default: true }
+              - { label: "Mostrar Carteira 3", name: "carteira3", widget: "boolean", default: true }
+              - { label: "Mostrar Carteira 4", name: "carteira4", widget: "boolean", default: false }
+              - { label: "Mostrar Carteira 5", name: "carteira5", widget: "boolean", default: false }

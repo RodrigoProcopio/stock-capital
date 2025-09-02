@@ -17,6 +17,8 @@ body {
 :root {
   color: #333846; /* slate-ink */
   background: #fff;
+  --fs-sm: theme(fontSize.sm[0]);     /* ~16px */
+  --fs-base: theme(fontSize.base[0]); /* ~20px */
 }
 
 h1, h2, h3 {

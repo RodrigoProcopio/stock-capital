@@ -1,0 +1,10 @@
+{
+    "nome": "IPCA",
+    "slug": "carteira4",
+    "series": [
+      { "date": "2025-01", "rendimento": 0.42 },
+      { "date": "2025-02", "rendimento": 0.16 },
+      { "date": "2025-03", "rendimento": 0.47 }
+    ]
+  }
+  
