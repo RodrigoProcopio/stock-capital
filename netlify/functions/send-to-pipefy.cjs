@@ -1,4 +1,4 @@
-// CommonJS v1 – send-to-pipefy.cjs
+// CommonJS v1 – send-to-pipefy.cjs (Opção 2 - ENVs por rota *_FORM)
 const { getStore } = require("@netlify/blobs");
 const validator = require("validator");
 const { createHash, randomUUID } = require("crypto");
@@ -34,10 +34,7 @@ const PIPE_QUESTIONNAIRE_FIELDS = [
 ];
 
 const sha256 = (v) => createHash("sha256").update(String(v)).digest("hex");
-const maskEmail = (email = "") => {
-  const [u, d] = String(email).toLowerCase().split("@");
-  return d ? `${u?.[0] ?? ""}***@${d}` : "";
-};
+const maskEmail = (email = "") => { const [u,d] = String(email).toLowerCase().split("@"); return d ? `${u?.[0] ?? ""}***@${d}` : ""; };
 const maskPhone = (phone = "") => String(phone).replace(/\d(?=\d{4})/g, "*");
 
 const json = (statusCode, body, headers = {}) => ({
@@ -69,8 +66,7 @@ const buildCors = (origin, allowed, event) => {
 const getClientIp = (event) =>
   getHeader(event, "x-nf-client-connection-ip") ||
   (getHeader(event, "x-forwarded-for") || "").split(",")[0]?.trim() ||
-  event.clientIp ||
-  "unknown";
+  event.clientIp || "unknown";
 
 /** ==================== Pipefy ==================== */
 async function sendToPipefy(data, correlationId) {
@@ -84,27 +80,29 @@ async function sendToPipefy(data, correlationId) {
   // fetch polyfill p/ Node < 18
   let _fetch = global.fetch;
   if (!_fetch) {
-    try {
-      _fetch = (await import("node-fetch")).default;
-    } catch {
-      return { ok: false, error: "fetch_unavailable_runtime_lt18" };
-    }
+    try { _fetch = (await import("node-fetch")).default; }
+    catch { return { ok: false, error: "fetch_unavailable_runtime_lt18" }; }
   }
 
-  // Mapeamentos por env (com defaults que combinam com seu pipe)
-  const F_EMAIL  = process.env.PIPEFY_FIELD_EMAIL  || "e_mail";
-  const F_PHONE  = process.env.PIPEFY_FIELD_PHONE  || "telefone_para_contato_whatsapp";
-  const F_MSG    = process.env.PIPEFY_FIELD_MESSAGE || "";        // opcional aqui
-  const F_POLICY = process.env.PIPEFY_FIELD_POLICY_VERSION || ""; // opcional aqui
+  // ===== Mapeamentos por rota (FORM) =====
+  const F_EMAIL  = process.env.PIPEFY_FIELD_EMAIL_FORM
+                || process.env.PIPEFY_FIELD_EMAIL
+                || "e_mail";
+  const F_PHONE  = process.env.PIPEFY_FIELD_PHONE_FORM
+                || "telefone_para_contato_whatsapp"; // fixa o do pipe Análise
+  const F_MSG    = process.env.PIPEFY_FIELD_MESSAGE_FORM
+                || ""; // NÃO envia mensagem por engano
+  const F_POLICY = process.env.PIPEFY_FIELD_POLICY_VERSION_FORM
+                || ""; // opcional
 
-  const F_LGPD_AT = process.env.PIPEFY_FIELD_LGPD_CONSENT_AT || "";
-  const F_LGPD_IP = process.env.PIPEFY_FIELD_LGPD_IP_HASH || "";
-  const F_LGPD_UA = process.env.PIPEFY_FIELD_LGPD_UA || "";
+  const F_LGPD_AT = process.env.PIPEFY_FIELD_LGPD_CONSENT_AT_FORM || "";
+  const F_LGPD_IP = process.env.PIPEFY_FIELD_LGPD_IP_HASH_FORM    || "";
+  const F_LGPD_UA = process.env.PIPEFY_FIELD_LGPD_UA_FORM         || "";
 
   const fields_attributes = [];
   fields_attributes.push({ field_id: F_EMAIL, field_value: data.email });
   fields_attributes.push({ field_id: F_PHONE, field_value: data.phone || "" });
-  if (F_MSG)    fields_attributes.push({ field_id: F_MSG, field_value: data.message || "" });
+  if (F_MSG)    fields_attributes.push({ field_id: F_MSG,    field_value: data.message || "" });
   if (F_POLICY) fields_attributes.push({ field_id: F_POLICY, field_value: data.policyVersion || "v1" });
 
   if (data.consent === true) {
@@ -122,11 +120,7 @@ async function sendToPipefy(data, correlationId) {
     }
   }
 
-  const mutation = `
-    mutation($input: CreateCardInput!) {
-      createCard(input: $input) { card { id } }
-    }`;
-
+  const mutation = `mutation($input: CreateCardInput!) { createCard(input: $input) { card { id } } }`;
   const variables = {
     input: {
       pipe_id: Number(pipeId),
@@ -151,12 +145,10 @@ async function sendToPipefy(data, correlationId) {
     if (process.env.DEBUG_PIPEFY === "1") {
       console.log(JSON.stringify({ level: "debug", msg: "pipefy_resp", correlationId, status: res.status, out }));
     }
-
     if (Array.isArray(out?.errors) && out.errors.length) {
       const msg = out.errors.map((e) => e?.message || "").filter(Boolean).join("; ");
       return { ok: false, status: res.status, error: msg || "graphql_error" };
     }
-
     const id = out?.data?.createCard?.card?.id;
     return { ok: !!id, id: id || null, status: res.status };
   } catch (e) {
@@ -175,7 +167,7 @@ async function getRateStore() {
   if (!fetchImpl) { try { fetchImpl = (await import("node-fetch")).default; } catch {} }
 
   if (hasManual) return getStore("rate-limits", { siteID, token, fetch: fetchImpl });
-  return getStore("rate-limits"); // pode lançar MissingBlobsEnvironmentError em v1 — chamamos com try/catch no uso
+  return getStore("rate-limits"); // se não houver, só desabilita contagem (sem quebrar)
 }
 
 /** ==================== Handler ==================== */
@@ -193,9 +185,7 @@ exports.handler = async (event) => {
   if ((event.httpMethod || "").toUpperCase() === "OPTIONS") {
     return { statusCode: isAllowed ? 204 : 403, headers: cors, body: "" };
   }
-  if (!isAllowed) {
-    return json(403, { error: "Origin not allowed" }, { ...cors, "X-Correlation-Id": correlationId });
-  }
+  if (!isAllowed) return json(403, { error: "Origin not allowed" }, { ...cors, "X-Correlation-Id": correlationId });
 
   if (process.env.PIPEFY_SKIP === "1") {
     return json(200, { ok: true, skipped: true, correlationId }, { ...cors, "X-Correlation-Id": correlationId });
@@ -204,9 +194,7 @@ exports.handler = async (event) => {
   // Limite de payload (via header)
   const maxBytes = Number(process.env.MAX_BODY_BYTES || 102400);
   const contentLength = Number(getHeader(event, "content-length") || "0");
-  if (contentLength > maxBytes) {
-    return json(413, { error: "Payload too large" }, { ...cors, "X-Correlation-Id": correlationId });
-  }
+  if (contentLength > maxBytes) return json(413, { error: "Payload too large" }, { ...cors, "X-Correlation-Id": correlationId });
 
   // Parse do body
   let body;
@@ -227,16 +215,13 @@ exports.handler = async (event) => {
   // Whitelist de campos permitidos
   const ALLOWED = ["name", "email", "phone", "message", "consent", "policyVersion", ...PIPE_QUESTIONNAIRE_FIELDS];
   const data = {};
-  for (const k of ALLOWED) {
-    if (k in body) data[k] = typeof body[k] === "string" ? body[k].trim() : body[k];
-  }
+  for (const k of ALLOWED) if (k in body) data[k] = typeof body[k] === "string" ? body[k].trim() : body[k];
 
-  // Validações mínimas
+  // Validações mínimas (form não exige message)
   const errors = {};
   if (!data.nome_do_cliente && (!data.name || String(data.name).length > 100)) errors.name = "Nome obrigatório (<= 100).";
   const emailToValidate = data.e_mail || data.email;
-  if (!emailToValidate || !validator.isEmail(String(emailToValidate)) || String(emailToValidate).length > 254)
-    errors.email = "Email inválido.";
+  if (!emailToValidate || !validator.isEmail(String(emailToValidate)) || String(emailToValidate).length > 254) errors.email = "Email inválido.";
   if (data.phone && !E164_RE.test(String(data.phone))) errors.phone = "Telefone no formato E.164 (ex: +5511999999999).";
   if (data.message && String(data.message).length > 5000) errors.message = "Mensagem muito longa (<= 5000).";
   if (data.consent !== true) errors.consent = "Consentimento LGPD é obrigatório.";

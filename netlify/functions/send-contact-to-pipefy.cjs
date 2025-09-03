@@ -1,4 +1,4 @@
-// CommonJS v1 – send-contact-to-pipefy.cjs
+// CommonJS v1 – send-contact-to-pipefy.cjs (Opção 2 - ENVs por rota *_CONTACT)
 const { getStore } = require("@netlify/blobs");
 const validator = require("validator");
 const { createHash, randomUUID } = require("crypto");
@@ -55,23 +55,33 @@ async function sendToPipefy(data, correlationId) {
     catch { return { ok: false, error: "fetch_unavailable_runtime_lt18" }; }
   }
 
-  // Mapeamentos por env (com defaults que combinam com seu pipe "Contato - MFO")
-  const F_NAME  = process.env.PIPEFY_FIELD_NAME  || "nome";
-  const F_EMAIL = process.env.PIPEFY_FIELD_EMAIL || "e_mail";
-  const F_PHONE = process.env.PIPEFY_FIELD_PHONE || "n_mero_de_telefone";
-  const F_MSG   = process.env.PIPEFY_FIELD_MESSAGE || "mensagem";
-  const F_POLICY = process.env.PIPEFY_FIELD_POLICY_VERSION || ""; // opcional
+  // ===== Mapeamentos por rota (CONTACT) =====
+  const F_NAME  = process.env.PIPEFY_FIELD_NAME_CONTACT
+               || process.env.PIPEFY_FIELD_NAME
+               || "nome";
+  const F_EMAIL = process.env.PIPEFY_FIELD_EMAIL_CONTACT
+               || process.env.PIPEFY_FIELD_EMAIL
+               || "e_mail";
+  const F_PHONE = process.env.PIPEFY_FIELD_PHONE_CONTACT
+               || process.env.PIPEFY_FIELD_PHONE
+               || "n_mero_de_telefone";
+  const F_MSG   = process.env.PIPEFY_FIELD_MESSAGE_CONTACT
+               || process.env.PIPEFY_FIELD_MESSAGE
+               || "mensagem";
+  const F_POLICY = process.env.PIPEFY_FIELD_POLICY_VERSION_CONTACT
+                || process.env.PIPEFY_FIELD_POLICY_VERSION
+                || ""; // opcional
 
-  const F_LGPD_AT = process.env.PIPEFY_FIELD_LGPD_CONSENT_AT || "";
-  const F_LGPD_IP = process.env.PIPEFY_FIELD_LGPD_IP_HASH || "";
-  const F_LGPD_UA = process.env.PIPEFY_FIELD_LGPD_UA || "";
+  const F_LGPD_AT = process.env.PIPEFY_FIELD_LGPD_CONSENT_AT_CONTACT || "";
+  const F_LGPD_IP = process.env.PIPEFY_FIELD_LGPD_IP_HASH_CONTACT    || "";
+  const F_LGPD_UA = process.env.PIPEFY_FIELD_LGPD_UA_CONTACT         || "";
 
   const fields_attributes = [
     { field_id: F_EMAIL, field_value: data.email },
     { field_id: F_PHONE, field_value: data.phone || "" },
     { field_id: F_MSG,   field_value: data.message },
   ];
-  if (F_NAME)  fields_attributes.push({ field_id: F_NAME,  field_value: data.name || "" });
+  if (F_NAME)   fields_attributes.push({ field_id: F_NAME,   field_value: data.name || "" });
   if (F_POLICY) fields_attributes.push({ field_id: F_POLICY, field_value: data.policyVersion || "v1" });
 
   if (data.consent === true) {
@@ -80,10 +90,7 @@ async function sendToPipefy(data, correlationId) {
     if (F_LGPD_UA) fields_attributes.push({ field_id: F_LGPD_UA, field_value: data.ua || "" });
   }
 
-  const mutation = `
-    mutation($input: CreateCardInput!) {
-      createCard(input: $input) { card { id } }
-    }`;
+  const mutation = `mutation($input: CreateCardInput!) { createCard(input: $input) { card { id } } }`;
   const variables = {
     input: {
       pipe_id: Number(pipeId),
@@ -108,12 +115,10 @@ async function sendToPipefy(data, correlationId) {
     if (process.env.DEBUG_PIPEFY === "1") {
       console.log(JSON.stringify({ level: "debug", msg: "pipefy_resp", correlationId, status: res.status, out }));
     }
-
     if (Array.isArray(out?.errors) && out.errors.length) {
       const msg = out.errors.map((e) => e?.message || "").filter(Boolean).join("; ");
       return { ok: false, status: res.status, error: msg || "graphql_error" };
     }
-
     const id = out?.data?.createCard?.card?.id;
     return { ok: !!id, id: id || null, status: res.status };
   } catch (e) {
