@@ -619,6 +619,7 @@ export default function FormularioApi() {
 
   const [loading, setLoading] = useState(false);
   const [step, setStep] = useState(0);
+  const [hp, setHp] = useState(""); // honeypot anti-bot
 
   const [form, setForm] = useState({
     [F.nome]: "",
@@ -673,6 +674,11 @@ export default function FormularioApi() {
 
   async function submit() {
     // Validação por etapas (UX)
+    // se o honeypot estiver preenchido, aborta (e "finge" sucesso p/ confundir bots)
+  if (String(hp || "").trim().length > 0) {
+    showToast("Formulário enviado com sucesso!", "success");
+    return;
+  }
     for (let i = 0; i < REQUIRED_BY_STEP.length - 1; i++) {
       const missing = getMissingInStep(i, form);
       if (missing.length) {
@@ -776,6 +782,18 @@ export default function FormularioApi() {
       <div className="mx-auto max-w-3xl w-full pb-28 md:pb-32">
         <Current form={form} set={set} />
       </div>
+
+      {/* honeypot anti-bot: campo oculto para bots preencherem */}
+<input
+  type="text"
+  name="hp"
+  value={hp}
+  onChange={(e) => setHp(e.target.value)}
+  tabIndex="-1"
+  autoComplete="off"
+  aria-hidden="true"
+  className="absolute -left-[9999px] -top-[9999px] h-0 w-0 opacity-0"
+/>
 
       {/* barra de progresso + navegação fixa */}
       <div className="fixed bottom-0 left-0 right-0 z-40 border-t border-brand-navy/10 bg-white/95 backdrop-blur">

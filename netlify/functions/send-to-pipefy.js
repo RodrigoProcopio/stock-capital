@@ -134,6 +134,16 @@ export default async (req, context) => {
     return json({ error: "Invalid JSON" }, { status: 400, headers: { ...cors, "X-Correlation-Id": correlationId } });
   }
 
+  // Honeypot: se veio 'hp' preenchido, encerra silenciosamente
+if (String(body?.hp || "").trim().length > 0) {
+  console.log(JSON.stringify({
+    level: "warn",
+    msg: "honeypot_triggered",
+    correlationId,
+  }));
+  return new Response(null, { status: 204, headers: { ...cors, "X-Correlation-Id": correlationId } });
+}
+
   const ALLOWED = ["name", "email", "phone", "message", "consent", "policyVersion"];
   const data = {};
   for (const k of ALLOWED) {

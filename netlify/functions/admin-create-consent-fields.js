@@ -5,10 +5,67 @@
 
 const API = "https://api.pipefy.com/graphql";
 
+
 const CORS = {
   "Access-Control-Allow-Origin": "*", // ajuste se quiser restringir
   "Access-Control-Allow-Methods": "POST, OPTIONS",
   "Access-Control-Allow-Headers": "Content-Type, Authorization, x-admin-token",
+};
+
+// netlify/functions/admin-create-consent-fields.js
+const allowlistFromEnv = () => {
+  const raw = (process.env.ADMIN_CORS_ALLOWLIST || process.env.CORS_ALLOWLIST || "")
+    .split(",")
+    .map((s) => s.trim())
+    .filter(Boolean);
+  return raw;
+};
+
+const getAllowedOrigin = (origin, allowlist) =>
+  origin && allowlist.includes(origin) ? origin : null;
+
+const buildCorsHeaders = (origin, allowed) => ({
+  Vary: "Origin",
+  "Access-Control-Allow-Origin": allowed ? origin : "null",
+  "Access-Control-Allow-Methods": "POST, OPTIONS",
+  "Access-Control-Allow-Headers": "Content-Type, X-Admin-Token",
+  "Access-Control-Max-Age": "86400",
+});
+
+export default async (req, context) => {
+  const origin = req.headers.get("origin") || "";
+  const allowlist = allowlistFromEnv();
+  const isAllowed = !!getAllowedOrigin(origin, allowlist);
+  const cors = buildCorsHeaders(origin, isAllowed);
+
+  // Pré-flight
+  if (req.method === "OPTIONS") {
+    return new Response(null, { status: isAllowed ? 204 : 403, headers: cors });
+  }
+  if (!isAllowed) {
+    return new Response(JSON.stringify({ error: "Origin not allowed" }), {
+      status: 403,
+      headers: { ...cors, "Content-Type": "application/json; charset=utf-8" },
+    });
+  }
+
+  // Autenticação administrativa (já existente)
+  const token = req.headers.get("x-admin-token") || "";
+  if (!token || token !== (process.env.ADMIN_SETUP_TOKEN || "")) {
+    return new Response(JSON.stringify({ error: "Unauthorized" }), {
+      status: 401,
+      headers: { ...cors, "Content-Type": "application/json; charset=utf-8" },
+    });
+  }
+
+  // 👉 A PARTIR DAQUI, MANTENHA SUA LÓGICA ATUAL (criação de campos, etc.)
+  // const body = await req.json().catch(() => ({}));
+  // ... sua implementação ...
+
+  return new Response(JSON.stringify({ ok: true }), {
+    status: 200,
+    headers: { ...cors, "Content-Type": "application/json; charset=utf-8" },
+  });
 };
 
 exports.handler = async (event) => {
