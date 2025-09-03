@@ -7,37 +7,52 @@
   node_bundler = "esbuild"
 
 # ─────────────────────────────────────────────────────────
-# Security headers (SITE-WIDE)
-# Ajuste domínios em connect-src/img-src/font-src se usar serviços externos.
+# HEADERS SITE-WIDE (apenas 1 bloco para "/*")
 # ─────────────────────────────────────────────────────────
 [[headers]]
   for = "/*"
   [headers.values]
-    # Content Security Policy (CSP)
-    Content-Security-Policy = "default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'none'; img-src 'self' data: blob:; font-src 'self' data: https://fonts.gstatic.com; media-src 'self' data:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; script-src 'self'; connect-src 'self' https://api.pipefy.com https://*.netlify.app https://identity.netlify.com; worker-src 'self' blob:; manifest-src 'self'; form-action 'self'; upgrade-insecure-requests;"
+    # CSP (ajuste domínios conforme seus serviços externos)
+    Content-Security-Policy = """
+      default-src 'self';
+      base-uri 'self';
+      object-src 'none';
+      frame-ancestors 'none';
+      img-src 'self' data: blob:;
+      font-src 'self' data: https://fonts.gstatic.com;
+      media-src 'self' data:;
+      style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
+      script-src 'self';
+      connect-src 'self' https://api.pipefy.com https://*.netlify.app https://identity.netlify.com;
+      worker-src 'self' blob:;
+      manifest-src 'self';
+      form-action 'self';
+      upgrade-insecure-requests;
+    """
+
+    # HSTS — remova "preload" se não pretende entrar no hstspreload.org
     Strict-Transport-Security = "max-age=31536000; includeSubDomains; preload"
 
-    # HSTS — remova `preload` se não pretende submeter em hstspreload.org
-    Strict-Transport-Security = "max-age=31536000; includeSubDomains; preload"
-
-    # Restringe acesso a APIs sensíveis do navegador
+    # Permissions-Policy
     Permissions-Policy = "geolocation=(), camera=(), microphone=()"
 
     # Extras recomendados
     Referrer-Policy = "strict-origin-when-cross-origin"
     X-Content-Type-Options = "nosniff"
-    X-Frame-Options = "DENY"   # redundante com frame-ancestors 'none', mas OK manter
+    X-Frame-Options = "DENY"
     X-XSS-Protection = "0"
 
 # ─────────────────────────────────────────────────────────
-# Noindex para qualquer coisa em /admin/*
+# NOINDEX em /admin/*
 # ─────────────────────────────────────────────────────────
 [[headers]]
   for = "/admin/*"
   [headers.values]
     X-Robots-Tag = "noindex, nofollow, noarchive"
 
+# ─────────────────────────────────────────────────────────
 # API -> Functions (mantidos)
+# ─────────────────────────────────────────────────────────
 [[redirects]]
   from = "/api/form"
   to   = "/.netlify/functions/send-to-pipefy"
@@ -48,8 +63,9 @@
   to   = "/.netlify/functions/send-contact-to-pipefy"
   status = 200
 
-# (Opcional) Headers específicos para /api/*
-# OBS: CORS fica nas functions (allowlist dinâmico), não aqui.
+# ─────────────────────────────────────────────────────────
+# HEADERS para /api/* (sem CORS aqui)
+# ─────────────────────────────────────────────────────────
 [[headers]]
   for = "/api/*"
   [headers.values]
@@ -58,7 +74,9 @@
     X-Frame-Options = "DENY"
     X-XSS-Protection = "0"
 
-# SPA fallback (deixe por último!)
+# ─────────────────────────────────────────────────────────
+# SPA fallback (por último)
+# ─────────────────────────────────────────────────────────
 [[redirects]]
   from = "/*"
   to   = "/index.html"
