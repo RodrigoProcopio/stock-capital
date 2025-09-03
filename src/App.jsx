@@ -513,7 +513,7 @@ export default function App() {
           <div>
             <h3 className="font-semibold text-white">Endereço</h3>
             <p className="text-white/80">
-              Rua Exemplo, 123 — Cidade/UF<br/>CEP 00000-000
+              Rua Francisco Rocha, 198 — Curitiba/PR - Brasil<br/>CEP 80420-130
             </p>
           </div>
         </div>
