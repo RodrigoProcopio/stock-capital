@@ -540,9 +540,8 @@ export default function App() {
             <p className="text-white/80">(41) 0000-0000</p>
           </div>
         </div>
-      </div>
-      
-{/* Canal de Denúncias (CVM) */}
+
+        {/* Canal de Denúncias (CVM) */}
 <div className="pt-2">
   <a
     href="https://app.pipefy.com/public/form/dirpZ0Km"
@@ -560,11 +559,11 @@ export default function App() {
     Canal de Denúncias
   </a>
   <p className="mt-2 text-xs text-white/70">
-    Canal seguro de denúncias, conforme rito da CVM. Abre em nova aba.
+    Canal seguro de denúncias, conforme rito da CVM.
   </p>
 </div>
-
-
+      </div>
+      
 {/* coluna: formulário */}
 <form
   onSubmit={async (e) => {
