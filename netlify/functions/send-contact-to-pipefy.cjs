@@ -1,4 +1,4 @@
-// CommonJS v1 – send-contact-to-pipefy.cjs
+// CommonJS v1 – send-contact-to-pipefy.cjs (com Blobs configurável)
 const { getStore } = require("@netlify/blobs");
 const validator = require("validator");
 const { createHash, randomUUID } = require("crypto");
@@ -88,6 +88,21 @@ async function sendToPipefy(data, correlationId) {
   }
 }
 
+/** ===== Blobs helpers ===== */
+async function getRateStore() {
+  const siteID =
+    process.env.NETLIFY_SITE_ID || process.env.SITE_ID || process.env.BLOBS_SITE_ID || "";
+  const token =
+    process.env.NETLIFY_ACCESS_TOKEN || process.env.BLOBS_TOKEN || "";
+  const hasManual = siteID && token;
+
+  let fetchImpl = global.fetch;
+  if (!fetchImpl) { try { fetchImpl = (await import("node-fetch")).default; } catch {} }
+
+  if (hasManual) return getStore("rate-limits", { siteID, token, fetch: fetchImpl });
+  return getStore("rate-limits");
+}
+
 exports.handler = async (event, context) => {
   const startedAt = Date.now();
   const correlationId = getHeader(event, "x-correlation-id") || (typeof randomUUID === "function" ? randomUUID() : Math.random().toString(36).slice(2));
@@ -134,24 +149,31 @@ exports.handler = async (event, context) => {
     return json(422, { error: "Validation failed", details: errors }, { ...cors, "X-Correlation-Id": correlationId });
   }
 
+  // Rate limit via Blobs
+  let store;
+  try { store = await getRateStore(); } catch (e) {
+    console.log(JSON.stringify({ level: "error", msg: "blobs_setup_failed", correlationId, err: String(e?.message || e) }));
+  }
+
   const ip = getClientIp(event);
   const windowSec = Number(process.env.RATE_LIMIT_WINDOW_SEC || 60);
   const maxPerWindow = Number(process.env.RATE_LIMIT_MAX || 60);
   const windowKey = Math.floor(Date.now() / (windowSec * 1000));
-  const store = getStore({ name: "rate-limits" });
   const key = `${ip}:${windowKey}:send-contact`;
 
-  try {
-    const raw = await store.get(key);
-    let current = { c: 0 };
-    if (raw) { try { current = typeof raw === "string" ? JSON.parse(raw) : raw; } catch {} }
-    if (current.c >= maxPerWindow) {
-      console.log(JSON.stringify({ level: "warn", msg: "rate_limited", correlationId, ip_hash: sha256(`${ip}:${process.env.PII_SALT || ""}`), windowSec, maxPerWindow, dur_ms: Date.now() - startedAt }));
-      return json(429, { error: "Too Many Requests" }, { ...cors, "Retry-After": String(windowSec), "X-Correlation-Id": correlationId });
+  if (store) {
+    try {
+      const raw = await store.get(key);
+      let current = { c: 0 };
+      if (raw) { try { current = typeof raw === "string" ? JSON.parse(raw) : raw; } catch {} }
+      if (current.c >= maxPerWindow) {
+        console.log(JSON.stringify({ level: "warn", msg: "rate_limited", correlationId, ip_hash: sha256(`${ip}:${process.env.PII_SALT || ""}`), windowSec, maxPerWindow, dur_ms: Date.now() - startedAt }));
+        return json(429, { error: "Too Many Requests" }, { ...cors, "Retry-After": String(windowSec), "X-Correlation-Id": correlationId });
+      }
+      await store.set(key, JSON.stringify({ c: current.c + 1 }));
+    } catch (e) {
+      console.log(JSON.stringify({ level: "error", msg: "blobs_error", correlationId, err: String(e?.message || e) }));
     }
-    await store.set(key, JSON.stringify({ c: current.c + 1 }));
-  } catch (e) {
-    console.log(JSON.stringify({ level: "error", msg: "blobs_error", correlationId, err: String(e?.message || e) }));
   }
 
   const ua = getHeader(event, "user-agent") || "";
