@@ -72,7 +72,8 @@ const F = {
 
 /* ------------------------------ opções estáticas ----------------------------- */
 const OPT = {
-  estado_civil: ["Solteiro (a)", "Casado(a)", "Divorciado (a)", "Morando Junto"],
+  estado_civil: ["Casado(a)", "Divorciado (a)", "Solteiro (a)", "Morando Junto"],
+
   faixa_etaria: [
     "Até 25 anos",
     "Entre 26 e 35 anos",
@@ -80,6 +81,7 @@ const OPT = {
     "Entre 46 e 55 anos",
     "Acima de 56 anos",
   ],
+
   fonte_renda: [
     "Salário (emprego CLT)",
     "Trabalho autônomo ou prestação de serviços",
@@ -88,13 +90,16 @@ const OPT = {
     "Investimentos (juros, dividendos)",
     "Benefícios sociais",
   ],
+
   finalidade_investir: [
     "Preservar patrimônio",
     "Valorização patrimonial",
     "Aumento de renda",
     "Realizar conquistas financeiras no médio prazo",
   ],
+
   dependentes_qtd: ["1 ou 2", "3 ou mais", "Nenhum"],
+
   dependentes_perfil: [
     "Crianças até 12 anos",
     "Adolescentes entre 13 a 18 anos",
@@ -102,14 +107,18 @@ const OPT = {
     "Cônjuge",
     "Idosos",
   ],
+
   moeda_preferencia: [
     "100% em Real",
     "100% em Dólar",
     "50% em Real e 50% em Dólar",
-    "Variável entre Real e Dólar",
+    "Variavel entre Real e Dólar", // <- sem acento, igual ao Pipefy
   ],
+
   investimentos_24m: ["Poupança", "Renda Fixa", "Renda Variável", "Investimento Imobiliário", "Nenhum"],
+
   interesse_eco: ["Nenhum interesse", "Algum interesse", "Muito interesse"],
+
   tipos_invest: [
     "Poupança",
     "Renda Fixa",
@@ -122,23 +131,33 @@ const OPT = {
     "Investimentos Alternativos",
     "Investimento Empresarial (Private Equity, Venture Capital, Investimento Anjo)",
   ],
+
   necessidade_rend: ["Complemento de renda", "Elevar padrão de vida", "Sem previsão de uso"],
+
   horizonte: ["Até 1 ano", "Entre 2 e 5 anos", "Mais de 5 anos"],
+
   volatilidade: ["Não conheço", "Aceito variação no curto prazo", "Aceito variação ou perda no curto prazo"],
+
   reacao_10: ["Muito preocupado", "Avaliaria reversão", "Não me preocuparia"],
+
   reacao_30: ["Muito preocupado", "Avaliaria reversão", "Não me preocuparia"],
+
+  // NBSP (\u00A0) exatamente como o Pipefy retornou:
   chave_01: [
-    "Método capaz de salvar 200 vidas, 200 morrerem e 200 dependem de sorte.",
-    "Método que traz 1/3 de chance de todas as 600 pessoas serem salvas e 2/3 de todas as 600 pessoas morrerem.",
-    "do capaz de me salvar, salvar quem eu amo e o resto que se vire.",
+    "Método capaz de salvar 200 vidas, 200 morrerem e 200 dependem\u00A0de\u00A0sorte.",
+    "Método que traz 1/3 de chance de todas as 600 pessoas serem salvas e 2/3 de todas as 600 pessoas\u00A0morrerem.",
+    "do capaz de me salvar, salvar quem eu amo e o resto\u00A0que\u00A0se\u00A0vire.",
   ],
+
   chave_02: [
     "Método onde 400 pessoas morrerão.",
-    "Método que traz 1/3 de chance de todas as 600 pessoas serem mortas e 2/3 de todas as 600 pessoas viverem.",
-    "Método que fortalece todos a viverem, mesmo não tendo controle quantos morrem, podendo ser todos inclusive.",
+    "Método que traz 1/3 de chance de todas as 600 pessoas serem mortas e 2/3 de todas as 600 pessoas\u00A0viverem.",
+    "Método que fortalece todos à viverem, mesmo não tendo controle quantos morrem, podendo ser todos\u00A0inclusive.",
   ],
+
   marcacao_mercado: ["Nenhum conhecimento", "Já ouvi mas desconheço impacto", "Conheço bem"],
 };
+
 
 /* ---------------------- Rótulos bonitos para a Revisão ---------------------- */
 const LABELS = {
