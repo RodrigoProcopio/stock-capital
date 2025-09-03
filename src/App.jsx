@@ -541,6 +541,29 @@ export default function App() {
           </div>
         </div>
       </div>
+      
+{/* Canal de Denúncias (CVM) */}
+<div className="pt-2">
+  <a
+    href="https://app.pipefy.com/public/form/dirpZ0Km"
+    target="_blank"
+    rel="noopener noreferrer"
+    className="inline-flex items-center gap-2 rounded-xl bg-white px-4 py-2 text-sm font-semibold
+               text-brand-navy shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
+    aria-label="Abrir Canal de Denúncias em nova aba"
+  >
+    {/* ícone de escudo */}
+    <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path d="M12 3l7 3v6a9 9 0 01-7 8 9 9 0 01-7-8V6l7-3z" stroke="currentColor" strokeWidth="1.8"/>
+      <path d="M9 12l2 2 4-4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+    </svg>
+    Canal de Denúncias
+  </a>
+  <p className="mt-2 text-xs text-white/70">
+    Canal seguro de denúncias, conforme rito da CVM. Abre em nova aba.
+  </p>
+</div>
+
 
 {/* coluna: formulário */}
 <form

@@ -1,14 +1,27 @@
-// CommonJS v1 – send-contact-to-pipefy.cjs (com Blobs configurável + detalhes do erro GraphQL)
+// CommonJS v1 – send-contact-to-pipefy.cjs
 const { getStore } = require("@netlify/blobs");
 const validator = require("validator");
 const { createHash, randomUUID } = require("crypto");
 
+/** ==================== Helpers ==================== */
+const E164_RE = /^\+?[1-9]\d{1,14}$/;
 const sha256 = (v) => createHash("sha256").update(String(v)).digest("hex");
 const maskEmail = (email = "") => { const [u,d] = String(email).toLowerCase().split("@"); return d ? `${u?.[0] ?? ""}***@${d}` : ""; };
 const maskPhone = (phone = "") => String(phone).replace(/\d(?=\d{4})/g, "*");
-const json = (statusCode, body, headers = {}) => ({ statusCode, headers: { "Content-Type": "application/json; charset=utf-8", ...headers }, body: JSON.stringify(body) });
-const getHeader = (event, name) => { const k = Object.keys(event.headers || {}).find((h) => h.toLowerCase() === name.toLowerCase()); return k ? event.headers[k] : undefined; };
-const getAllowedOrigin = (origin, allowlist) => origin && allowlist.includes(origin) ? origin : null;
+
+const json = (statusCode, body, headers = {}) => ({
+  statusCode,
+  headers: { "Content-Type": "application/json; charset=utf-8", ...headers },
+  body: JSON.stringify(body),
+});
+
+const getHeader = (event, name) => {
+  const k = Object.keys(event.headers || {}).find((h) => h.toLowerCase() === name.toLowerCase());
+  return k ? event.headers[k] : undefined;
+};
+
+const getAllowedOrigin = (origin, allowlist) => (origin && allowlist.includes(origin) ? origin : null);
+
 const buildCors = (origin, allowed, event) => {
   const reqAllowed = getHeader({ headers: event?.headers || {} }, "access-control-request-headers");
   const allowHeaders = reqAllowed || "Content-Type, X-Correlation-Id";
@@ -21,13 +34,13 @@ const buildCors = (origin, allowed, event) => {
     "Access-Control-Max-Age": "86400",
   };
 };
+
 const getClientIp = (event) =>
   getHeader(event, "x-nf-client-connection-ip") ||
   (getHeader(event, "x-forwarded-for") || "").split(",")[0]?.trim() ||
   event.clientIp || "unknown";
 
-const E164_RE = /^\+?[1-9]\d{1,14}$/;
-
+/** ==================== Pipefy ==================== */
 async function sendToPipefy(data, correlationId) {
   const token = process.env.PIPEFY_TOKEN || "";
   const pipeId = process.env.PIPEFY_PIPE_ID_CONTACT || process.env.PIPEFY_PIPE_ID || "";
@@ -42,20 +55,25 @@ async function sendToPipefy(data, correlationId) {
     catch { return { ok: false, error: "fetch_unavailable_runtime_lt18" }; }
   }
 
-  const F_EMAIL  = process.env.PIPEFY_FIELD_EMAIL || "email";
-  const F_PHONE  = process.env.PIPEFY_FIELD_PHONE || "telefone";
-  const F_MSG    = process.env.PIPEFY_FIELD_MESSAGE || "mensagem";
-  const F_POLICY = process.env.PIPEFY_FIELD_POLICY_VERSION || "policy_version";
+  // Mapeamentos por env (com defaults que combinam com seu pipe "Contato - MFO")
+  const F_NAME  = process.env.PIPEFY_FIELD_NAME  || "nome";
+  const F_EMAIL = process.env.PIPEFY_FIELD_EMAIL || "e_mail";
+  const F_PHONE = process.env.PIPEFY_FIELD_PHONE || "n_mero_de_telefone";
+  const F_MSG   = process.env.PIPEFY_FIELD_MESSAGE || "mensagem";
+  const F_POLICY = process.env.PIPEFY_FIELD_POLICY_VERSION || ""; // opcional
+
   const F_LGPD_AT = process.env.PIPEFY_FIELD_LGPD_CONSENT_AT || "";
   const F_LGPD_IP = process.env.PIPEFY_FIELD_LGPD_IP_HASH || "";
   const F_LGPD_UA = process.env.PIPEFY_FIELD_LGPD_UA || "";
 
   const fields_attributes = [
-    { field_id: F_EMAIL,  field_value: data.email },
-    { field_id: F_PHONE,  field_value: data.phone || "" },
-    { field_id: F_MSG,    field_value: data.message },
-    { field_id: F_POLICY, field_value: data.policyVersion || "v1" },
+    { field_id: F_EMAIL, field_value: data.email },
+    { field_id: F_PHONE, field_value: data.phone || "" },
+    { field_id: F_MSG,   field_value: data.message },
   ];
+  if (F_NAME)  fields_attributes.push({ field_id: F_NAME,  field_value: data.name || "" });
+  if (F_POLICY) fields_attributes.push({ field_id: F_POLICY, field_value: data.policyVersion || "v1" });
+
   if (data.consent === true) {
     if (F_LGPD_AT) fields_attributes.push({ field_id: F_LGPD_AT, field_value: new Date().toISOString() });
     if (F_LGPD_IP) fields_attributes.push({ field_id: F_LGPD_IP, field_value: data.ip_hash || "" });
@@ -66,10 +84,17 @@ async function sendToPipefy(data, correlationId) {
     mutation($input: CreateCardInput!) {
       createCard(input: $input) { card { id } }
     }`;
-  const variables = { input: { pipe_id: Number(pipeId), title: `Contato - ${data.name}`, fields_attributes } };
+  const variables = {
+    input: {
+      pipe_id: Number(pipeId),
+      title: `Contato - ${data.name || data.email}`,
+      fields_attributes,
+    },
+  };
 
   const controller = new AbortController();
   const tid = setTimeout(() => controller.abort("timeout"), 10000);
+
   try {
     const res = await _fetch("https://api.pipefy.com/graphql", {
       method: "POST",
@@ -85,7 +110,7 @@ async function sendToPipefy(data, correlationId) {
     }
 
     if (Array.isArray(out?.errors) && out.errors.length) {
-      const msg = out.errors.map(e => e?.message || "").filter(Boolean).join("; ");
+      const msg = out.errors.map((e) => e?.message || "").filter(Boolean).join("; ");
       return { ok: false, status: res.status, error: msg || "graphql_error" };
     }
 
@@ -97,12 +122,10 @@ async function sendToPipefy(data, correlationId) {
   }
 }
 
-/** ===== Blobs helpers ===== */
+/** ==================== Blobs (rate limit) ==================== */
 async function getRateStore() {
-  const siteID =
-    process.env.NETLIFY_SITE_ID || process.env.SITE_ID || process.env.BLOBS_SITE_ID || "";
-  const token =
-    process.env.NETLIFY_ACCESS_TOKEN || process.env.BLOBS_TOKEN || "";
+  const siteID = process.env.NETLIFY_SITE_ID || process.env.SITE_ID || process.env.BLOBS_SITE_ID || "";
+  const token  = process.env.NETLIFY_ACCESS_TOKEN || process.env.BLOBS_TOKEN || "";
   const hasManual = siteID && token;
 
   let fetchImpl = global.fetch;
@@ -112,9 +135,12 @@ async function getRateStore() {
   return getStore("rate-limits");
 }
 
-exports.handler = async (event, context) => {
+/** ==================== Handler ==================== */
+exports.handler = async (event) => {
   const startedAt = Date.now();
-  const correlationId = getHeader(event, "x-correlation-id") || (typeof randomUUID === "function" ? randomUUID() : Math.random().toString(36).slice(2));
+  const correlationId =
+    getHeader(event, "x-correlation-id") ||
+    (typeof randomUUID === "function" ? randomUUID() : Math.random().toString(36).slice(2));
 
   const origin = getHeader(event, "origin") || "";
   const allowlist = (process.env.CORS_ALLOWLIST || "").split(",").map((s) => s.trim()).filter(Boolean);
@@ -136,20 +162,25 @@ exports.handler = async (event, context) => {
 
   let body;
   try {
-    body = event.isBase64Encoded ? JSON.parse(Buffer.from(event.body || "", "base64").toString("utf8")) : JSON.parse(event.body || "{}");
+    body = event.isBase64Encoded
+      ? JSON.parse(Buffer.from(event.body || "", "base64").toString("utf8"))
+      : JSON.parse(event.body || "{}");
   } catch {
     return json(400, { error: "Invalid JSON" }, { ...cors, "X-Correlation-Id": correlationId });
   }
 
+  // Honeypot
   if (String(body?.hp || "").trim().length > 0) {
     console.log(JSON.stringify({ level: "warn", msg: "honeypot_triggered", correlationId }));
     return { statusCode: 204, headers: { ...cors, "X-Correlation-Id": correlationId }, body: "" };
   }
 
+  // Whitelist enxuta para contato
   const ALLOWED = ["name", "email", "phone", "message", "consent", "policyVersion"];
   const data = {};
   for (const k of ALLOWED) if (k in body) data[k] = typeof body[k] === "string" ? body[k].trim() : body[k];
 
+  // Validações (contato: exige message)
   const errors = {};
   if (!data.name || String(data.name).length > 100) errors.name = "Nome obrigatório (<= 100).";
   if (!data.email || !validator.isEmail(String(data.email)) || String(data.email).length > 254) errors.email = "Email inválido.";
@@ -157,13 +188,14 @@ exports.handler = async (event, context) => {
   if (!data.message || String(data.message).length > 5000) errors.message = "Mensagem obrigatória (<= 5000).";
   if (data.consent !== true) errors.consent = "Consentimento LGPD é obrigatório.";
   if (data.policyVersion && String(data.policyVersion).length > 20) errors.policyVersion = "policyVersion muito longo.";
+
   if (Object.keys(errors).length) {
     console.log(JSON.stringify({ level: "warn", msg: "validation_failed", correlationId, fields: Object.keys(errors), dur_ms: Date.now() - startedAt }));
     return json(422, { error: "Validation failed", details: errors }, { ...cors, "X-Correlation-Id": correlationId });
   }
 
-  // Rate limit via Blobs
-  let store;
+  // Rate limit
+  let store = null;
   try { store = await getRateStore(); } catch (e) {
     console.log(JSON.stringify({ level: "error", msg: "blobs_setup_failed", correlationId, err: String(e?.message || e) }));
   }
@@ -199,8 +231,12 @@ exports.handler = async (event, context) => {
   }
 
   console.log(JSON.stringify({
-    level: "info", msg: "contact_received", correlationId, origin,
-    ua, ip_hash,
+    level: "info",
+    msg: "contact_received",
+    correlationId,
+    origin,
+    ua,
+    ip_hash,
     payload: {
       name_len: String(data.name || "").length,
       email_mask: maskEmail(data.email),
