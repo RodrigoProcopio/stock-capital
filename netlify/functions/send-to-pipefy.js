@@ -2,6 +2,11 @@
 import { getStore } from "@netlify/blobs";
 import validator from "validator";
 
+import { randomUUID as nodeRandomUUID, createHash } from "node:crypto";
+
+const uuid = () => (globalThis.crypto?.randomUUID?.() || nodeRandomUUID());
+const sha256 = (value) => createHash("sha256").update(String(value)).digest("hex");
+
 /** ====== Utils ====== */
 const maskEmail = (email = "") => {
   const [user, domain] = String(email).toLowerCase().split("@");
@@ -9,11 +14,7 @@ const maskEmail = (email = "") => {
   return `${user?.[0] ?? ""}***@${domain}`;
 };
 const maskPhone = (phone = "") => String(phone).replace(/\d(?=\d{4})/g, "*");
-const sha256 = async (value) => {
-  const data = new TextEncoder().encode(value);
-  const digest = await crypto.subtle.digest("SHA-256", data);
-  return [...new Uint8Array(digest)].map((b) => b.toString(16).padStart(2, "0")).join("");
-};
+
 const json = (body, { status = 200, headers = {} } = {}) =>
   new Response(JSON.stringify(body), { status, headers: { "Content-Type": "application/json; charset=utf-8", ...headers } });
 
@@ -103,7 +104,7 @@ async function sendToPipefy(data, correlationId) {
 
 export default async (req, context) => {
   const startedAt = Date.now();
-  const correlationId = req.headers.get("x-correlation-id") || crypto.randomUUID();
+  const correlationId = req.headers.get("x-correlation-id") || uuid();
 
   const allowlist = (process.env.CORS_ALLOWLIST || "")
     .split(",")
@@ -188,7 +189,7 @@ if (String(body?.hp || "").trim().length > 0) {
         level: "warn",
         msg: "rate_limited",
         correlationId,
-        ip_hash: await sha256(`${ip}:${process.env.PII_SALT || ""}`),
+        ip_hash: sha256(`${ip}:${process.env.PII_SALT || ""}`),
         windowSec,
         maxPerWindow,
         dur_ms: Date.now() - startedAt,
@@ -204,7 +205,7 @@ if (String(body?.hp || "").trim().length > 0) {
   }
 
   const piiSalt = process.env.PII_SALT || "";
-  const ip_hash = await sha256(`${ip}:${piiSalt}`);
+  const ip_hash = sha256(`${ip}:${piiSalt}`);
   const ua = req.headers.get("user-agent") || "";
 
   const pipeRes = await sendToPipefy({ ...data, ip_hash, ua }, correlationId);
