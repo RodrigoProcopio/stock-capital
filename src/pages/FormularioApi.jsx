@@ -1,10 +1,9 @@
 // src/pages/FormularioApi.jsx
 import React, { useMemo, useState, useEffect } from "react";
-import { Link } from "react-router-dom"; // para linkar sem recarregar
-const POLICY_VERSION = "v1";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import PageLayout from "../components/PageLayout";
-import LgpdConsent from "../components/LgpdConsent";
+// import LgpdConsent from "../components/LgpdConsent"; // (não usado aqui)
+const POLICY_VERSION = "v1";
 
 /* --------------------------------- helpers -------------------------------- */
 const cx = (...c) => c.filter(Boolean).join(" ");
@@ -81,7 +80,6 @@ const OPT = {
     "Entre 46 e 55 anos",
     "Acima de 56 anos",
   ],
-
   fonte_renda: [
     "Salário (emprego CLT)",
     "Trabalho autônomo ou prestação de serviços",
@@ -90,14 +88,12 @@ const OPT = {
     "Investimentos (juros, dividendos)",
     "Benefícios sociais",
   ],
-
   finalidade_investir: [
     "Preservar patrimônio",
     "Valorização patrimonial",
     "Aumento de renda",
     "Realizar conquistas financeiras no médio prazo",
   ],
-
   dependentes_qtd: ["1 ou 2", "3 ou mais", "Nenhum"],
   dependentes_perfil: [
     "Crianças até 12 anos",
@@ -106,18 +102,14 @@ const OPT = {
     "Cônjuge",
     "Idosos",
   ],
-
   moeda_preferencia: [
     "100% em Real",
     "100% em Dólar",
     "50% em Real e 50% em Dólar",
     "Variável entre Real e Dólar",
   ],
-
   investimentos_24m: ["Poupança", "Renda Fixa", "Renda Variável", "Investimento Imobiliário", "Nenhum"],
-
   interesse_eco: ["Nenhum interesse", "Algum interesse", "Muito interesse"],
-
   tipos_invest: [
     "Poupança",
     "Renda Fixa",
@@ -130,13 +122,11 @@ const OPT = {
     "Investimentos Alternativos",
     "Investimento Empresarial (Private Equity, Venture Capital, Investimento Anjo)",
   ],
-
   necessidade_rend: ["Complemento de renda", "Elevar padrão de vida", "Sem previsão de uso"],
   horizonte: ["Até 1 ano", "Entre 2 e 5 anos", "Mais de 5 anos"],
   volatilidade: ["Não conheço", "Aceito variação no curto prazo", "Aceito variação ou perda no curto prazo"],
   reacao_10: ["Muito preocupado", "Avaliaria reversão", "Não me preocuparia"],
   reacao_30: ["Muito preocupado", "Avaliaria reversão", "Não me preocuparia"],
-
   chave_01: [
     "Método capaz de salvar 200 vidas, 200 morrerem e 200 dependem de sorte.",
     "Método que traz 1/3 de chance de todas as 600 pessoas serem salvas e 2/3 de todas as 600 pessoas morrerem.",
@@ -147,7 +137,6 @@ const OPT = {
     "Método que traz 1/3 de chance de todas as 600 pessoas serem mortas e 2/3 de todas as 600 pessoas viverem.",
     "Método que fortalece todos a viverem, mesmo não tendo controle quantos morrem, podendo ser todos inclusive.",
   ],
-
   marcacao_mercado: ["Nenhum conhecimento", "Já ouvi mas desconheço impacto", "Conheço bem"],
 };
 
@@ -187,7 +176,7 @@ const pretty = (v) =>
 const REQUIRED_BY_STEP = [
   [F.nome, F.tel, F.email, F.estadoCivil, F.faixaEtaria], // 0 – Dados
   [F.fonteRenda, F.disponibilidade, F.dependentesQtd], // 1 – Renda
-  [F.interesseEco, F.inv24m, F.tiposInvest], // 2 – Preferências (agora exige os 2 checklists)
+  [F.interesseEco, F.inv24m, F.tiposInvest], // 2 – Preferências
   [F.chave01, F.chave02, F.necessidadeRend, F.horizonte, F.volatilidade, F.reacao10, F.reacao30, F.marcacaoMercado], // 3 – Risco
   [], // 4 – Revisão
 ];
@@ -197,8 +186,48 @@ const isEmpty = (val) =>
 const getMissingInStep = (step, form) =>
   (REQUIRED_BY_STEP[step] || []).filter((key) => isEmpty(form[key]));
 
+/* --------------------------- Helpers de submissão --------------------------- */
+// Normaliza telefone para E.164 (Brasil por default)
+const E164_RE = /^\+?[1-9]\d{1,14}$/;
+function toE164BR(input) {
+  const digits = String(input || "").replace(/\D/g, "");
+  if (!digits) return "";
+  if (digits.startsWith("55")) return `+${digits}`;
+  // heurística: se tiver 10 ou 11 dígitos, assume BR e prefixa +55
+  if (digits.length === 10 || digits.length === 11) return `+55${digits}`;
+  // fallback: se já parece E.164 sem +, adiciona
+  if (digits.length >= 8 && digits.length <= 15) return `+${digits}`;
+  return "";
+}
+
+function buildMessageFromForm(form) {
+  const grupos = [
+    { titulo: "Dados do Cliente", campos: [F.nome, F.tel, F.email, F.estadoCivil, F.faixaEtaria] },
+    { titulo: "Renda e Disponibilidade", campos: [F.fonteRenda, F.compRenda, F.disponibilidade] },
+    { titulo: "Preferências e Objetivos", campos: [F.finalidade, F.dependentesQtd, F.dependentesPerfil, F.moeda, F.inv24m, F.tiposInvest] },
+    { titulo: "Perfil de Risco", campos: [F.chave01, F.chave02, F.interesseEco, F.necessidadeRend, F.horizonte, F.volatilidade, F.reacao10, F.reacao30, F.marcacaoMercado] },
+  ];
+
+  let out = `Resumo do formulário de suitability\n`;
+  out += `Gerado em: ${new Date().toISOString()}\n\n`;
+
+  for (const g of grupos) {
+    out += `## ${g.titulo}\n`;
+    for (const k of g.campos) {
+      const val = pretty(form[k]);
+      out += `- ${labelOf(k)}: ${val}\n`;
+    }
+    out += `\n`;
+  }
+
+  // Respeitar limite do backend (<= 5000 chars). Mantém margem de segurança.
+  if (out.length > 4800) {
+    out = out.slice(0, 4750) + "\n[...resumo truncado por limite de tamanho]";
+  }
+  return out;
+}
+
 /* --------------------------------- UI blocks -------------------------------- */
-// Agora todos os blocos seguem o tema claro (mesmo padrão das páginas internas)
 function Section({ title, description, children }) {
   return (
     <section className="rounded-2xl border border-brand-navy/15 bg-white p-6 lg:p-8 space-y-6 shadow-subtle">
@@ -305,6 +334,7 @@ function StepDados({ form, set }) {
           value={form[F.nome]}
           onChange={(e) => set(F.nome, e.target.value)}
           required
+          maxLength={100}
         />
       </Field>
       <Field label="Telefone para Contato (Whatsapp)" required>
@@ -314,6 +344,7 @@ function StepDados({ form, set }) {
           value={form[F.tel]}
           onChange={(e) => set(F.tel, e.target.value)}
           required
+          maxLength={20}
         />
       </Field>
       <Field label="E-mail" required>
@@ -324,6 +355,7 @@ function StepDados({ form, set }) {
           value={form[F.email]}
           onChange={(e) => set(F.email, e.target.value)}
           required
+          maxLength={254}
         />
       </Field>
       <Select
@@ -360,6 +392,7 @@ function StepRenda({ form, set }) {
           className="w-full rounded-lg border border-brand-navy/20 bg-white px-3 py-2 outline-none focus:ring-2 focus:ring-brand-navy/30"
           value={form[F.compRenda]}
           onChange={(e) => set(F.compRenda, e.target.value)}
+          maxLength={1000}
         />
       </Field>
       <Field
@@ -371,6 +404,7 @@ function StepRenda({ form, set }) {
           className="w-full rounded-lg border border-brand-navy/20 bg-white px-3 py-2 outline-none focus:ring-2 focus:ring-brand-navy/30"
           value={form[F.disponibilidade]}
           onChange={(e) => set(F.disponibilidade, e.target.value)}
+          maxLength={60}
         />
       </Field>
 
@@ -456,7 +490,8 @@ function StepPerfilRisco({ form, set }) {
       <Select
         label="Qual é a necessidade futura dos seus rendimentos?"
         required
-        options={OPT.necessidade_rend}
+        options={OPT.necessidade_rend]
+}
         value={form[F.necessidadeRend]}
         onChange={(v) => set(F.necessidadeRend, v)}
       />
@@ -637,14 +672,12 @@ export default function FormularioApi() {
   const canContinue = useMemo(() => validators[step](), [form, step]);
 
   async function submit() {
+    // Validação por etapas (UX)
     for (let i = 0; i < REQUIRED_BY_STEP.length - 1; i++) {
       const missing = getMissingInStep(i, form);
       if (missing.length) {
         setStep(i);
-        const msg = missing
-          .slice(0, 3)
-          .map((k) => `• ${labelOf(k)}`)
-          .join("\n");
+        const msg = missing.slice(0, 3).map((k) => `• ${labelOf(k)}`).join("\n");
         showToast(`Antes de enviar, responda:\n${msg}`, "warning", 4800);
         window.scrollTo({ top: 0 });
         return;
@@ -656,51 +689,62 @@ export default function FormularioApi() {
       return;
     }
 
+    // Monta payload whitelisted para o backend
+    const name = String(form[F.nome] || "").trim();
+    const email = String(form[F.email] || "").trim();
+    const phoneE164 = toE164BR(form[F.tel]);
+    const phone = E164_RE.test(phoneE164) ? phoneE164 : undefined; // telefone é opcional no backend
+    const message = buildMessageFromForm(form);
+
+    const correlationId = crypto.randomUUID();
     setLoading(true);
     try {
-      // monta payload principal
-      const payload = {
-        ...form,
-        lgpd: {
-          accepted: true,
-          policyVersion: POLICY_VERSION,
-          consentAtClient: new Date().toISOString(),
-        },
-      };
-
-      // Registro autoritativo no servidor (timestamp/IP/UA do server)
-      try {
-        await fetch("/.netlify/functions/consent", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            action: "consent",
-            policyVersion: POLICY_VERSION,
-            formId: "FormularioApi",
-            nome: payload[F.nome],
-            email: payload[F.email],
-            telefone: payload[F.tel],
-            context: { page: window.location.pathname },
-          }),
-        });
-      } catch (e) {
-        console.warn("Falha ao registrar consentimento no backend", e);
-      }
-
-      // Envio ao endpoint da sua API
       const res = await fetch("/api/form", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
+        headers: {
+          "Content-Type": "application/json",
+          "X-Correlation-Id": correlationId, // opcional, ajuda no rastreio
+        },
+        body: JSON.stringify({
+          name,
+          email,
+          phone,
+          message,
+          consent: true,
+          policyVersion: POLICY_VERSION,
+        }),
       });
-      const json = await res.json().catch(() => ({}));
-      if (!res.ok || json.error) {
-        console.error(json);
-        showToast(json.message || json.error || "Erro ao enviar para o Pipefy.", "error");
+
+      const data = await res.json().catch(() => ({}));
+      const cid = data.correlationId || res.headers.get("X-Correlation-Id") || correlationId;
+
+      if (res.ok && data.ok) {
+        showToast(`Formulário enviado com sucesso! (ID: ${cid})`, "success");
+        window.scrollTo({ top: 0 });
+        // opcional: resetar
+        // setForm(/* estado inicial */);
         return;
       }
-      showToast("Formulário enviado com sucesso!", "success");
-      window.scrollTo({ top: 0 });
+
+      // Tratamento de respostas do backend
+      if (res.status === 422) {
+        const fields = Object.keys(data.details || {});
+        showToast(`Verifique os campos: ${fields.join(", ")}`, "warning", 4800);
+        return;
+      }
+      if (res.status === 429) {
+        showToast("Muitas tentativas. Tente novamente em instantes.", "warning");
+        return;
+      }
+      if (res.status === 413) {
+        showToast("Mensagem muito grande. Reduza o tamanho do texto.", "warning");
+        return;
+      }
+      if (res.status === 403) {
+        showToast("Origem não permitida (CORS).", "error");
+        return;
+      }
+      showToast(`Falha (${res.status}). ID: ${cid}`, "error", 4800);
     } catch (e) {
       console.error(e);
       showToast("Erro de conexão. Tente novamente.", "error");
@@ -709,10 +753,8 @@ export default function FormularioApi() {
     }
   }
 
-  // progresso (percentual) para a barra no rodapé
   const progressPct = ((step + 1) / steps.length) * 100;
 
-  // Mantém consistência de scroll com as demais páginas
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "smooth" });
   }, [step]);
@@ -735,15 +777,13 @@ export default function FormularioApi() {
         <Current form={form} set={set} />
       </div>
 
-      {/* barra de progresso + navegação fixa na base da viewport, como nas outras páginas claras */}
+      {/* barra de progresso + navegação fixa */}
       <div className="fixed bottom-0 left-0 right-0 z-40 border-t border-brand-navy/10 bg-white/95 backdrop-blur">
         <div className="mx-auto max-w-3xl px-4 pt-3">
-          {/* barra de progresso */}
           <div className="w-full h-2 rounded bg-brand-100 overflow-hidden">
             <div className="h-2 bg-brand-navy transition-all" style={{ width: `${progressPct}%` }} />
           </div>
 
-          {/* controles */}
           <div className="py-3 flex items-center gap-3">
             <button
               onClick={() => {

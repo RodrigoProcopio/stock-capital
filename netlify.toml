@@ -6,7 +6,7 @@
   directory = "netlify/functions"
   node_bundler = "esbuild"
 
-# API -> Functions
+# API -> Functions (mantidos)
 [[redirects]]
   from = "/api/form"
   to   = "/.netlify/functions/send-to-pipefy"
@@ -16,6 +16,16 @@
   from = "/api/send-contact"
   to   = "/.netlify/functions/send-contact-to-pipefy"
   status = 200
+
+# (Opcional) Headers de segurança para /api/*
+[[headers]]
+  for = "/api/*"
+  [headers.values]
+    Referrer-Policy = "no-referrer"
+    X-Content-Type-Options = "nosniff"
+    X-Frame-Options = "DENY"
+    X-XSS-Protection = "0"
+    # CORS **não** fica aqui (vai na função com allowlist dinâmico)
 
 # SPA fallback (deixe por último!)
 [[redirects]]
