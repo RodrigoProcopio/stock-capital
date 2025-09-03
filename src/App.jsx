@@ -244,7 +244,7 @@ export default function App() {
         {/* Nosso Propósito */}
         <Section id="nosso-proposito" title="Nosso Propósito" subtitle="">
           <p className="text-justify">
-            Na <strong>Stock Capital Multi Family Office</strong>, gerimos patrimônios com excelência, 
+            Na <strong>Stock Capital Multi-Family Office</strong>, gerimos patrimônios com excelência, 
             conectando crescimento, proteção e propósito. Acreditamos que um patrimônio bem administrado 
             vai além dos resultados financeiros: ele constrói legados, fortalece vínculos familiares e 
             transforma o ambiente em que vivemos. Com independência, técnica e visão de longo prazo, 
@@ -272,7 +272,7 @@ export default function App() {
         {/* Quem Somos */}
         <Section id="quem-somos" title="Quem Somos" subtitle="">
           <p className="text-justify">
-            A <strong>Stock Capital Multi Family Office</strong>, apoia famílias e investidores na
+            A <strong>Stock Capital Multi-Family Office</strong>, apoia famílias e investidores na
              proteção e crescimento de seu patrimônio. Com uma equipe multidisciplinar, unimos rigor
               técnico e visão estratégica para oferecer soluções alinhadas aos objetivos de cada cliente, 
               gerando segurança e confiança. Nossa abordagem inclui: 

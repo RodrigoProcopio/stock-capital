@@ -1,7 +1,6 @@
 // netlify/functions/send-contact-to-pipefy.js
 import { getStore } from "@netlify/blobs";
 import validator from "validator";
-
 import { randomUUID as nodeRandomUUID, createHash } from "node:crypto";
 
 const uuid = () => (globalThis.crypto?.randomUUID?.() || nodeRandomUUID());
@@ -49,13 +48,7 @@ async function sendToPipefy(data, correlationId) {
   const token = process.env.PIPEFY_TOKEN || "";
   const pipeId = process.env.PIPEFY_PIPE_ID || "";
   if (!token || !pipeId) {
-    console.log(
-      JSON.stringify({
-        level: "warn",
-        msg: "pipefy_not_configured",
-        correlationId,
-      })
-    );
+    console.log(JSON.stringify({ level: "warn", msg: "pipefy_not_configured", correlationId }));
     return { ok: true, skipped: true };
   }
 
@@ -74,7 +67,6 @@ async function sendToPipefy(data, correlationId) {
     { field_id: F_MSG, field_value: data.message },
     { field_id: F_POLICY, field_value: data.policyVersion || "v1" },
   ];
-
   if (data.consent === true) {
     if (F_LGPD_AT) fields_attributes.push({ field_id: F_LGPD_AT, field_value: new Date().toISOString() });
     if (F_LGPD_IP) fields_attributes.push({ field_id: F_LGPD_IP, field_value: data.ip_hash || "" });
@@ -99,10 +91,7 @@ async function sendToPipefy(data, correlationId) {
   try {
     const res = await fetch("https://api.pipefy.com/graphql", {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
       body: JSON.stringify({ query: mutation, variables }),
       signal: controller.signal,
     });
@@ -118,9 +107,9 @@ async function sendToPipefy(data, correlationId) {
   }
 }
 
-export default async (req, context) => {
+async function main(req, context) {
   const startedAt = Date.now();
-  const correlationId = req.headers.get("x-correlation-id") || crypto.randomUUID();
+  const correlationId = req.headers.get("x-correlation-id") || uuid();
 
   const allowlist = (process.env.CORS_ALLOWLIST || "")
     .split(",")
@@ -154,22 +143,16 @@ export default async (req, context) => {
   }
 
   // Honeypot: se veio 'hp' preenchido, encerra silenciosamente
-if (String(body?.hp || "").trim().length > 0) {
-  console.log(JSON.stringify({
-    level: "warn",
-    msg: "honeypot_triggered",
-    correlationId,
-  }));
-  return new Response(null, { status: 204, headers: { ...cors, "X-Correlation-Id": correlationId } });
-}
+  if (String(body?.hp || "").trim().length > 0) {
+    console.log(JSON.stringify({ level: "warn", msg: "honeypot_triggered", correlationId }));
+    return new Response(null, { status: 204, headers: { ...cors, "X-Correlation-Id": correlationId } });
+  }
 
   // Whitelist de campos (descarta extras)
   const ALLOWED = ["name", "email", "phone", "message", "consent", "policyVersion"];
   const data = {};
   for (const k of ALLOWED) {
-    if (k in body) {
-      data[k] = typeof body[k] === "string" ? body[k].trim() : body[k];
-    }
+    if (k in body) data[k] = typeof body[k] === "string" ? body[k].trim() : body[k];
   }
 
   // Validações
@@ -229,13 +212,10 @@ if (String(body?.hp || "").trim().length > 0) {
 
   // Envio ao Pipefy
   const piiSalt = process.env.PII_SALT || "";
-  const ip_hash = await sha256(`${ip}:${piiSalt}`);
+  const ip_hash = sha256(`${ip}:${piiSalt}`);
   const ua = req.headers.get("user-agent") || "";
 
-  const pipeRes = await sendToPipefy(
-    { ...data, ip_hash, ua },
-    correlationId
-  );
+  const pipeRes = await sendToPipefy({ ...data, ip_hash, ua }, correlationId);
 
   if (!pipeRes.ok) {
     console.log(JSON.stringify({
@@ -246,7 +226,6 @@ if (String(body?.hp || "").trim().length > 0) {
       error: pipeRes.error || null,
       dur_ms: Date.now() - startedAt,
     }));
-    // Se preferir endurecer, troque 200 por 502:
     return json({ error: "Upstream error", correlationId }, { status: 502, headers: { ...cors, "X-Correlation-Id": correlationId } });
   }
 
@@ -270,4 +249,54 @@ if (String(body?.hp || "").trim().length > 0) {
   }));
 
   return json({ ok: true, correlationId }, { status: 200, headers: { ...cors, "X-Correlation-Id": correlationId } });
-};
+}
+
+// Export default (v2)
+export default main;
+
+// Compat: wrapper para runtime v1
+export async function handler(event, context) {
+  try {
+    const method = (event.httpMethod || "GET").toUpperCase();
+    const headers = event.headers || {};
+    const host = headers.host || "localhost";
+    const path = event.path || "/";
+    const qs = event.rawQuery
+      ? `?${event.rawQuery}`
+      : event.queryStringParameters
+      ? "?" + new URLSearchParams(event.queryStringParameters).toString()
+      : "";
+    const url = event.rawUrl || `https://${host}${path}${qs}`;
+
+    let body;
+    if (!["GET", "HEAD"].includes(method)) {
+      body = event.isBase64Encoded ? Buffer.from(event.body || "", "base64") : event.body;
+    }
+
+    const req = new Request(url, { method, headers, body });
+
+    const ip =
+      event.clientIp ||
+      headers["x-nf-client-connection-ip"] ||
+      (headers["x-forwarded-for"] || "").split(",")[0]?.trim() ||
+      undefined;
+
+    const res = await main(req, { ...context, ip });
+
+    const outHeaders = {};
+    res.headers.forEach((v, k) => { outHeaders[k] = v; });
+    const text = await res.text();
+
+    return {
+      statusCode: res.status,
+      headers: outHeaders,
+      body: text,
+    };
+  } catch (e) {
+    return {
+      statusCode: 500,
+      headers: { "content-type": "application/json; charset=utf-8" },
+      body: JSON.stringify({ error: "runtime_error", message: String(e?.message || e) }),
+    };
+  }
+}

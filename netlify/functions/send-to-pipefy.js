@@ -1,7 +1,6 @@
 // netlify/functions/send-to-pipefy.js
 import { getStore } from "@netlify/blobs";
 import validator from "validator";
-
 import { randomUUID as nodeRandomUUID, createHash } from "node:crypto";
 
 const uuid = () => (globalThis.crypto?.randomUUID?.() || nodeRandomUUID());
@@ -14,7 +13,6 @@ const maskEmail = (email = "") => {
   return `${user?.[0] ?? ""}***@${domain}`;
 };
 const maskPhone = (phone = "") => String(phone).replace(/\d(?=\d{4})/g, "*");
-
 const json = (body, { status = 200, headers = {} } = {}) =>
   new Response(JSON.stringify(body), { status, headers: { "Content-Type": "application/json; charset=utf-8", ...headers } });
 
@@ -102,7 +100,7 @@ async function sendToPipefy(data, correlationId) {
   }
 }
 
-export default async (req, context) => {
+async function main(req, context) {
   const startedAt = Date.now();
   const correlationId = req.headers.get("x-correlation-id") || uuid();
 
@@ -135,22 +133,20 @@ export default async (req, context) => {
     return json({ error: "Invalid JSON" }, { status: 400, headers: { ...cors, "X-Correlation-Id": correlationId } });
   }
 
-  // Honeypot: se veio 'hp' preenchido, encerra silenciosamente
-if (String(body?.hp || "").trim().length > 0) {
-  console.log(JSON.stringify({
-    level: "warn",
-    msg: "honeypot_triggered",
-    correlationId,
-  }));
-  return new Response(null, { status: 204, headers: { ...cors, "X-Correlation-Id": correlationId } });
-}
+  // Honeypot: encerra silenciosamente
+  if (String(body?.hp || "").trim().length > 0) {
+    console.log(JSON.stringify({ level: "warn", msg: "honeypot_triggered", correlationId }));
+    return new Response(null, { status: 204, headers: { ...cors, "X-Correlation-Id": correlationId } });
+  }
 
+  // Whitelist de campos
   const ALLOWED = ["name", "email", "phone", "message", "consent", "policyVersion"];
   const data = {};
   for (const k of ALLOWED) {
     if (k in body) data[k] = typeof body[k] === "string" ? body[k].trim() : body[k];
   }
 
+  // Validações
   const errors = {};
   if (!data.name || data.name.length > 100) errors.name = "Nome obrigatório (<= 100).";
   if (!data.email || !validator.isEmail(String(data.email)) || String(data.email).length > 254)
@@ -175,6 +171,7 @@ if (String(body?.hp || "").trim().length > 0) {
     return json({ error: "Validation failed", details: errors }, { status: 422, headers: { ...cors, "X-Correlation-Id": correlationId } });
   }
 
+  // Rate limiting por IP
   const ip = getClientIp(req, context);
   const windowSec = Number(process.env.RATE_LIMIT_WINDOW_SEC || 60);
   const maxPerWindow = Number(process.env.RATE_LIMIT_MAX || 60);
@@ -219,7 +216,6 @@ if (String(body?.hp || "").trim().length > 0) {
       error: pipeRes.error || null,
       dur_ms: Date.now() - startedAt,
     }));
-    // Se preferir endurecer, troque 200 por 502:
     return json({ error: "Upstream error", correlationId }, { status: 502, headers: { ...cors, "X-Correlation-Id": correlationId } });
   }
 
@@ -242,4 +238,54 @@ if (String(body?.hp || "").trim().length > 0) {
   }));
 
   return json({ ok: true, correlationId }, { status: 200, headers: { ...cors, "X-Correlation-Id": correlationId } });
-};
+}
+
+// Export default (runtime v2)
+export default main;
+
+// Compat: wrapper para runtime v1
+export async function handler(event, context) {
+  try {
+    const method = (event.httpMethod || "GET").toUpperCase();
+    const headers = event.headers || {};
+    const host = headers.host || "localhost";
+    const path = event.path || "/";
+    const qs = event.rawQuery
+      ? `?${event.rawQuery}`
+      : event.queryStringParameters
+      ? "?" + new URLSearchParams(event.queryStringParameters).toString()
+      : "";
+    const url = event.rawUrl || `https://${host}${path}${qs}`;
+
+    let body;
+    if (!["GET", "HEAD"].includes(method)) {
+      body = event.isBase64Encoded ? Buffer.from(event.body || "", "base64") : event.body;
+    }
+
+    const req = new Request(url, { method, headers, body });
+
+    const ip =
+      event.clientIp ||
+      headers["x-nf-client-connection-ip"] ||
+      (headers["x-forwarded-for"] || "").split(",")[0]?.trim() ||
+      undefined;
+
+    const res = await main(req, { ...context, ip });
+
+    const outHeaders = {};
+    res.headers.forEach((v, k) => { outHeaders[k] = v; });
+    const text = await res.text();
+
+    return {
+      statusCode: res.status,
+      headers: outHeaders,
+      body: text,
+    };
+  } catch (e) {
+    return {
+      statusCode: 500,
+      headers: { "content-type": "application/json; charset=utf-8" },
+      body: JSON.stringify({ error: "runtime_error", message: String(e?.message || e) }),
+    };
+  }
+}
