@@ -1,4 +1,4 @@
-// CommonJS v1 – send-to-pipefy.cjs (com Blobs configurável)
+// CommonJS v1 – send-to-pipefy.cjs (com Blobs configurável + detalhes do erro GraphQL)
 const { getStore } = require("@netlify/blobs");
 const validator = require("validator");
 const { createHash, randomUUID } = require("crypto");
@@ -21,8 +21,8 @@ const getHeader = (event, name) => {
 };
 const getAllowedOrigin = (origin, allowlist) =>
   origin && allowlist.includes(origin) ? origin : null;
-const buildCors = (origin, allowed, req) => {
-  const reqAllowed = getHeader({ headers: req?.headers || {} }, "access-control-request-headers");
+const buildCors = (origin, allowed, event) => {
+  const reqAllowed = getHeader({ headers: event?.headers || {} }, "access-control-request-headers");
   const allowHeaders = reqAllowed || "Content-Type, X-Correlation-Id";
   return {
     Vary: "Origin",
@@ -60,18 +60,18 @@ async function sendToPipefy(data, correlationId) {
     }
   }
 
-  const F_EMAIL = process.env.PIPEFY_FIELD_EMAIL || "email";
-  const F_PHONE = process.env.PIPEFY_FIELD_PHONE || "telefone";
-  const F_MSG = process.env.PIPEFY_FIELD_MESSAGE || "mensagem";
+  const F_EMAIL  = process.env.PIPEFY_FIELD_EMAIL || "email";
+  const F_PHONE  = process.env.PIPEFY_FIELD_PHONE || "telefone";
+  const F_MSG    = process.env.PIPEFY_FIELD_MESSAGE || "mensagem";
   const F_POLICY = process.env.PIPEFY_FIELD_POLICY_VERSION || "policy_version";
   const F_LGPD_AT = process.env.PIPEFY_FIELD_LGPD_CONSENT_AT || "";
   const F_LGPD_IP = process.env.PIPEFY_FIELD_LGPD_IP_HASH || "";
   const F_LGPD_UA = process.env.PIPEFY_FIELD_LGPD_UA || "";
 
   const fields_attributes = [
-    { field_id: F_EMAIL, field_value: data.email },
-    { field_id: F_PHONE, field_value: data.phone || "" },
-    { field_id: F_MSG, field_value: data.message },
+    { field_id: F_EMAIL,  field_value: data.email },
+    { field_id: F_PHONE,  field_value: data.phone || "" },
+    { field_id: F_MSG,    field_value: data.message },
     { field_id: F_POLICY, field_value: data.policyVersion || "v1" },
   ];
   if (data.consent === true) {
@@ -96,10 +96,19 @@ async function sendToPipefy(data, correlationId) {
       signal: controller.signal,
     });
     clearTimeout(tid);
-    if (!res.ok) return { ok: false, status: res.status };
+
     const out = await res.json().catch(() => ({}));
+    if (process.env.DEBUG_PIPEFY === "1") {
+      console.log(JSON.stringify({ level: "debug", msg: "pipefy_resp", correlationId, status: res.status, out }));
+    }
+
+    if (Array.isArray(out?.errors) && out.errors.length) {
+      const msg = out.errors.map(e => e?.message || "").filter(Boolean).join("; ");
+      return { ok: false, status: res.status, error: msg || "graphql_error" };
+    }
+
     const id = out?.data?.createCard?.card?.id;
-    return { ok: !!id, id: id || null };
+    return { ok: !!id, id: id || null, status: res.status };
   } catch (e) {
     clearTimeout(tid);
     return { ok: false, error: String(e?.message || e) };
@@ -123,7 +132,7 @@ async function getRateStore() {
   if (hasManual) {
     return getStore("rate-limits", { siteID, token, fetch: fetchImpl });
   }
-  // tenta auto-config, e se falhar, relança (o erro deixa claro que faltam credenciais)
+  // tenta auto-config (em alguns ambientes v1 pode falhar)
   return getStore("rate-limits");
 }
 
@@ -145,12 +154,19 @@ exports.handler = async (event, context) => {
     return json(403, { error: "Origin not allowed" }, { ...cors, "X-Correlation-Id": correlationId });
   }
 
+  // Bypass Pipefy (staging/emergência)
+  if (process.env.PIPEFY_SKIP === "1") {
+    return json(200, { ok: true, skipped: true, correlationId }, { ...cors, "X-Correlation-Id": correlationId });
+  }
+
+  // Limite de payload por header
   const maxBytes = Number(process.env.MAX_BODY_BYTES || 102400);
   const contentLength = Number(getHeader(event, "content-length") || "0");
   if (contentLength > maxBytes) {
     return json(413, { error: "Payload too large" }, { ...cors, "X-Correlation-Id": correlationId });
   }
 
+  // Parse body
   let body;
   try {
     body = event.isBase64Encoded
@@ -160,15 +176,18 @@ exports.handler = async (event, context) => {
     return json(400, { error: "Invalid JSON" }, { ...cors, "X-Correlation-Id": correlationId });
   }
 
+  // Honeypot
   if (String(body?.hp || "").trim().length > 0) {
     console.log(JSON.stringify({ level: "warn", msg: "honeypot_triggered", correlationId }));
     return { statusCode: 204, headers: { ...cors, "X-Correlation-Id": correlationId }, body: "" };
   }
 
+  // Whitelist
   const ALLOWED = ["name", "email", "phone", "message", "consent", "policyVersion"];
   const data = {};
   for (const k of ALLOWED) if (k in body) data[k] = typeof body[k] === "string" ? body[k].trim() : body[k];
 
+  // Validações
   const errors = {};
   if (!data.name || String(data.name).length > 100) errors.name = "Nome obrigatório (<= 100).";
   if (!data.email || !validator.isEmail(String(data.email)) || String(data.email).length > 254) errors.email = "Email inválido.";
@@ -186,7 +205,6 @@ exports.handler = async (event, context) => {
   try {
     store = await getRateStore();
   } catch (e) {
-    // Se ainda assim não tiver contexto, loga e segue sem rate limit (ou, se preferir, retorne 500)
     console.log(JSON.stringify({ level: "error", msg: "blobs_setup_failed", correlationId, err: String(e?.message || e) }));
   }
 

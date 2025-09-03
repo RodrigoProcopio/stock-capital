@@ -1,4 +1,4 @@
-// CommonJS v1 – send-contact-to-pipefy.cjs (com Blobs configurável)
+// CommonJS v1 – send-contact-to-pipefy.cjs (com Blobs configurável + detalhes do erro GraphQL)
 const { getStore } = require("@netlify/blobs");
 const validator = require("validator");
 const { createHash, randomUUID } = require("crypto");
@@ -42,18 +42,18 @@ async function sendToPipefy(data, correlationId) {
     catch { return { ok: false, error: "fetch_unavailable_runtime_lt18" }; }
   }
 
-  const F_EMAIL = process.env.PIPEFY_FIELD_EMAIL || "email";
-  const F_PHONE = process.env.PIPEFY_FIELD_PHONE || "telefone";
-  const F_MSG = process.env.PIPEFY_FIELD_MESSAGE || "mensagem";
+  const F_EMAIL  = process.env.PIPEFY_FIELD_EMAIL || "email";
+  const F_PHONE  = process.env.PIPEFY_FIELD_PHONE || "telefone";
+  const F_MSG    = process.env.PIPEFY_FIELD_MESSAGE || "mensagem";
   const F_POLICY = process.env.PIPEFY_FIELD_POLICY_VERSION || "policy_version";
   const F_LGPD_AT = process.env.PIPEFY_FIELD_LGPD_CONSENT_AT || "";
   const F_LGPD_IP = process.env.PIPEFY_FIELD_LGPD_IP_HASH || "";
   const F_LGPD_UA = process.env.PIPEFY_FIELD_LGPD_UA || "";
 
   const fields_attributes = [
-    { field_id: F_EMAIL, field_value: data.email },
-    { field_id: F_PHONE, field_value: data.phone || "" },
-    { field_id: F_MSG, field_value: data.message },
+    { field_id: F_EMAIL,  field_value: data.email },
+    { field_id: F_PHONE,  field_value: data.phone || "" },
+    { field_id: F_MSG,    field_value: data.message },
     { field_id: F_POLICY, field_value: data.policyVersion || "v1" },
   ];
   if (data.consent === true) {
@@ -78,10 +78,19 @@ async function sendToPipefy(data, correlationId) {
       signal: controller.signal,
     });
     clearTimeout(tid);
-    if (!res.ok) return { ok: false, status: res.status };
+
     const out = await res.json().catch(() => ({}));
+    if (process.env.DEBUG_PIPEFY === "1") {
+      console.log(JSON.stringify({ level: "debug", msg: "pipefy_resp", correlationId, status: res.status, out }));
+    }
+
+    if (Array.isArray(out?.errors) && out.errors.length) {
+      const msg = out.errors.map(e => e?.message || "").filter(Boolean).join("; ");
+      return { ok: false, status: res.status, error: msg || "graphql_error" };
+    }
+
     const id = out?.data?.createCard?.card?.id;
-    return { ok: !!id, id: id || null };
+    return { ok: !!id, id: id || null, status: res.status };
   } catch (e) {
     clearTimeout(tid);
     return { ok: false, error: String(e?.message || e) };
@@ -116,6 +125,10 @@ exports.handler = async (event, context) => {
     return { statusCode: isAllowed ? 204 : 403, headers: cors, body: "" };
   }
   if (!isAllowed) return json(403, { error: "Origin not allowed" }, { ...cors, "X-Correlation-Id": correlationId });
+
+  if (process.env.PIPEFY_SKIP === "1") {
+    return json(200, { ok: true, skipped: true, correlationId }, { ...cors, "X-Correlation-Id": correlationId });
+  }
 
   const maxBytes = Number(process.env.MAX_BODY_BYTES || 102400);
   const contentLength = Number(getHeader(event, "content-length") || "0");
