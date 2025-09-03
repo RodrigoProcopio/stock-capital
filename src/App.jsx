@@ -541,34 +541,14 @@ export default function App() {
           </div>
         </div>
 
-        {/* Canal de Denúncias (CVM) */}
-<div className="pt-2">
-  <a
-    href="https://app.pipefy.com/public/form/dirpZ0Km"
-    target="_blank"
-    rel="noopener noreferrer"
-    className="inline-flex items-center gap-2 rounded-xl bg-white px-4 py-2 text-sm font-semibold
-               text-brand-navy shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
-    aria-label="Abrir Canal de Denúncias em nova aba"
-  >
-    {/* ícone de escudo */}
-    <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <path d="M12 3l7 3v6a9 9 0 01-7 8 9 9 0 01-7-8V6l7-3z" stroke="currentColor" strokeWidth="1.8"/>
-      <path d="M9 12l2 2 4-4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
-    </svg>
-    Canal de Denúncias
-  </a>
-  <p className="mt-2 text-xs text-white/70">
-    Canal seguro de denúncias, conforme rito da CVM.
-  </p>
-</div>
+        
       </div>
       
 {/* coluna: formulário */}
 <form
   onSubmit={async (e) => {
     e.preventDefault();
-  
+
     const formEl = e.currentTarget;
     const nome = formEl.querySelector('input[name="nome"]').value;
     const telefone = formEl.querySelector('input[name="telefone"]').value;
@@ -576,28 +556,44 @@ export default function App() {
     const mensagem = formEl.querySelector('textarea[name="mensagem"]').value;
     const hp = formEl.querySelector('input[name="hp"]').value || "";
     const lgpdChecked = formEl.querySelector('input[name="lgpd"]').checked;
-  
+
     if (!lgpdChecked) {
-      setToast({ open: true, variant: "warning", message: "Para enviar, é necessário aceitar a LGPD e o compartilhamento dos dados pessoais." });
+      setToast({
+        open: true,
+        variant: "warning",
+        message:
+          "Para enviar, é necessário aceitar a LGPD e o compartilhamento dos dados pessoais.",
+      });
       return;
     }
-  
+
     const payload = {
-      nome, telefone, email, mensagem, hp,
+      nome,
+      telefone,
+      email,
+      mensagem,
+      hp,
       form_id: "Contato",
       lgpd: { accepted: true, policyVersion: "v1", consentAtClient: new Date().toISOString() },
     };
-  
+
     const url = "/.netlify/functions/send-contact-to-pipefy";
-  
+
     setSending(true);
     try {
-      const res = await fetch(url, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
+      const res = await fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
       let json = {};
-      try { json = await res.json(); } catch {
-        const txt = await res.text().catch(() => ""); json = { raw: txt };
+      try {
+        json = await res.json();
+      } catch {
+        const txt = await res.text().catch(() => "");
+        json = { raw: txt };
       }
-  
+
       if (res.ok && json.ok) {
         setToast({ open: true, variant: "success", message: "Mensagem enviada com sucesso!" });
         formEl.reset();
@@ -630,71 +626,118 @@ export default function App() {
     } finally {
       setSending(false);
     }
-  }}  
-  
+  }}
   className="rounded-2xl border border-brand-100/15 bg-white p-6 shadow-subtle"
+  aria-labelledby="contato-title"
 >
-  <h3 className="text-base font-semibold text-brand-navy">Envie uma mensagem</h3>
+  <h3 id="contato-title" className="text-base font-semibold text-brand-navy">
+    Envie uma mensagem
+  </h3>
 
   {/* honeypot escondido (anti-spam) */}
-  <input type="text" name="hp" className="hidden" tabIndex="-1" autoComplete="off" />
+  <input
+    type="text"
+    name="hp"
+    className="hidden"
+    tabIndex={-1}
+    autoComplete="off"
+    aria-hidden="true"
+  />
 
   <div className="mt-4 grid gap-4">
-    <input
-      type="text"
-      name="nome"
-      required
-      className="rounded-lg border border-brand-navy/20 px-3 py-2 outline-none focus:ring-2 focus:ring-brand-navy/30 text-brand-navy"
-      placeholder="Nome"
-    />
-    <input
-      type="tel"
-      name="telefone"
-      required
-      className="rounded-lg border border-brand-navy/20 px-3 py-2 outline-none focus:ring-2 focus:ring-brand-navy/30 text-brand-navy"
-      placeholder="Telefone"
-    />
-    <input
-      type="email"
-      name="email"
-      required
-      className="rounded-lg border border-brand-navy/20 px-3 py-2 outline-none focus:ring-2 focus:ring-brand-navy/30 text-brand-navy"
-      placeholder="E-mail"
-    />
-    <textarea
-      name="mensagem"
-      rows={5}
-      required
-      className="rounded-lg border border-brand-navy/20 px-3 py-2 outline-none focus:ring-2 focus:ring-brand-navy/30 text-brand-navy"
-      placeholder="Mensagem"
-    />
+    {/* Nome */}
+    <div>
+      <label htmlFor="contato-nome" className="block text-sm font-medium text-brand-navy">
+        Nome
+      </label>
+      <input
+        id="contato-nome"
+        type="text"
+        name="nome"
+        autoComplete="name"
+        required
+        className="mt-1 w-full rounded-lg border border-brand-navy/20 px-3 py-2 outline-none focus:ring-2 focus:ring-brand-navy/30 text-brand-navy"
+        placeholder="Seu nome completo"
+      />
+    </div>
+
+    {/* Telefone */}
+    <div>
+      <label htmlFor="contato-telefone" className="block text-sm font-medium text-brand-navy">
+        Telefone (Whatsapp)
+      </label>
+      <input
+        id="contato-telefone"
+        type="tel"
+        name="telefone"
+        inputMode="tel"
+        autoComplete="tel"
+        pattern="^\+?[1-9]\d{1,14}$"
+        aria-describedby="contato-telefone-hint"
+        className="mt-1 w-full rounded-lg border border-brand-navy/20 px-3 py-2 outline-none focus:ring-2 focus:ring-brand-navy/30 text-brand-navy"
+        placeholder="+5511999999999"
+      />
+      <p id="contato-telefone-hint" className="mt-1 text-xs text-slate-500">
+        Formato internacional (E.164). Ex.: <code>+5511999999999</code>.
+      </p>
+    </div>
+
+    {/* E-mail */}
+    <div>
+      <label htmlFor="contato-email" className="block text-sm font-medium text-brand-navy">
+        E-mail
+      </label>
+      <input
+        id="contato-email"
+        type="email"
+        name="email"
+        autoComplete="email"
+        required
+        className="mt-1 w-full rounded-lg border border-brand-navy/20 px-3 py-2 outline-none focus:ring-2 focus:ring-brand-navy/30 text-brand-navy"
+        placeholder="seuemail@dominio.com"
+      />
+    </div>
+
+    {/* Mensagem */}
+    <div>
+      <label htmlFor="contato-mensagem" className="block text-sm font-medium text-brand-navy">
+        Mensagem
+      </label>
+      <textarea
+        id="contato-mensagem"
+        name="mensagem"
+        rows={5}
+        required
+        className="mt-1 w-full rounded-lg border border-brand-navy/20 px-3 py-2 outline-none focus:ring-2 focus:ring-brand-navy/30 text-brand-navy"
+        placeholder="Como podemos ajudar?"
+      />
+    </div>
 
     {/* Aceite LGPD */}
-    <label className="flex items-start gap-3 rounded-lg border border-brand-navy/15 bg-white/80 px-3 py-3">
+    <div>
       <input
+        id="contato-lgpd"
         type="checkbox"
         name="lgpd"
         required
         className="mt-1 h-4 w-4 rounded border-brand-navy/40 text-brand-navy focus:ring-brand-navy/40"
       />
-<span className="text-sm text-brand-navy/90">
-  Autorizo o tratamento e o compartilhamento dos meus dados pessoais para fins de contato e atendimento,
-  conforme a LGPD. <Link to="/privacidade" className="underline hover:opacity-80">Saiba mais</Link>.
-</span>
-    </label>
+      <label htmlFor="contato-lgpd" className="ml-2 align-middle text-sm text-brand-navy/90">
+        Autorizo o tratamento e o compartilhamento dos meus dados pessoais para fins de contato e atendimento,
+        conforme a LGPD. <Link to="/privacidade" className="underline hover:opacity-80">Saiba mais</Link>.
+      </label>
+    </div>
 
     <button
-  type="submit"
-  disabled={sending}
-  className="mt-2 w-full rounded-xl bg-brand-navy px-5 py-3 text-sm font-semibold text-white 
-     shadow-sm transition-all duration-300 hover:bg-brand-primary hover:-translate-y-0.5 hover:shadow-md disabled:opacity-50"
->
-  {sending ? "Enviando..." : "Enviar"}
-</button>
-
+      type="submit"
+      disabled={sending}
+      className="mt-2 w-full rounded-xl bg-brand-navy px-5 py-3 text-sm font-semibold text-white 
+         shadow-sm transition-all duration-300 hover:bg-brand-primary hover:-translate-y-0.5 hover:shadow-md disabled:opacity-50"
+    >
+      {sending ? "Enviando..." : "Enviar"}
+    </button>
   </div>
 </form>
-
     </div>
   </div>
 </section>

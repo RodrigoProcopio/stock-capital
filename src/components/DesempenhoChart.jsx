@@ -1,5 +1,5 @@
 // src/components/DesempenhoChart.jsx
-import { useMemo } from "react";
+import { useMemo, useId } from "react";
 import {
   ResponsiveContainer,
   LineChart,
@@ -27,7 +27,7 @@ import {
 
 const SITE_BG = "#f6f7f9";
 
-// variações monocromáticas
+// variações monocromáticas (mantido)
 const LINE_STYLES = {
   carteira1: { stroke: "#000000", strokeWidth: 3.0, strokeDasharray: "" },
   carteira2: { stroke: "#111111", strokeWidth: 2.6, strokeDasharray: "6 3" },
@@ -41,7 +41,18 @@ const fmtPct = (v) =>
   new Intl.NumberFormat("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })
     .format(Number(v ?? 0)) + "%";
 
+// util p/ achar último valor não-nulo
+const lastNonNull = (arr, key) => {
+  for (let i = arr.length - 1; i >= 0; i--) {
+    const v = arr[i]?.[key];
+    if (v !== null && v !== undefined) return v;
+  }
+  return null;
+};
+
 export default function DesempenhoChart() {
+  const captionId = useId();
+
   // séries acumuladas
   const s1 = useMemo(() => prepararSerieAcumulada(c1), []);
   const s2 = useMemo(() => prepararSerieAcumulada(c2), []);
@@ -61,6 +72,27 @@ export default function DesempenhoChart() {
 
   const exibir = dash.exibir || {};
 
+  // metadados das séries ativas
+  const series = useMemo(() => {
+    const arr = [];
+    if (exibir.carteira1) arr.push({ key: "carteira1", name: c1.nome || "Carteira 1" });
+    if (exibir.carteira2) arr.push({ key: "carteira2", name: c2.nome || "Carteira 2" });
+    if (exibir.carteira3) arr.push({ key: "carteira3", name: c3.nome || "Carteira 3" });
+    if (exibir.carteira4) arr.push({ key: "carteira4", name: c4.nome || "Carteira 4" });
+    if (exibir.carteira5) arr.push({ key: "carteira5", name: c5.nome || "Carteira 5" });
+    return arr;
+  }, [exibir]);
+
+  // resumo dos últimos valores (para figcaption/table)
+  const latestSummary = useMemo(() => {
+    const out = [];
+    for (const s of series) {
+      const v = lastNonNull(data, s.key);
+      if (v !== null) out.push(`${s.name}: ${fmtPct(v)}`);
+    }
+    return out;
+  }, [series, data]);
+
   // renderer que desenha label apenas no último ponto
   const endLabel =
     (serieKey, nome) =>
@@ -68,7 +100,7 @@ export default function DesempenhoChart() {
       if (index !== data.length - 1 || value == null) return null;
       return (
         <text
-          x={x + 10}                      // desloca para a direita
+          x={x + 10}
           y={y}
           fill="#000"
           fontSize="var(--fs-sm)"
@@ -80,69 +112,140 @@ export default function DesempenhoChart() {
       );
     };
 
+  // quantidade de linhas para a tabela fallback (evitar excesso para leitores)
+  const tableRows = useMemo(() => data.slice(-12), [data]); // últimos 12 meses
+
   return (
     <div className="w-full rounded-2xl p-6" style={{ background: SITE_BG }}>
-      {/* títulos centralizados */}
-      <h2 className="text-black text-3xl font-semibold text-center">Desempenho Consolidado | Multi-Family Office</h2>
+      {/* títulos centralizados (mantidos) */}
+      <h2 className="text-black text-3xl font-semibold text-center">
+        Desempenho Consolidado | Multi-Family Office
+      </h2>
       <p className="text-black/70 text-base mt-1 text-center">Retorno acumulado</p>
 
-      <div style={{ width: "100%", height: 420 }} className="mt-4">
-        <ResponsiveContainer>
-          {/* aumenta a margem direita para caber os rótulos */}
-          <LineChart data={data} margin={{ top: 24, right: 128, left: 0, bottom: 16 }}>
-            <CartesianGrid stroke="rgba(0,0,0,0.1)" vertical={false} />
-            <XAxis dataKey="date" stroke="#000" tick={{ fontSize: "var(--fs-sm)", fill: "#000" }} />
-            <YAxis
-              stroke="#000"
-              tick={{ fontSize: "var(--fs-sm)", fill: "#000" }}
-              tickFormatter={(v) => (v == null ? "" : `${v.toFixed(0)}%`)}
-            />
-            <Tooltip
-              contentStyle={{
-                background: SITE_BG,
-                border: "1px solid #000",
-                color: "#000",
-                fontSize: "var(--fs-base)",
-              }}
-              formatter={(v, n) =>
-                v == null ? ["—", n] : [`${Number(v).toFixed(2)}%`, n]
-              }
-              labelFormatter={(l) => `Mês: ${l}`}
-            />
+      {/* A11y: figure + figcaption + tabela fallback */}
+      <figure
+        aria-label="Gráfico de linhas com o retorno acumulado das carteiras ao longo do tempo"
+        aria-describedby={captionId}
+        className="mt-4"
+      >
+        <div style={{ width: "100%", height: 420 }}>
+          <ResponsiveContainer>
+            {/* aumenta a margem direita para caber os rótulos */}
+            <LineChart data={data} margin={{ top: 24, right: 128, left: 0, bottom: 16 }}>
+              <CartesianGrid stroke="rgba(0,0,0,0.1)" vertical={false} />
+              <XAxis dataKey="date" stroke="#000" tick={{ fontSize: "var(--fs-sm)", fill: "#000" }} />
+              <YAxis
+                stroke="#000"
+                tick={{ fontSize: "var(--fs-sm)", fill: "#000" }}
+                tickFormatter={(v) => (v == null ? "" : `${v.toFixed(0)}%`)}
+              />
+              <Tooltip
+                contentStyle={{
+                  background: SITE_BG,
+                  border: "1px solid #000",
+                  color: "#000",
+                  fontSize: "var(--fs-base)",
+                }}
+                formatter={(v, n) => (v == null ? ["—", n] : [`${Number(v).toFixed(2)}%`, n])}
+                labelFormatter={(l) => `Mês: ${l}`}
+              />
 
-            {/* Linhas com LabelList customizado (somente no último ponto) */}
-            {exibir.carteira1 && (
-              <Line type="monotone" dataKey="carteira1" name={c1.nome} dot={false} activeDot={{ r: 3, fill: "#000" }} {...LINE_STYLES.carteira1}>
-                <LabelList dataKey="carteira1" content={endLabel("carteira1", c1.nome || "Carteira 1")} />
-              </Line>
-            )}
-            {exibir.carteira2 && (
-              <Line type="monotone" dataKey="carteira2" name={c2.nome} dot={false} activeDot={{ r: 3, fill: "#000" }} {...LINE_STYLES.carteira2}>
-                <LabelList dataKey="carteira2" content={endLabel("carteira2", c2.nome || "Carteira 2")} />
-              </Line>
-            )}
-            {exibir.carteira3 && (
-              <Line type="monotone" dataKey="carteira3" name={c3.nome} dot={false} activeDot={{ r: 3, fill: "#000" }} {...LINE_STYLES.carteira3}>
-                <LabelList dataKey="carteira3" content={endLabel("carteira3", c3.nome || "Carteira 3")} />
-              </Line>
-            )}
-            {exibir.carteira4 && (
-              <Line type="monotone" dataKey="carteira4" name={c4.nome} dot={false} activeDot={{ r: 3, fill: "#000" }} {...LINE_STYLES.carteira4}>
-                <LabelList dataKey="carteira4" content={endLabel("carteira4", c4.nome || "Carteira 4")} />
-              </Line>
-            )}
-            {exibir.carteira5 && (
-              <Line type="monotone" dataKey="carteira5" name={c5.nome} dot={false} activeDot={{ r: 3, fill: "#000" }} {...LINE_STYLES.carteira5}>
-                <LabelList dataKey="carteira5" content={endLabel("carteira5", c5.nome || "Carteira 5")} />
-              </Line>
-            )}
-          </LineChart>
-        </ResponsiveContainer>
-      </div>
+              {exibir.carteira1 && (
+                <Line
+                  type="monotone"
+                  dataKey="carteira1"
+                  name={c1.nome}
+                  dot={false}
+                  activeDot={{ r: 3, fill: "#000" }}
+                  {...LINE_STYLES.carteira1}
+                >
+                  <LabelList dataKey="carteira1" content={endLabel("carteira1", c1.nome || "Carteira 1")} />
+                </Line>
+              )}
+              {exibir.carteira2 && (
+                <Line
+                  type="monotone"
+                  dataKey="carteira2"
+                  name={c2.nome}
+                  dot={false}
+                  activeDot={{ r: 3, fill: "#000" }}
+                  {...LINE_STYLES.carteira2}
+                >
+                  <LabelList dataKey="carteira2" content={endLabel("carteira2", c2.nome || "Carteira 2")} />
+                </Line>
+              )}
+              {exibir.carteira3 && (
+                <Line
+                  type="monotone"
+                  dataKey="carteira3"
+                  name={c3.nome}
+                  dot={false}
+                  activeDot={{ r: 3, fill: "#000" }}
+                  {...LINE_STYLES.carteira3}
+                >
+                  <LabelList dataKey="carteira3" content={endLabel("carteira3", c3.nome || "Carteira 3")} />
+                </Line>
+              )}
+              {exibir.carteira4 && (
+                <Line
+                  type="monotone"
+                  dataKey="carteira4"
+                  name={c4.nome}
+                  dot={false}
+                  activeDot={{ r: 3, fill: "#000" }}
+                  {...LINE_STYLES.carteira4}
+                >
+                  <LabelList dataKey="carteira4" content={endLabel("carteira4", c4.nome || "Carteira 4")} />
+                </Line>
+              )}
+              {exibir.carteira5 && (
+                <Line
+                  type="monotone"
+                  dataKey="carteira5"
+                  name={c5.nome}
+                  dot={false}
+                  activeDot={{ r: 3, fill: "#000" }}
+                  {...LINE_STYLES.carteira5}
+                >
+                  <LabelList dataKey="carteira5" content={endLabel("carteira5", c5.nome || "Carteira 5")} />
+                </Line>
+              )}
+            </LineChart>
+          </ResponsiveContainer>
+        </div>
 
-      <p className="text-black/60 text-sm mt-4 text-center">
-        Dados atualizados mensalmente. Cada linha representa o acumulado de rendimentos mensais.
-      </p>
+        {/* Legenda/descrição do figure com resumo dos últimos valores */}
+        <figcaption id={captionId} className="text-black/60 text-sm mt-3 text-center">
+          Dados atualizados mensalmente. Últimos valores — {latestSummary.join(" · ")}.
+        </figcaption>
+
+        {/* Tabela fallback (a11y): visível para leitores de tela (Tailwind 'sr-only').
+            Se quiser ver na tela para QA, troque 'sr-only' por 'mt-6 overflow-auto' */}
+        <div className="sr-only">
+          <table>
+            <caption>Resumo tabular do desempenho acumulado (últimos 12 meses).</caption>
+            <thead>
+              <tr>
+                <th scope="col">Mês</th>
+                {series.map((s) => (
+                  <th key={s.key} scope="col">{s.name}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {tableRows.map((row, i) => (
+                <tr key={i}>
+                  <th scope="row">{row.date}</th>
+                  {series.map((s) => (
+                    <td key={s.key}>{row[s.key] == null ? "—" : fmtPct(row[s.key])}</td>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </figure>
     </div>
   );
 }

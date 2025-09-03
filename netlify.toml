@@ -84,3 +84,11 @@
 
 [build.environment]
   NODE_VERSION = "20"
+
+# www -> apex (opcional se já definiu o Primary Domain)
+[[redirects]]
+  from = "https://www.stockcapitalmfo.com.br/*"
+  to   = "https://stockcapitalmfo.com.br/:splat"
+  status = 301
+  force = true
+ 

@@ -1,52 +1,44 @@
 <!doctype html>
-<html lang="en">
+<html lang="pt-BR">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Stock Capital MFO</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <!-- Favicons / ícones -->
+    <link rel="icon" href="/favicon.ico" sizes="any" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+
+    <!-- SEO -->
+    <title>Stock Capital — Assessoria de Investimentos</title>
+    <meta
+      name="description"
+      content="Descubra seu perfil de investidor e receba uma assessoria personalizada para seus objetivos financeiros."
+    />
+    <link rel="canonical" href="https://stockcapitalmfo.com.br/" />
+
+    <!-- Open Graph -->
+    <meta property="og:title" content="Stock Capital — Assessoria de Investimentos" />
+    <meta
+      property="og:description"
+      content="Descubra seu perfil de investidor e receba uma assessoria personalizada."
+    />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://stockcapitalmfo.com.br/" />
+    <meta property="og:image" content="https://stockcapitalmfo.com.br/og-image.png" />
+    <meta property="og:locale" content="pt_BR" />
+
+    <!-- Twitter Cards -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Stock Capital — Assessoria de Investimentos" />
+    <meta
+      name="twitter:description"
+      content="Descubra seu perfil de investidor e receba uma assessoria personalizada."
+    />
+    <meta name="twitter:image" content="https://stockcapitalmfo.com.br/og-image.png" />
   </head>
   <body>
     <div id="root"></div>
-
-    <!-- 1) Se houver token (invite/confirmation/recovery), manda direto para /admin mantendo o hash -->
-    <script>
-      (function () {
-        var h = window.location.hash || "";
-        if (/#(?:invite_token|confirmation_token|recovery_token)=/.test(h)) {
-          // usa replace para não poluir histórico
-          window.location.replace("/admin/" + h);
-        }
-      })();
-    </script>
-
-    <!-- 2) Carrega sua SPA React -->
     <script type="module" src="/src/main.jsx"></script>
-
-    <!-- 3) Netlify Identity Widget (fallback na home, se precisar processar token aqui) -->
-    <script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
-    <script>
-      if (window.netlifyIdentity) {
-        window.netlifyIdentity.init();
-
-        // Se por algum motivo o token for processado na home,
-        // ao concluir login mandamos o usuário para o CMS
-        window.netlifyIdentity.on("login", function (user) {
-          console.log("Usuário logado via home:", user);
-
-          // Se veio de convite/confirm, redireciona limpo para evitar travar botão no admin
-          if (/#(?:invite_token|confirmation_token)=/.test(window.location.hash)) {
-            window.location.href = "/admin/";
-          } else {
-            window.location.href = "/admin/";
-          }
-        });
-
-        window.netlifyIdentity.on("error", function (err) {
-          console.error("Erro no Netlify Identity (home):", err);
-        });
-      }
-    </script>
   </body>
 </html>
-
