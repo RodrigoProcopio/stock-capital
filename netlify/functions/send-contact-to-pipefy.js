@@ -24,11 +24,11 @@ const json = (body, { status = 200, headers = {} } = {}) =>
 const getAllowedOrigin = (origin, allowlist) =>
   origin && allowlist.includes(origin) ? origin : null;
 
-const buildCorsHeaders = (origin, allowed) => ({
+const buildCorsHeaders = (origin, allowed, allowedHeaders = "Content-Type, X-Correlation-Id") => ({
   Vary: "Origin",
   "Access-Control-Allow-Origin": allowed ? origin : "null",
   "Access-Control-Allow-Methods": "POST, OPTIONS",
-  "Access-Control-Allow-Headers": "Content-Type, X-Correlation-Id",
+  "Access-Control-Allow-Headers": allowedHeaders,
   "Access-Control-Expose-Headers": "X-Correlation-Id",
   "Access-Control-Max-Age": "86400",
 });
@@ -46,7 +46,8 @@ const E164_RE = /^\+?[1-9]\d{1,14}$/; // E.164
 /** ====== Envio ao Pipefy (GraphQL) ====== */
 async function sendToPipefy(data, correlationId) {
   const token = process.env.PIPEFY_TOKEN || "";
-  const pipeId = process.env.PIPEFY_PIPE_ID || "";
+  // Preferir pipe específico de contato, se existir
+  const pipeId = process.env.PIPEFY_PIPE_ID_CONTACT || process.env.PIPEFY_PIPE_ID || "";
   if (!token || !pipeId) {
     console.log(JSON.stringify({ level: "warn", msg: "pipefy_not_configured", correlationId }));
     return { ok: true, skipped: true };
@@ -118,7 +119,10 @@ async function main(req, context) {
 
   const origin = req.headers.get("origin") || "";
   const isAllowed = !!getAllowedOrigin(origin, allowlist);
-  const cors = buildCorsHeaders(origin, isAllowed);
+
+  // Se for preflight, ecoar os headers solicitados
+  const reqAllowedHeaders = req.headers.get("access-control-request-headers");
+  const cors = buildCorsHeaders(origin, isAllowed, reqAllowedHeaders || "Content-Type, X-Correlation-Id");
 
   if (req.method === "OPTIONS") {
     return new Response(null, { status: isAllowed ? 204 : 403, headers: cors });
@@ -189,7 +193,11 @@ async function main(req, context) {
   const key = `${ip}:${windowKey}:send-contact`;
 
   try {
-    const current = (await store.get(key, { type: "json" })) || { c: 0 };
+    const raw = await store.get(key);
+    let current = { c: 0 };
+    if (raw) {
+      try { current = typeof raw === "string" ? JSON.parse(raw) : raw; } catch { current = { c: 0 }; }
+    }
     if (current.c >= maxPerWindow) {
       console.log(JSON.stringify({
         level: "warn",
