@@ -490,8 +490,7 @@ function StepPerfilRisco({ form, set }) {
       <Select
         label="Qual é a necessidade futura dos seus rendimentos?"
         required
-        options={OPT.necessidade_rend]
-}
+        options={OPT.necessidade_rend}
         value={form[F.necessidadeRend]}
         onChange={(v) => set(F.necessidadeRend, v)}
       />
@@ -533,6 +532,7 @@ function StepPerfilRisco({ form, set }) {
     </Section>
   );
 }
+
 
 function StepReview({ form, set }) {
   const grupos = [
