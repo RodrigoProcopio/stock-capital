@@ -36,7 +36,34 @@
     X-XSS-Protection = "0"
 
 # ─────────────────────────────────────────────────────────
-# /admin/* — permite apenas o necessário pro CMS
+# /admin  (rota exata) — aplicar mesma CSP do CMS
+# ─────────────────────────────────────────────────────────
+[[headers]]
+  for = "/admin"
+  [headers.values]
+    X-Robots-Tag = "noindex, nofollow, noarchive"
+    Content-Security-Policy = """
+      default-src 'self';
+      base-uri 'self';
+      object-src 'none';
+      frame-ancestors 'none';
+      frame-src 'self' https://identity.netlify.com;
+      img-src 'self' data: blob: https://avatars.githubusercontent.com;
+      font-src 'self' data: https://fonts.gstatic.com;
+      media-src 'self' data:;
+      style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
+      script-src 'self' 'unsafe-eval' 'wasm-unsafe-eval' blob: https://identity.netlify.com;
+      connect-src 'self' https://identity.netlify.com https://git-gateway.netlify.com https://api.netlify.com;
+      # Se usar backend GitHub direto, descomente:
+      # connect-src 'self' https://identity.netlify.com https://git-gateway.netlify.com https://api.netlify.com https://api.github.com https://github.com;
+      worker-src 'self' blob:;
+      manifest-src 'self';
+      form-action 'self';
+      upgrade-insecure-requests;
+    """
+
+# ─────────────────────────────────────────────────────────
+# /admin/* — subrotas do CMS (mantém igual)
 # ─────────────────────────────────────────────────────────
 [[headers]]
   for = "/admin/*"
@@ -47,21 +74,14 @@
       base-uri 'self';
       object-src 'none';
       frame-ancestors 'none';
-      /* Netlify Identity abre um iframe */
       frame-src 'self' https://identity.netlify.com;
-      /* avatars do GitHub no media library */
       img-src 'self' data: blob: https://avatars.githubusercontent.com;
       font-src 'self' data: https://fonts.gstatic.com;
       media-src 'self' data:;
       style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
-      /*
-        Decap self-hosted; Identity externo.
-        Alguns plugins/preview usam eval(), Function() ou WASM via blob:
-      */
       script-src 'self' 'unsafe-eval' 'wasm-unsafe-eval' blob: https://identity.netlify.com;
-      /* chamadas do Identity/Git Gateway */
       connect-src 'self' https://identity.netlify.com https://git-gateway.netlify.com https://api.netlify.com;
-      /* Se usar backend GitHub direto, descomente a linha abaixo: */
+      # Se usar backend GitHub direto, descomente:
       # connect-src 'self' https://identity.netlify.com https://git-gateway.netlify.com https://api.netlify.com https://api.github.com https://github.com;
       worker-src 'self' blob:;
       manifest-src 'self';
