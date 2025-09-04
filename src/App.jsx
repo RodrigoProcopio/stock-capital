@@ -8,6 +8,8 @@ import ScrollToTopButton from "./components/ScrollToTopButton";
 import FloatingWhatsApp from "./components/FloatingWhatsApp";
 import LazyVisible from "./components/LazyVisible";
 
+const DesempenhoChart = React.lazy(() => import("./components/DesempenhoChart"));
+
 /**
  * ------------------------------
  * Navegação principal
