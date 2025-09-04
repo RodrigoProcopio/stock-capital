@@ -224,10 +224,12 @@ export default function App() {
           Gerenciamos patrimônios com excelência para construir o mundo ao nosso redor.
         </h1>
 
-       {/* Botão Fale Conosco */}
+{/* Botão Fale Conosco */}
 <div className="mt-8 flex justify-center hover:-translate-y-0.5">
   <a
-    href="https://wa.me/554100000000?text=Olá! Gostaria de saber mais sobre os serviços da Stock Capital."
+    href={`https://wa.me/${import.meta.env.VITE_WA_PHONE}?text=${encodeURIComponent(
+      import.meta.env.VITE_WA_MESSAGE
+    )}`}
     target="_blank"
     rel="noopener noreferrer"
     className="mt-6 rounded-xl bg-brand-navy px-6 py-3 text-sm font-semibold text-white 
