@@ -10,8 +10,8 @@
     "netlify:dev": "netlify dev",
     "prebuild": "mkdir -p public/admin && curl -sSL https://unpkg.com/decap-cms@3.8.3/dist/decap-cms.js -o public/admin/decap-cms-3.8.3.js",
 
-    "lint": "eslint \"src/**/*.{js,jsx}\"",
-    "lint:fix": "eslint \"src/**/*.{js,jsx}\" --fix"
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix"
   },
   "engines": {
     "node": ">=18"
