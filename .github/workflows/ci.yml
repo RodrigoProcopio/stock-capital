@@ -1,0 +1,32 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  lint-build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout código
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Instalar dependências
+        run: npm ci
+
+      - name: Rodar lint
+        run: npm run lint
+
+      - name: Build do projeto
+        run: npm run build
+        env:
+          VITE_WA_PHONE: ${{ secrets.VITE_WA_PHONE }}
+          VITE_WA_MESSAGE: ${{ secrets.VITE_WA_MESSAGE }}
