@@ -27,7 +27,7 @@ npm run build
 
 # prévia de produção
 npm run preview
-```
+````
 
 > Node 18+ recomendado (o projeto fixa em `"engines": { "node": ">=18" }`).
 
@@ -115,7 +115,9 @@ Pasta: `netlify/functions`.
 
   * Logo (acima da dobra): `loading="eager" decoding="async" fetchpriority="high"`.
   * Outras (abaixo da dobra): `loading="lazy" decoding="async"`.
-* **Fonts:** use `<link>` (ou self-host) — evite `@import`.
+* **Fonts:** carregadas via `<link>` em `index.html` (préconnect + display=swap).
+
+  > Evite `@import` no CSS.
 * **HERO/critico:** background já otimizado.
 
 ---
@@ -159,6 +161,11 @@ Workflow exemplo (`.github/workflows/ci.yml`) já incluído:
 * **Headers/Redirects:** gerenciados no `netlify.toml`.
 * **Robots/Sitemap:** `public/robots.txt` e `public/sitemap.xml` (estáticos por ora).
 
+### Regerar sitemap
+
+Edite manualmente `public/sitemap.xml` e faça commit.
+(Opcional: criar script `npm run gen:sitemap` para gerar a partir das rotas no futuro).
+
 ---
 
 ## Troubleshooting
@@ -196,4 +203,3 @@ Workflow exemplo (`.github/workflows/ci.yml`) já incluído:
 ## Licença
 
 Proprietário — Stock Capital MFO. Uso interno/autorizado.
-
