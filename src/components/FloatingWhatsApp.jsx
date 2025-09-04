@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react";
 import whatsappIcon from "../assets/WhatsApp.svg";
 
-// lê do .env / Netlify, senão usa default
-const PHONE = import.meta.env.VITE_WA_PHONE || "554100000000";
+// lê do Netlify
+const PHONE = import.meta.env.VITE_WA_PHONE ;
 const MESSAGE =
-  import.meta.env.VITE_WA_MESSAGE || "Olá! Vim pelo site e gostaria de saber mais.";
+  import.meta.env.VITE_WA_MESSAGE ;
 
 export default function FloatingWhatsApp() {
   const [animate, setAnimate] = useState(false);
