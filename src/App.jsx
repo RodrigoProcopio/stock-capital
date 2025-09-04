@@ -1,5 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
-import React, { Suspense } from "react";
+import React, { useEffect, useRef, useState, Suspense } from "react";
 import { Link } from "react-router-dom";
 import heroImg from "./assets/hero.webp";
 import logo from "./assets/logo.png";
