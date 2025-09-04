@@ -1,10 +1,9 @@
 {
-    "exibir": {
-      "carteira1": true,   
-      "carteira2": true,   
-      "carteira3": true,   
-      "carteira4": false,  
-      "carteira5": false   
-    }
+  "exibir": {
+    "carteira1": true,
+    "carteira2": false,
+    "carteira3": false,
+    "carteira4": false,
+    "carteira5": false
   }
-  
+}
