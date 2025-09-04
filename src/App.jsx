@@ -18,8 +18,8 @@ const DesempenhoChart = React.lazy(() => import("./components/DesempenhoChart"))
 const NAV = [
   { id: "home", label: "Home" },
   { id: "quem-somos", label: "Quem Somos" },
-  { id: "nossa-equipe", label: "Nossa Equipe" },
   { id: "nossa-filosofia", label: "Nossa Filosofia" },
+  { id: "nossa-equipe", label: "Nossa Equipe" },
   { id: "nossos-servicos", label: "Nossos Serviços" },
   { id: "governanca", label: "Governança" },
   { id: "publicacoes", label: "Publicações" },
