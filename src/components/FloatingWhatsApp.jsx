@@ -1,13 +1,21 @@
 import { useEffect, useState } from "react";
 import whatsappIcon from "../assets/WhatsApp.svg";
 
-// lê do Netlify
+// Somente variáveis de ambiente (Netlify/.env)
 const PHONE = import.meta.env.VITE_WA_PHONE;
 const MESSAGE = import.meta.env.VITE_WA_MESSAGE;
 
-if (!PHONE || !MESSAGE) {
-  console.error("❌ Variáveis VITE_WA_PHONE e VITE_WA_MESSAGE não foram definidas no ambiente!");
-}
+export default function FloatingWhatsApp() {
+  // Se as envs não estiverem definidas, não renderiza o botão
+  if (!PHONE || !MESSAGE) {
+    console.error(
+      "❌ VITE_WA_PHONE e/ou VITE_WA_MESSAGE não definidos no ambiente. " +
+      "Cadastre em Netlify → Site settings → Build & deploy → Environment."
+    );
+    return null;
+  }
+
+  const [animate, setAnimate] = useState(false);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -42,4 +50,4 @@ if (!PHONE || !MESSAGE) {
       />
     </a>
   );
-
+}
