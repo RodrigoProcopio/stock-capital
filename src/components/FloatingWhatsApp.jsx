@@ -6,24 +6,21 @@ const PHONE = import.meta.env.VITE_WA_PHONE;
 const MESSAGE = import.meta.env.VITE_WA_MESSAGE;
 
 export default function FloatingWhatsApp() {
-  // Se as envs não estiverem definidas, não renderiza o botão
-  if (!PHONE || !MESSAGE) {
-    console.error(
-      "❌ VITE_WA_PHONE e/ou VITE_WA_MESSAGE não definidos no ambiente. " +
-      "Cadastre em Netlify → Site settings → Build & deploy → Environment."
-    );
-    return null;
-  }
-
+  // ⚠️ Hooks SEMPRE no topo (sem early-return antes!)
   const [animate, setAnimate] = useState(false);
 
   useEffect(() => {
     const interval = setInterval(() => {
       setAnimate(true);
-      setTimeout(() => setAnimate(false), 600); // duração da animação
-    }, 3000); // a cada 3 segundos
+      const t = setTimeout(() => setAnimate(false), 600);
+      return () => clearTimeout(t);
+    }, 3000);
     return () => clearInterval(interval);
   }, []);
+
+  // Se as envs não estiverem definidas, apenas não renderiza
+  const disabled = !PHONE || !MESSAGE;
+  if (disabled) return null;
 
   const href = `https://wa.me/${PHONE}?text=${encodeURIComponent(MESSAGE)}`;
 
