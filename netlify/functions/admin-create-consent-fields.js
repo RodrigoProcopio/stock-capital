@@ -5,14 +5,7 @@
 
 const API = "https://api.pipefy.com/graphql";
 
-
-const CORS = {
-  "Access-Control-Allow-Origin": "*", // ajuste se quiser restringir
-  "Access-Control-Allow-Methods": "POST, OPTIONS",
-  "Access-Control-Allow-Headers": "Content-Type, Authorization, x-admin-token",
-};
-
-// netlify/functions/admin-create-consent-fields.js
+// 🔒 CORS dinâmico por allowlist (retira qualquer vestígio de "*" para evitar confusão)
 const allowlistFromEnv = () => {
   const raw = (process.env.ADMIN_CORS_ALLOWLIST || process.env.CORS_ALLOWLIST || "")
     .split(",")
@@ -24,15 +17,16 @@ const allowlistFromEnv = () => {
 const getAllowedOrigin = (origin, allowlist) =>
   origin && allowlist.includes(origin) ? origin : null;
 
-const buildCorsHeaders = (origin, allowed) => ({
+const buildCorsHeaders = (origin, isAllowed) => ({
   Vary: "Origin",
-  "Access-Control-Allow-Origin": allowed ? origin : "null",
+  "Access-Control-Allow-Origin": isAllowed ? origin : "null",
   "Access-Control-Allow-Methods": "POST, OPTIONS",
   "Access-Control-Allow-Headers": "Content-Type, X-Admin-Token",
   "Access-Control-Max-Age": "86400",
+  "Content-Type": "application/json; charset=utf-8",
 });
 
-export default async (req, context) => {
+export default async (req) => {
   const origin = req.headers.get("origin") || "";
   const allowlist = allowlistFromEnv();
   const isAllowed = !!getAllowedOrigin(origin, allowlist);
@@ -42,59 +36,49 @@ export default async (req, context) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { status: isAllowed ? 204 : 403, headers: cors });
   }
+
   if (!isAllowed) {
     return new Response(JSON.stringify({ error: "Origin not allowed" }), {
       status: 403,
-      headers: { ...cors, "Content-Type": "application/json; charset=utf-8" },
+      headers: cors,
     });
   }
 
-  // Autenticação administrativa (já existente)
-  const token = req.headers.get("x-admin-token") || "";
-  if (!token || token !== (process.env.ADMIN_SETUP_TOKEN || "")) {
+  // Autenticação administrativa
+  const adminToken = process.env.ADMIN_SETUP_TOKEN || "";
+  const got = req.headers.get("x-admin-token") || "";
+  if (!adminToken || got !== adminToken) {
     return new Response(JSON.stringify({ error: "Unauthorized" }), {
       status: 401,
-      headers: { ...cors, "Content-Type": "application/json; charset=utf-8" },
+      headers: cors,
     });
   }
 
-  // 👉 A PARTIR DAQUI, MANTENHA SUA LÓGICA ATUAL (criação de campos, etc.)
-  // const body = await req.json().catch(() => ({}));
-  // ... sua implementação ...
-
-  return new Response(JSON.stringify({ ok: true }), {
-    status: 200,
-    headers: { ...cors, "Content-Type": "application/json; charset=utf-8" },
-  });
-};
-
-exports.handler = async (event) => {
-  if (event.httpMethod === "OPTIONS") return { statusCode: 200, headers: CORS, body: "" };
-  if (event.httpMethod !== "POST")    return { statusCode: 405, headers: CORS, body: "Method Not Allowed" };
-
   try {
-    // --- Segurança: exija um token admin para evitar uso indevido ---
-    const ADMIN_TOKEN = process.env.ADMIN_SETUP_TOKEN; // defina no painel da Netlify
-    const got = event.headers["x-admin-token"] || event.headers["X-Admin-Token"];
-    if (!ADMIN_TOKEN || got !== ADMIN_TOKEN) {
-      return { statusCode: 401, headers: CORS, body: JSON.stringify({ error: "Unauthorized" }) };
-    }
-
     const PIPEFY_TOKEN = process.env.PIPEFY_TOKEN;
     if (!PIPEFY_TOKEN) {
-      return { statusCode: 500, headers: CORS, body: JSON.stringify({ error: "PIPEFY_TOKEN ausente" }) };
+      return new Response(JSON.stringify({ error: "PIPEFY_TOKEN ausente" }), {
+        status: 500,
+        headers: cors,
+      });
     }
 
-    const body = JSON.parse(event.body || "{}");
-    const pipeId = Number(body.pipeId || process.env.PIPEFY_PIPE_ID); // pode vir no body ou do env
+    const body = await req.json().catch(() => ({}));
+    const pipeId = Number(body.pipeId || process.env.PIPEFY_PIPE_ID);
     if (!pipeId) {
-      return { statusCode: 400, headers: CORS, body: JSON.stringify({ error: "Informe pipeId no body ou PIPEFY_PIPE_ID no ambiente." }) };
+      return new Response(
+        JSON.stringify({ error: "Informe pipeId no body ou PIPEFY_PIPE_ID no ambiente." }),
+        { status: 400, headers: cors }
+      );
     }
 
     async function gql(query, variables = {}) {
       const r = await fetch(API, {
         method: "POST",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${PIPEFY_TOKEN}` },
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${PIPEFY_TOKEN}`,
+        },
         body: JSON.stringify({ query, variables }),
       });
       const j = await r.json();
@@ -105,7 +89,8 @@ exports.handler = async (event) => {
     }
 
     // 1) Descobrir Start Form (phase) e campos existentes
-    const data = await gql(`
+    const data = await gql(
+      `
       query ($id: ID!) {
         pipe(id: $id) {
           id
@@ -113,15 +98,24 @@ exports.handler = async (event) => {
           startFormPhaseId
           start_form_fields { id label type }
         }
-      }`, { id: pipeId });
+      }
+    `,
+      { id: pipeId }
+    );
 
     const phaseId = data.pipe?.startFormPhaseId;
     const existing = data.pipe?.start_form_fields || [];
     if (!phaseId) {
-      return { statusCode: 500, headers: CORS, body: JSON.stringify({ error: "startFormPhaseId não encontrado para este pipe." }) };
+      return new Response(
+        JSON.stringify({ error: "startFormPhaseId não encontrado para este pipe." }),
+        { status: 500, headers: cors }
+      );
     }
 
-    const existingLabelsLC = new Set(existing.map(f => String(f.label || "").toLowerCase()));
+    const existingLabelsLC = new Set(
+      existing.map((f) => String(f.label || "").toLowerCase())
+    );
+
     const desired = [
       { label: "Consent TS",             type: "datetime",   description: "Timestamp do consentimento (server)." },
       { label: "Consent IP",             type: "short_text", description: "IP (pode ser mascarado)." },
@@ -143,14 +137,17 @@ exports.handler = async (event) => {
 
     for (const f of desired) {
       const exists = existingLabelsLC.has(String(f.label).toLowerCase());
-      if (exists) { skipped.push(f.label); continue; }
+      if (exists) {
+        skipped.push(f.label);
+        continue;
+      }
 
       const input = {
         phase_id: phaseId,
         label: f.label,
-        type: f.type,        // ex.: short_text | long_text | date | datetime | ...
+        type: f.type,
         description: f.description || "",
-        // required: false, // (opcional) geralmente deixamos não obrigatório
+        // required: false,
       };
 
       const resp = await gql(createMutation, { input });
@@ -158,20 +155,22 @@ exports.handler = async (event) => {
       if (pf?.id) created.push({ id: pf.id, label: pf.label, type: pf.type });
     }
 
-    return {
-      statusCode: 200,
-      headers: { ...CORS, "Content-Type": "application/json" },
-      body: JSON.stringify({
+    return new Response(
+      JSON.stringify({
         ok: true,
         pipeId,
         phaseId,
         created,
-        skipped,              // já existiam
-        hint: "Campos criados/garantidos no Start Form. Ajuste o backend para enviar por 'label' ou mapeie IDs.",
+        skipped, // já existiam
+        hint:
+          "Campos criados/garantidos no Start Form. Ajuste o backend para enviar por 'label' ou mapeie IDs.",
       }),
-    };
-
+      { status: 200, headers: cors }
+    );
   } catch (err) {
-    return { statusCode: 500, headers: CORS, body: JSON.stringify({ error: "Erro interno", detail: String(err) }) };
+    return new Response(
+      JSON.stringify({ error: "Erro interno", detail: String(err) }),
+      { status: 500, headers: cors }
+    );
   }
 };

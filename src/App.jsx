@@ -14,8 +14,6 @@ const DesempenhoChart = React.lazy(() => import("./components/DesempenhoChart"))
  * ------------------------------
  * Navegação principal
  * ------------------------------
- * Lista de seções presentes na página. Os ids devem existir no DOM
- * para que o scroll spy funcione corretamente.
  */
 const NAV = [
   { id: "home", label: "Home" },
@@ -29,12 +27,10 @@ const NAV = [
   { id: "contato", label: "Contato" },
 ];
 
-// Imagem de fundo do HERO (separado para facilitar troca futura)
+// Imagem de fundo do HERO
 const HERO_BG = heroImg;
 
-/**
- * Utilitário simples para compor classes condicionalmente
- */
+/** util de classes */
 function cx(...c) {
   return c.filter(Boolean).join(" ");
 }
@@ -55,41 +51,24 @@ function Toast({ open, message, variant = "error", onClose }) {
   );
 }
 
-
 /**
- * Componente principal da página.
- * - Header "auto-hide" ao rolar para baixo
- * - Menu hambúrguer sempre visível
- * - Scroll spy para destacar a seção ativa
- * - Navegação com smooth scroll para âncoras
+ * Componente principal
  */
 export default function App() {
-
   const [toast, setToast] = useState({ open: false, message: "", variant: "error" });
   const [sending, setSending] = useState(false);
 
-  // Estado: controle do drawer do menu
   const [menuOpen, setMenuOpen] = useState(false);
-  // Estado: seção ativa com base no scroll
   const [active, setActive] = useState("home");
-  // Ref: última posição Y, para detectar direção do scroll
   const lastY = useRef(0);
-  // Estado: esconde/mostra o header conforme direção do scroll
   const [hideHeader, setHideHeader] = useState(false);
 
-  /**
-   * Scroll spy + auto-hide header
-   * - Define comportamento "smooth" para scroll do documento
-   * - Atualiza a seção ativa de acordo com a posição no viewport
-   * - Esconde o header quando o usuário rola para baixo
-   */
   useEffect(() => {
     const onScroll = () => {
       const y = window.scrollY;
       setHideHeader(y > lastY.current && y > 64);
       lastY.current = y;
 
-      // Inclui NAV e possíveis filhos (caso a estrutura seja expandida no futuro)
       const sections = NAV.flatMap((n) => (n.children ? [n, ...n.children] : [n]));
       let nearest = "home";
       let min = Infinity;
@@ -106,7 +85,6 @@ export default function App() {
       setActive(nearest);
     };
 
-    // Ativa smooth scroll globalmente enquanto o componente estiver montado
     const root = document.documentElement;
     const prevBehavior = root.style.scrollBehavior;
     root.style.scrollBehavior = "smooth";
@@ -118,9 +96,6 @@ export default function App() {
     };
   }, []);
 
-  /**
-   * Navega para a seção informada e atualiza o hash da URL.
-   */
   const goTo = (id) => {
     setMenuOpen(false);
     const el = document.getElementById(id);
@@ -131,11 +106,12 @@ export default function App() {
   return (
     <div className="min-h-screen bg-gray-50 text-slate-ink">
       <Toast
-  open={toast.open}
-  message={toast.message}
-  variant={toast.variant}
-  onClose={() => setToast(t => ({ ...t, open: false }))}
-/>
+        open={toast.open}
+        message={toast.message}
+        variant={toast.variant}
+        onClose={() => setToast((t) => ({ ...t, open: false }))}
+      />
+
       {/* Header (auto-hide) */}
       <header
         className={cx(
@@ -144,21 +120,24 @@ export default function App() {
         )}
       >
         <div className="flex w-full items-center justify-between px-6 py-3">
-          {/* Logo como botão para voltar ao início */}
-          <button
-            onClick={() => goTo("home")}
-            className="flex items-center gap-3"
-            aria-label="Ir para início"
-          >
-            <img src={logo} alt="Logo Stock Capital MFO" className="h-20 w-auto" />
+          {/* Logo → início */}
+          <button onClick={() => goTo("home")} className="flex items-center gap-3" aria-label="Ir para início">
+            <img
+              src={logo}
+              alt="Logo Stock Capital MFO"
+              className="h-20 w-auto"
+              loading="eager"
+              decoding="async"
+              fetchpriority="high"
+            />
           </button>
 
-          {/* Botão hambúrguer (sempre visível) */}
+          {/* Menu */}
           <button
             onClick={() => setMenuOpen((v) => !v)}
             className={cx(
               "relative inline-flex h-11 w-11 items-center justify-center rounded-xl border border-brand-navy/15",
-              menuOpen ? "bg-white" : "bg-white"
+              "bg-white"
             )}
             aria-label="Abrir menu"
             aria-expanded={menuOpen}
@@ -182,7 +161,7 @@ export default function App() {
           </button>
         </div>
 
-        {/* Drawer do menu */}
+        {/* Drawer */}
         {menuOpen && (
           <nav id="main-menu" className="border-t border-brand-navy/10 bg-brand-100/70">
             <ul className="grid w-full gap-1 px-6 py-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6">
@@ -190,9 +169,7 @@ export default function App() {
                 <li key={item.id}>
                   <button
                     onClick={() => goTo(item.id)}
-                    className={cx(
-                      "w-full rounded-lg px-4 py-2 text-left text-sm font-semibold hover:bg-white hover:text-brand-navy",
-                    )}
+                    className="w-full rounded-lg px-4 py-2 text-left text-sm font-semibold hover:bg-white hover:text-brand-navy"
                   >
                     {item.label}
                   </button>
@@ -203,64 +180,63 @@ export default function App() {
         )}
       </header>
 
-{/* HERO */}
-<section id="home" className="relative">
-  <div
-    className="relative h-screen min-h-[640px] w-full overflow-hidden"
-    style={{
-      backgroundImage: `url(${HERO_BG})`,
-      backgroundSize: "cover",
-      backgroundPosition: "center bottom",
-      backgroundRepeat: 'no-repeat'
-    }}
-  >
-    {/* Overlay com transparência */}
-    <div className="absolute inset-0 bg-brand-primary/60" />
+      {/* HERO */}
+      <section id="home" className="relative">
+        <div
+          className="relative h-screen min-h-[640px] w-full overflow-hidden"
+          style={{
+            backgroundImage: `url(${HERO_BG})`,
+            backgroundSize: "cover",
+            backgroundPosition: "center bottom",
+            backgroundRepeat: "no-repeat",
+          }}
+        >
+          {/* Overlay */}
+          <div className="absolute inset-0 bg-brand-primary/60" />
 
-    {/* Conteúdo centralizado */}
-    <div className="relative z-10 flex h-full w-full items-center justify-center px-4 text-center text-white">
-      <div className="max-w-3xl">
-        <h1 className="text-4xl font-bold md:text-5xl text-white drop-shadow-lg">
-          Gerenciamos patrimônios com excelência para construir o mundo ao nosso redor.
-        </h1>
+          {/* Conteúdo */}
+          <div className="relative z-10 flex h-full w-full items-center justify-center px-4 text-center text-white">
+            <div className="max-w-3xl">
+              <h1 className="text-4xl font-bold md:text-5xl text-white drop-shadow-lg">
+                Gerenciamos patrimônios com excelência para construir o mundo ao nosso redor.
+              </h1>
 
-{/* Botão Fale Conosco */}
-<div className="mt-8 flex justify-center hover:-translate-y-0.5">
-  <a
-    href={`https://wa.me/${import.meta.env.VITE_WA_PHONE}?text=${encodeURIComponent(
-      import.meta.env.VITE_WA_MESSAGE
-    )}`}
-    target="_blank"
-    rel="noopener noreferrer"
-    className="mt-6 rounded-xl bg-brand-navy px-6 py-3 text-sm font-semibold text-white 
-               shadow-sm transition hover:bg-brand-primary"
-  >
-    Fale Conosco
-  </a>
-</div>
-      </div>
-    </div>
-  </div>
-</section>
+              {/* Botão Fale Conosco (env vars) */}
+              <div className="mt-8 flex justify-center hover:-translate-y-0.5">
+                <a
+                  href={`https://wa.me/${import.meta.env.VITE_WA_PHONE}?text=${encodeURIComponent(
+                    import.meta.env.VITE_WA_MESSAGE
+                  )}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="mt-6 rounded-xl bg-brand-navy px-6 py-3 text-sm font-semibold text-white 
+                             shadow-sm transition hover:bg-brand-primary"
+                >
+                  Fale Conosco
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       <MainContainer>
-
         {/* Nosso Propósito */}
         <Section id="nosso-proposito" title="Nosso Propósito" subtitle="">
           <p className="text-justify">
-            Na <strong>Stock Capital Multi-Family Office</strong>, gerimos patrimônios com excelência, 
-            conectando crescimento, proteção e propósito. Acreditamos que um patrimônio bem administrado 
-            vai além dos resultados financeiros: ele constrói legados, fortalece vínculos familiares e 
-            transforma o ambiente em que vivemos. Com independência, técnica e visão de longo prazo, 
-            estruturamos soluções patrimoniais que unem rentabilidade, segurança e impacto positivo 
-            para as próximas gerações.
+            Na <strong>Stock Capital Multi-Family Office</strong>, gerimos patrimônios com excelência, conectando
+            crescimento, proteção e propósito. Acreditamos que um patrimônio bem administrado vai além dos resultados
+            financeiros: ele constrói legados, fortalece vínculos familiares e transforma o ambiente em que vivemos. Com
+            independência, técnica e visão de longo prazo, estruturamos soluções patrimoniais que unem rentabilidade,
+            segurança e impacto positivo para as próximas gerações.
           </p>
         </Section>
 
         {/* Quem Beneficiamos */}
         <Section id="para-quem-atuamos" title="Quem Beneficiamos" subtitle="">
           <p className="text-justify">
-            Nossas soluções atendem famílias e indivíduos que compartilham a visão de construir e 
-            preservar legados duradouros:
+            Nossas soluções atendem famílias e indivíduos que compartilham a visão de construir e preservar legados
+            duradouros:
           </p>
 
           <ul className="mt-4 list-disc space-y-2 pl-6 text-justify text-slate-ink">
@@ -275,148 +251,119 @@ export default function App() {
         {/* Quem Somos */}
         <Section id="quem-somos" title="Quem Somos" subtitle="">
           <p className="text-justify">
-            A <strong>Stock Capital Multi-Family Office</strong>, apoia famílias e investidores na
-             proteção e crescimento de seu patrimônio. Com uma equipe multidisciplinar, unimos rigor
-              técnico e visão estratégica para oferecer soluções alinhadas aos objetivos de cada cliente, 
-              gerando segurança e confiança. Nossa abordagem inclui: 
+            A <strong>Stock Capital Multi-Family Office</strong>, apoia famílias e investidores na proteção e
+            crescimento de seu patrimônio. Com uma equipe multidisciplinar, unimos rigor técnico e visão estratégica
+            para oferecer soluções alinhadas aos objetivos de cada cliente, gerando segurança e confiança. Nossa
+            abordagem inclui:
           </p>
           <ul className="mt-4 list-disc space-y-2 pl-6 text-justify text-slate-ink">
             <li>Independência total: sem vínculo com bancos ou produtos;</li>
             <li>Transparência e alinhamento: modelo de remuneração claro;</li>
-            <li>
-            Atuação multidisciplinar: profissionais experientes em finanças, direito, sucessão e investimentos 
-            de impacto.
-            </li>
+            <li>Atuação multidisciplinar: profissionais experientes em finanças, direito, sucessão e investimentos de impacto.</li>
           </ul>
         </Section>
 
         {/* Nossa Filosofia */}
         <Section id="nossa-filosofia" title="Nossa Filosofia" subtitle="">
           <p className="text-justify">
-          Nossa gestão une resiliência, inovação e responsabilidade, reconhecendo que investir é, ao mesmo tempo, 
-          proteger o presente e preparar o futuro. Estruturamos portfólios sólidos e sustentáveis, capazes de 
-          atravessar ciclos econômicos. Buscamos garantir solidez patrimonial sem perder de vista a evolução constante. 
-          Nosso modelo de investimento abrange:
+            Nossa gestão une resiliência, inovação e responsabilidade, reconhecendo que investir é, ao mesmo tempo,
+            proteger o presente e preparar o futuro. Estruturamos portfólios sólidos e sustentáveis, capazes de
+            atravessar ciclos econômicos. Buscamos garantir solidez patrimonial sem perder de vista a evolução
+            constante.
           </p>
 
           <p className="mt-4 text-justify">Nosso modelo de investimento abrange:</p>
 
           <ul className="mt-4 list-disc space-y-2 pl-6 text-justify text-slate-ink">
             <li>Alocação estratégica e tática de ativos, equilibrando segurança e crescimento;</li>
-            <li>Integração de critérios ESG; </li>
-            <li>
-            Acesso a fundos globais e ativos alternativos (Private Equity, Real Estate, Venture Capital e Crédito Estruturado);
-            </li>
+            <li>Integração de critérios ESG;</li>
+            <li>Acesso a fundos globais e ativos alternativos (Private Equity, Real Estate, Venture Capital e Crédito Estruturado);</li>
             <li>Monitoramento constante de riscos e resultados.</li>
           </ul>
         </Section>
 
-{/* Nossa Equipe */}
-<Section id="nossa-equipe" title="Nossa Equipe">
-  <div className="flex flex-wrap justify-center gap-12">
-    {/* Card 1 */}
-    <div className="flex flex-col items-center text-center">
-      <div className="relative h-74 w-64 rounded-2xl overflow-hidden">
-        <img
-          src={augustoImg}
-          alt="Augusto Lubian"
-          className="h-full w-full object-cover"
-        />
-        {/* overlay branco por cima da foto */}
-        <div className="absolute inset-0 bg-white/25" />
-      </div>
+        {/* Nossa Equipe */}
+        <Section id="nossa-equipe" title="Nossa Equipe">
+          <div className="flex flex-wrap justify-center gap-12">
+            {/* Card 1 */}
+            <div className="flex flex-col items-center text-center">
+              <div className="relative h-74 w-64 rounded-2xl overflow-hidden">
+                <img
+                  src={augustoImg}
+                  alt="Augusto Lubian"
+                  className="h-full w-full object-cover"
+                  loading="lazy"
+                  decoding="async"
+                />
+                <div className="absolute inset-0 bg-white/25" />
+              </div>
 
-      <div className="mt-4">
-        <h3 className="text-lg font-semibold text-brand-navy">
-          Augusto Lubian <span className="font-normal">| CDAA, PQO</span>
-        </h3>
-        <p className="text-sm text-slate-600">CEO</p>
-      </div>
-    </div>
+              <div className="mt-4">
+                <h3 className="text-lg font-semibold text-brand-navy">
+                  Augusto Lubian <span className="font-normal">| CDAA, PQO</span>
+                </h3>
+                <p className="text-sm text-slate-600">CEO</p>
+              </div>
+            </div>
 
-    {/* Card 2 */}
-    <div className="flex flex-col items-center text-center">
-      <div className="relative h-74 w-64 rounded-2xl overflow-hidden">
-        <img
-          src={igorImg}
-          alt="Igor Dudeque Luiz da Costa"
-          className="h-full w-full object-cover"
-        />
-        {/* overlay branco por cima da foto */}
-        <div className="absolute inset-0 bg-white/25" />
-      </div>
+            {/* Card 2 */}
+            <div className="flex flex-col items-center text-center">
+              <div className="relative h-74 w-64 rounded-2xl overflow-hidden">
+                <img
+                  src={igorImg}
+                  alt="Igor Dudeque Luiz da Costa"
+                  className="h-full w-full object-cover"
+                  loading="lazy"
+                  decoding="async"
+                />
+                <div className="absolute inset-0 bg-white/25" />
+              </div>
 
-      <div className="mt-4">
-        <h3 className="text-lg font-semibold text-brand-navy">
-          Igor Dudeque <span className="font-normal">| CEA®, Behavioural Finance</span>
-        </h3>
-        <p className="text-sm text-slate-600">Director of Investments Strategies</p>
-      </div>
-    </div>
-  </div>
-</Section>
+              <div className="mt-4">
+                <h3 className="text-lg font-semibold text-brand-navy">
+                  Igor Dudeque <span className="font-normal">| CEA®, Behavioural Finance</span>
+                </h3>
+                <p className="text-sm text-slate-600">Director of Investments Strategies</p>
+              </div>
+            </div>
+          </div>
+        </Section>
 
-        {/* Nossos Serviços (cards com overlay local) */}
+        {/* Nossos Serviços */}
         <Section id="nossos-servicos" title="Nossos Serviços">
           <ServiceCards
             cols="3"
             items={[
-              {
-                title: "Consultoria financeira especializada",
-                desc: "Assessoria estratégica e independente para estruturar, proteger e expandir o patrimônio familiar, com soluções personalizadas alinhadas aos objetivos de cada cliente.",
-              },
-              {
-                title: "Administração de Patrimônio",
-                desc: "Gestão integrada de bens, ativos e investimentos, garantindo eficiência, preservação e crescimento sustentável do patrimônio no longo prazo.",
-              },
-              {
-                title: "Administração de Portfólio",
-                desc: "Elaboração e acompanhamento de carteiras de investimento diversificadas, com foco em performance, liquidez e alinhamento ao perfil de risco da família.",
-              },
-              {
-                title: "Mapeamento e consolidação de ativos",
-                desc: "Organização e centralização das informações patrimoniais, permitindo uma visão clara e estratégica do conjunto de ativos.",
-              },
-              {
-                title: "Planejamento jurídico, fiscal e sucessório",
-                desc: "Estruturação de estratégias legais e tributárias que asseguram eficiência fiscal, proteção patrimonial e continuidade do legado familiar.",
-              },
-              {
-                title: "Constituição de holdings, trusts e estruturas fiduciárias",
-                desc: "Implementação de veículos societários e fiduciários para organização patrimonial, proteção de ativos e planejamento sucessório internacional.",
-              },
-              {
-                title: "Governança familiar com foco em continuidade",
-                desc: "Desenvolvimento de práticas e estruturas de governança que fortalecem a união familiar e garantem a perenidade do patrimônio ao longo das gerações.",
-              },
-              { title: "BPO Financeiro", 
-                desc: "Terceirização completa da gestão financeira pessoal e empresarial, com controle, eficiência e confidencialidade em cada processo."
-              },
-              {
-                title: "Relatórios periódicos e suporte operacional",
-                desc: "Produção de relatórios claros e objetivos, aliados a suporte contínuo, para tomada de decisão ágil e fundamentada.",
-              },
+              { title: "Consultoria financeira especializada", desc: "Assessoria estratégica e independente para estruturar, proteger e expandir o patrimônio familiar, com soluções personalizadas alinhadas aos objetivos de cada cliente." },
+              { title: "Administração de Patrimônio", desc: "Gestão integrada de bens, ativos e investimentos, garantindo eficiência, preservação e crescimento sustentável do patrimônio no longo prazo." },
+              { title: "Administração de Portfólio", desc: "Elaboração e acompanhamento de carteiras de investimento diversificadas, com foco em performance, liquidez e alinhamento ao perfil de risco da família." },
+              { title: "Mapeamento e consolidação de ativos", desc: "Organização e centralização das informações patrimoniais, permitindo uma visão clara e estratégica do conjunto de ativos." },
+              { title: "Planejamento jurídico, fiscal e sucessório", desc: "Estruturação de estratégias legais e tributárias que asseguram eficiência fiscal, proteção patrimonial e continuidade do legado familiar." },
+              { title: "Constituição de holdings, trusts e estruturas fiduciárias", desc: "Implementação de veículos societários e fiduciários para organização patrimonial, proteção de ativos e planejamento sucessório internacional." },
+              { title: "Governança familiar com foco em continuidade", desc: "Desenvolvimento de práticas e estruturas de governança que fortalecem a união familiar e garantem a perenidade do patrimônio ao longo das gerações." },
+              { title: "BPO Financeiro", desc: "Terceirização completa da gestão financeira pessoal e empresarial, com controle, eficiência e confidencialidade em cada processo." },
+              { title: "Relatórios periódicos e suporte operacional", desc: "Produção de relatórios claros e objetivos, aliados a suporte contínuo, para tomada de decisão ágil e fundamentada." },
             ]}
           />
         </Section>
 
-{/* seção de desempenho */}
-<section id="desempenho">
-  <h2 className="text-xl font-semibold mb-4">Desempenho</h2>
-  <LazyVisible>
-    <Suspense fallback={<div>Carregando gráfico…</div>}>
-      <DesempenhoChart />
-    </Suspense>
-  </LazyVisible>
-</section>
+        {/* Desempenho */}
+        <section id="desempenho">
+          <h2 className="text-xl font-semibold mb-4">Desempenho</h2>
+          <LazyVisible>
+            <Suspense fallback={<div>Carregando gráfico…</div>}>
+              <DesempenhoChart />
+            </Suspense>
+          </LazyVisible>
+        </section>
 
-        {/* Governança e Confiança */}
+        {/* Governança */}
         <Section id="governanca" title="Governança e Confiança" subtitle="">
           <p className="text-justify">
-          A governança é o pilar da nossa atuação. Gerimos patrimônio com rigor, sigilo e processos estruturados, 
-          garantindo que cada decisão seja fundamentada, ética e auditável. Nossa atuação combina disciplina técnica
-           e transparência, reforçando o compromisso com a confiança que nossos clientes depositam em nós. 
-           Nossa governança inclui:
+            A governança é o pilar da nossa atuação. Gerimos patrimônio com rigor, sigilo e processos estruturados,
+            garantindo que cada decisão seja fundamentada, ética e auditável. Nossa atuação combina disciplina técnica
+            e transparência, reforçando o compromisso com a confiança que nossos clientes depositam em nós. Nossa
+            governança inclui:
           </p>
 
           <ul className="mt-4 list-disc space-y-2 pl-6 text-justify text-slate-ink">
@@ -427,12 +374,12 @@ export default function App() {
           </ul>
         </Section>
 
-        {/* Sustentabilidade e Impacto */}
+        {/* Sustentabilidade */}
         <Section id="sustentabilidade" title="Sustentabilidade e Impacto" subtitle="">
           <p className="text-justify">
-          Todo investimento molda o mundo — por isso, seu patrimônio pode gerar transformações concretas. 
-          Acreditamos na união entre prosperidade e propósito, incorporando impacto ao planejamento de capital 
-          sem comprometer desempenho. Nossas diretrizes incluem:
+            Todo investimento molda o mundo — por isso, seu patrimônio pode gerar transformações concretas. Acreditamos
+            na união entre prosperidade e propósito, incorporando impacto ao planejamento de capital sem comprometer
+            desempenho.
           </p>
 
           <ul className="mt-4 list-disc space-y-2 pl-6 text-justify text-slate-ink">
@@ -446,29 +393,37 @@ export default function App() {
         {/* Publicações */}
         <Section id="publicacoes" title="Publicações" subtitle="Análises e materiais proprietários.">
           <div className="grid gap-4 md:grid-cols-2">
-            <Link to="/publicacoes/cartas" className="block rounded-2xl border border-brand-navy/15 bg-white p-6 shadow hover:shadow-md text-center hover:-translate-y-1 hover:shadow-lg hover:border-brand-navy/30
-             transition-all duration-200" >
+            <Link
+              to="/publicacoes/cartas"
+              className="block rounded-2xl border border-brand-navy/15 bg-white p-6 shadow hover:shadow-md text-center hover:-translate-y-1 hover:shadow-lg hover:border-brand-navy/30 transition-all duration-200"
+            >
               <h3 className="text-lg font-semibold text-brand-navy">Cartas</h3>
               <p className="mt-2 text-slate-600">Cartas periódicas com visão de mercado e posicionamento.</p>
               <span className="mt-4 inline-block text-sm font-medium text-brand-navy hover:underline">Ver mais →</span>
             </Link>
 
-            <Link to="/publicacoes/relatorios" className="block rounded-2xl border border-brand-navy/15 bg-white p-6 shadow hover:shadow-md text-center hover:-translate-y-1 hover:shadow-lg hover:border-brand-navy/30
-             transition-all duration-200">
+            <Link
+              to="/publicacoes/relatorios"
+              className="block rounded-2xl border border-brand-navy/15 bg-white p-6 shadow hover:shadow-md text-center hover:-translate-y-1 hover:shadow-lg hover:border-brand-navy/30 transition-all duration-200"
+            >
               <h3 className="text-lg font-semibold text-brand-navy">Relatórios</h3>
               <p className="mt-2 text-slate-600">Materiais aprofundados, macro, setores e classes de ativos.</p>
               <span className="mt-4 inline-block text-sm font-medium text-brand-navy hover:underline">Ver mais →</span>
             </Link>
 
-            <Link to="/publicacoes/insights" className="block rounded-2xl border border-brand-navy/15 bg-white p-6 shadow hover:shadow-md text-center hover:-translate-y-1 hover:shadow-lg hover:border-brand-navy/30
-             transition-all duration-200">
+            <Link
+              to="/publicacoes/insights"
+              className="block rounded-2xl border border-brand-navy/15 bg-white p-6 shadow hover:shadow-md text-center hover:-translate-y-1 hover:shadow-lg hover:border-brand-navy/30 transition-all duration-200"
+            >
               <h3 className="text-lg font-semibold text-brand-navy">Insights</h3>
               <p className="mt-2 text-slate-600">Notas rápidas e estudos sobre temas relevantes.</p>
               <span className="mt-4 inline-block text-sm font-medium text-brand-navy hover:underline">Ver mais →</span>
             </Link>
 
-            <Link to="/publicacoes/compliance" className="block rounded-2xl border border-brand-navy/15 bg-white p-6 shadow hover:shadow-md text-center hover:-translate-y-1 hover:shadow-lg hover:border-brand-navy/30
-             transition-all duration-200">
+            <Link
+              to="/publicacoes/compliance"
+              className="block rounded-2xl border border-brand-navy/15 bg-white p-6 shadow hover:shadow-md text-center hover:-translate-y-1 hover:shadow-lg hover:border-brand-navy/30 transition-all duração-200"
+            >
               <h3 className="text-lg font-semibold text-brand-navy">Compliance</h3>
               <p className="mt-2 text-slate-600">Documentos e políticas de conformidade e ética.</p>
               <span className="mt-4 inline-block text-sm font-medium text-brand-navy hover:underline">Ver mais →</span>
@@ -485,286 +440,272 @@ export default function App() {
           <div className="flex justify-center">
             <Link
               to="/formulario-api"
-              className="rounded-xl bg-brand-navy px-5 py-3 text-sm font-semibold text-white hover:bg-brand-navy/90 hover:shadow-md transition-all duration-200"
+              className="rounded-xl bg-brand-navy px-5 py-3 text-sm font-semibold text-white hover:bg-brand-navy/90 hover:shadow-md transition-all duração-200"
             >
               Preencher formulário
             </Link>
           </div>
         </Section>
-        </MainContainer>
+      </MainContainer>
 
-        {/* Contato */}
-      <section
-  id="contato"
-  className="scroll-mt-24 bg-brand-primary border-t border-brand-navy/10 py-24"
->
-  {/* wrapper para centralizar o conteúdo, igual ao resto do site */}
-  <div className="mx-auto max-w-7xl px-4">
-    <div className="mb-12 text-center text-white">
-      <h2 className="text-3xl font-semibold text-white">Contato</h2>
-      <p className="mt-1">Fale com nossa equipe.</p>
-    </div>
+      {/* Contato */}
+      <section id="contato" className="scroll-mt-24 bg-brand-primary border-t border-brand-navy/10 py-24">
+        <div className="mx-auto max-w-7xl px-4">
+          <div className="mb-12 text-center text-white">
+            <h2 className="text-3xl font-semibold text-white">Contato</h2>
+            <p className="mt-1">Fale com nossa equipe.</p>
+          </div>
 
-    <div className="grid gap-10 md:grid-cols-2 items-start text-white">
-      {/* coluna: informações */}
-      <div className="space-y-8">
-        {/* Endereço */}
-        <div className="flex items-start gap-4">
-          <svg className="h-6 w-6 text-white mt-1" viewBox="0 0 24 24" fill="none">
-            <path d="M12 21s7-5.33 7-11a7 7 0 10-14 0c0 5.67 7 11 7 11z" stroke="currentColor" strokeWidth="1.8"/>
-            <circle cx="12" cy="10" r="2.8" stroke="currentColor" strokeWidth="1.8"/>
-          </svg>
-          <div>
-            <h3 className="font-semibold text-white">Endereço</h3>
-            <p className="text-white/80">
-              Rua Francisco Rocha, 198 — Curitiba/PR - Brasil<br/>CEP 80420-130
-            </p>
+          <div className="grid gap-10 md:grid-cols-2 items-start text-white">
+            {/* Info */}
+            <div className="space-y-8">
+              {/* Endereço */}
+              <div className="flex items-start gap-4">
+                <svg className="h-6 w-6 text-white mt-1" viewBox="0 0 24 24" fill="none">
+                  <path d="M12 21s7-5.33 7-11a7 7 0 10-14 0c0 5.67 7 11 7 11z" stroke="currentColor" strokeWidth="1.8" />
+                  <circle cx="12" cy="10" r="2.8" stroke="currentColor" strokeWidth="1.8" />
+                </svg>
+                <div>
+                  <h3 className="font-semibold text-white">Endereço</h3>
+                  <p className="text-white/80">
+                    Rua Francisco Rocha, 198 — Curitiba/PR - Brasil<br />CEP 80420-130
+                  </p>
+                </div>
+              </div>
+
+              {/* E-mail */}
+              <div className="flex items-start gap-4">
+                <svg className="h-6 w-6 text-white mt-1" viewBox="0 0 24 24" fill="none">
+                  <path d="M4 6h16v12H4z" stroke="currentColor" strokeWidth="1.8" />
+                  <path d="M4 7l8 6 8-6" stroke="currentColor" strokeWidth="1.8" />
+                </svg>
+                <div>
+                  <h3 className="font-semibold text-white">E-mail</h3>
+                  <p className="text-white/80">contato@stockcapital.com.br</p>
+                </div>
+              </div>
+
+              {/* Telefone */}
+              <div className="flex items-start gap-4">
+                <svg className="h-6 w-6 text-white mt-1" viewBox="0 0 24 24" fill="none">
+                  <path d="M22 16.92v2a2 2 0 01-2.18 2 19.8 19.8 0 01-8.63-3.07 19.5 19.5 0 01-6-6A19.8 19.8 0 012.92 4.2 2 2 0 014.86 2h2a2 2 0 012 1.72c.1.76.27 1.5.5 2.21a2 2 0 01-.45 2.11L8 9a16 16 0 006 6l.95-.91a2 2 0 012.11-.45c.71.23 1.45.4 2.21.5A2 2 0 0122 16.92z" stroke="currentColor" strokeWidth="1.8" />
+                </svg>
+                <div>
+                  <h3 className="font-semibold text-white">Telefone</h3>
+                  <p className="text-white/80">(41) 0000-0000</p>
+                </div>
+              </div>
+
+              {/* Canal de Denúncias */}
+              <div className="pt-2">
+                <a
+                  href="https://app.pipefy.com/public/form/dirpZ0Km"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 rounded-xl bg-white px-4 py-2 text-sm font-semibold
+                             text-brand-navy shadow-sm transition hover:-translate-y-0.5 hover:shadow-md
+                             focus:outline-none focus-visible:ring-2 focus-visible:ring-white/70"
+                  aria-label="Abrir Canal de Denúncias em nova aba"
+                >
+                  <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                    <path d="M12 3l7 3v6a9 9 0 01-7 8 9 9 0 01-7-8V6l7-3z" stroke="currentColor" strokeWidth="1.8" />
+                    <path d="M9 12l2 2 4-4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                  Canal de Denúncias
+                </a>
+                <p className="mt-2 text-xs text-white/70">Canal seguro de denúncias, conforme rito da CVM.</p>
+              </div>
+            </div>
+
+            {/* Formulário */}
+            <form
+              onSubmit={async (e) => {
+                e.preventDefault();
+
+                const formEl = e.currentTarget;
+                const nome = formEl.querySelector('input[name="nome"]').value;
+                const telefone = formEl.querySelector('input[name="telefone"]').value;
+                const email = formEl.querySelector('input[name="email"]').value;
+                const mensagem = formEl.querySelector('textarea[name="mensagem"]').value;
+                const hp = formEl.querySelector('input[name="hp"]').value || "";
+                const lgpdChecked = formEl.querySelector('input[name="lgpd"]').checked;
+
+                if (!lgpdChecked) {
+                  setToast({
+                    open: true,
+                    variant: "warning",
+                    message: "Para enviar, é necessário aceitar a LGPD e o compartilhamento dos dados pessoais.",
+                  });
+                  return;
+                }
+
+                const payload = {
+                  nome,
+                  telefone,
+                  email,
+                  mensagem,
+                  hp,
+                  form_id: "Contato",
+                  lgpd: { accepted: true, policyVersion: "v1", consentAtClient: new Date().toISOString() },
+                };
+
+                const url = "/.netlify/functions/send-contact-to-pipefy";
+
+                setSending(true);
+                try {
+                  const res = await fetch(url, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(payload),
+                  });
+                  let json = {};
+                  try {
+                    json = await res.json();
+                  } catch {
+                    const txt = await res.text().catch(() => "");
+                    json = { raw: txt };
+                  }
+
+                  if (res.ok && json.ok) {
+                    setToast({ open: true, variant: "success", message: "Mensagem enviada com sucesso!" });
+                    formEl.reset();
+                    return;
+                  }
+                  if (res.status === 400 && json?.error === "Campos obrigatórios ausentes.") {
+                    setToast({ open: true, variant: "warning", message: `Preencha: ${json.missing?.join(", ")}` });
+                    return;
+                  }
+                  if (res.status === 400 && json?.error === "Alguns valores não correspondem às opções do Pipefy.") {
+                    setToast({ open: true, variant: "warning", message: "Alguns valores não correspondem às opções do Pipefy." });
+                    console.warn(json.detail);
+                    return;
+                  }
+                  if (res.status === 502 && json?.error === "Falha ao criar card no Pipefy") {
+                    setToast({ open: true, variant: "error", message: json.message || "Falha ao criar card no Pipefy." });
+                    console.error(json.detail);
+                    return;
+                  }
+                  if (res.status === 500 && json?.error === "Erro interno") {
+                    setToast({ open: true, variant: "error", message: "Erro interno. Tente novamente." });
+                    console.error(json.detail);
+                    return;
+                  }
+                  setToast({ open: true, variant: "error", message: "Não foi possível enviar. Tente novamente." });
+                  console.error(res.status, json);
+                } catch (err) {
+                  setToast({ open: true, variant: "error", message: "Erro de rede. Verifique sua conexão." });
+                  console.error(err);
+                } finally {
+                  setSending(false);
+                }
+              }}
+              className="rounded-2xl border border-brand-100/15 bg-white p-6 shadow-subtle"
+              aria-labelledby="contato-title"
+            >
+              <h3 id="contato-title" className="text-base font-semibold text-brand-navy">
+                Envie uma mensagem
+              </h3>
+
+              {/* honeypot */}
+              <input type="text" name="hp" className="hidden" tabIndex={-1} autoComplete="off" aria-hidden="true" />
+
+              <div className="mt-4 grid gap-4">
+                {/* Nome */}
+                <div>
+                  <label htmlFor="contato-nome" className="block text-sm font-medium text-brand-navy">
+                    Nome
+                  </label>
+                  <input
+                    id="contato-nome"
+                    type="text"
+                    name="nome"
+                    autoComplete="name"
+                    required
+                    className="mt-1 w-full rounded-lg border border-brand-navy/20 px-3 py-2 outline-none focus:ring-2 focus:ring-brand-navy/30 text-brand-navy"
+                    placeholder="Seu nome completo"
+                  />
+                </div>
+
+                {/* Telefone */}
+                <div>
+                  <label htmlFor="contato-telefone" className="block text-sm font-medium text-brand-navy">
+                    Telefone (Whatsapp)
+                  </label>
+                  <input
+                    id="contato-telefone"
+                    type="tel"
+                    name="telefone"
+                    inputMode="tel"
+                    autoComplete="tel"
+                    pattern="^\\+?[1-9]\\d{1,14}$"
+                    aria-describedby="contato-telefone-hint"
+                    className="mt-1 w-full rounded-lg border border-brand-navy/20 px-3 py-2 outline-none focus:ring-2 focus:ring-brand-navy/30 text-brand-navy"
+                    placeholder="+5511999999999"
+                  />
+                  <p id="contato-telefone-hint" className="mt-1 text-xs text-slate-500">
+                    Formato internacional (E.164). Ex.: <code>+5511999999999</code>.
+                  </p>
+                </div>
+
+                {/* E-mail */}
+                <div>
+                  <label htmlFor="contato-email" className="block text-sm font-medium text-brand-navy">
+                    E-mail
+                  </label>
+                  <input
+                    id="contato-email"
+                    type="email"
+                    name="email"
+                    autoComplete="email"
+                    required
+                    className="mt-1 w-full rounded-lg border border-brand-navy/20 px-3 py-2 outline-none focus:ring-2 focus:ring-brand-navy/30 text-brand-navy"
+                    placeholder="seuemail@dominio.com"
+                  />
+                </div>
+
+                {/* Mensagem */}
+                <div>
+                  <label htmlFor="contato-mensagem" className="block text-sm font-medium text-brand-navy">
+                    Mensagem
+                  </label>
+                  <textarea
+                    id="contato-mensagem"
+                    name="mensagem"
+                    rows={5}
+                    required
+                    className="mt-1 w-full rounded-lg border border-brand-navy/20 px-3 py-2 outline-none focus:ring-2 focus:ring-brand-navy/30 text-brand-navy"
+                    placeholder="Como podemos ajudar?"
+                  />
+                </div>
+
+                {/* LGPD */}
+                <div>
+                  <input
+                    id="contato-lgpd"
+                    type="checkbox"
+                    name="lgpd"
+                    required
+                    className="mt-1 h-4 w-4 rounded border-brand-navy/40 text-brand-navy focus:ring-brand-navy/40"
+                  />
+                  <label htmlFor="contato-lgpd" className="ml-2 align-middle text-sm text-brand-navy/90">
+                    Autorizo o tratamento e o compartilhamento dos meus dados pessoais para fins de contato e
+                    atendimento, conforme a LGPD. <Link to="/privacidade" className="underline hover:opacity-80">Saiba mais</Link>.
+                  </label>
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={sending}
+                  className="mt-2 w-full rounded-xl bg-brand-navy px-5 py-3 text-sm font-semibold text-white 
+                             shadow-sm transition-all duração-300 hover:bg-brand-primary hover:-translate-y-0.5 hover:shadow-md disabled:opacity-50"
+                >
+                  {sending ? "Enviando..." : "Enviar"}
+                </button>
+              </div>
+            </form>
           </div>
         </div>
-
-        {/* E-mail */}
-        <div className="flex items-start gap-4">
-          <svg className="h-6 w-6 text-white mt-1" viewBox="0 0 24 24" fill="none">
-            <path d="M4 6h16v12H4z" stroke="currentColor" strokeWidth="1.8"/>
-            <path d="M4 7l8 6 8-6" stroke="currentColor" strokeWidth="1.8"/>
-          </svg>
-          <div>
-            <h3 className="font-semibold text-white">E-mail</h3>
-            <p className="text-white/80">contato@stockcapital.com.br</p>
-          </div>
-        </div>
-
-        {/* Telefone */}
-        <div className="flex items-start gap-4">
-          <svg className="h-6 w-6 text-white mt-1" viewBox="0 0 24 24" fill="none">
-            <path d="M22 16.92v2a2 2 0 01-2.18 2 19.8 19.8 0 01-8.63-3.07 19.5 19.5 0 01-6-6A19.8 19.8 0 012.92 4.2 2 2 0 014.86 2h2a2 2 0 012 1.72c.1.76.27 1.5.5 2.21a2 2 0 01-.45 2.11L8 9a16 16 0 006 6l.95-.91a2 2 0 012.11-.45c.71.23 1.45.4 2.21.5A2 2 0 0122 16.92z" stroke="currentColor" strokeWidth="1.8"/>
-          </svg>
-          <div>
-            <h3 className="font-semibold text-white">Telefone</h3>
-            <p className="text-white/80">(41) 0000-0000</p>
-          </div>
-        </div>
-        {/* Canal de Denúncias (CVM) */}
-  <div className="pt-2">
-    <a
-      href="https://app.pipefy.com/public/form/dirpZ0Km"
-      target="_blank"
-      rel="noopener noreferrer"
-      className="inline-flex items-center gap-2 rounded-xl bg-white px-4 py-2 text-sm font-semibold
-                 text-brand-navy shadow-sm transition hover:-translate-y-0.5 hover:shadow-md
-                 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/70"
-      aria-label="Abrir Canal de Denúncias em nova aba"
-    >
-      {/* ícone de escudo */}
-      <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-        <path d="M12 3l7 3v6a9 9 0 01-7 8 9 9 0 01-7-8V6l7-3z" stroke="currentColor" strokeWidth="1.8"/>
-        <path d="M9 12l2 2 4-4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
-      </svg>
-      Canal de Denúncias
-    </a>
-    <p className="mt-2 text-xs text-white/70">
-      Canal seguro de denúncias, conforme rito da CVM.
-    </p>
-  </div>
-</div>
-      
-{/* coluna: formulário */}
-<form
-  onSubmit={async (e) => {
-    e.preventDefault();
-
-    const formEl = e.currentTarget;
-    const nome = formEl.querySelector('input[name="nome"]').value;
-    const telefone = formEl.querySelector('input[name="telefone"]').value;
-    const email = formEl.querySelector('input[name="email"]').value;
-    const mensagem = formEl.querySelector('textarea[name="mensagem"]').value;
-    const hp = formEl.querySelector('input[name="hp"]').value || "";
-    const lgpdChecked = formEl.querySelector('input[name="lgpd"]').checked;
-
-    if (!lgpdChecked) {
-      setToast({
-        open: true,
-        variant: "warning",
-        message:
-          "Para enviar, é necessário aceitar a LGPD e o compartilhamento dos dados pessoais.",
-      });
-      return;
-    }
-
-    const payload = {
-      nome,
-      telefone,
-      email,
-      mensagem,
-      hp,
-      form_id: "Contato",
-      lgpd: { accepted: true, policyVersion: "v1", consentAtClient: new Date().toISOString() },
-    };
-
-    const url = "/.netlify/functions/send-contact-to-pipefy";
-
-    setSending(true);
-    try {
-      const res = await fetch(url, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-      let json = {};
-      try {
-        json = await res.json();
-      } catch {
-        const txt = await res.text().catch(() => "");
-        json = { raw: txt };
-      }
-
-      if (res.ok && json.ok) {
-        setToast({ open: true, variant: "success", message: "Mensagem enviada com sucesso!" });
-        formEl.reset();
-        return;
-      }
-      if (res.status === 400 && json?.error === "Campos obrigatórios ausentes.") {
-        setToast({ open: true, variant: "warning", message: `Preencha: ${json.missing?.join(", ")}` });
-        return;
-      }
-      if (res.status === 400 && json?.error === "Alguns valores não correspondem às opções do Pipefy.") {
-        setToast({ open: true, variant: "warning", message: "Alguns valores não correspondem às opções do Pipefy." });
-        console.warn(json.detail);
-        return;
-      }
-      if (res.status === 502 && json?.error === "Falha ao criar card no Pipefy") {
-        setToast({ open: true, variant: "error", message: json.message || "Falha ao criar card no Pipefy." });
-        console.error(json.detail);
-        return;
-      }
-      if (res.status === 500 && json?.error === "Erro interno") {
-        setToast({ open: true, variant: "error", message: "Erro interno. Tente novamente." });
-        console.error(json.detail);
-        return;
-      }
-      setToast({ open: true, variant: "error", message: "Não foi possível enviar. Tente novamente." });
-      console.error(res.status, json);
-    } catch (err) {
-      setToast({ open: true, variant: "error", message: "Erro de rede. Verifique sua conexão." });
-      console.error(err);
-    } finally {
-      setSending(false);
-    }
-  }}
-  className="rounded-2xl border border-brand-100/15 bg-white p-6 shadow-subtle"
-  aria-labelledby="contato-title"
->
-  <h3 id="contato-title" className="text-base font-semibold text-brand-navy">
-    Envie uma mensagem
-  </h3>
-
-  {/* honeypot escondido (anti-spam) */}
-  <input
-    type="text"
-    name="hp"
-    className="hidden"
-    tabIndex={-1}
-    autoComplete="off"
-    aria-hidden="true"
-  />
-
-  <div className="mt-4 grid gap-4">
-    {/* Nome */}
-    <div>
-      <label htmlFor="contato-nome" className="block text-sm font-medium text-brand-navy">
-        Nome
-      </label>
-      <input
-        id="contato-nome"
-        type="text"
-        name="nome"
-        autoComplete="name"
-        required
-        className="mt-1 w-full rounded-lg border border-brand-navy/20 px-3 py-2 outline-none focus:ring-2 focus:ring-brand-navy/30 text-brand-navy"
-        placeholder="Seu nome completo"
-      />
-    </div>
-
-    {/* Telefone */}
-    <div>
-      <label htmlFor="contato-telefone" className="block text-sm font-medium text-brand-navy">
-        Telefone (Whatsapp)
-      </label>
-      <input
-        id="contato-telefone"
-        type="tel"
-        name="telefone"
-        inputMode="tel"
-        autoComplete="tel"
-        pattern="^\+?[1-9]\d{1,14}$"
-        aria-describedby="contato-telefone-hint"
-        className="mt-1 w-full rounded-lg border border-brand-navy/20 px-3 py-2 outline-none focus:ring-2 focus:ring-brand-navy/30 text-brand-navy"
-        placeholder="+5511999999999"
-      />
-      <p id="contato-telefone-hint" className="mt-1 text-xs text-slate-500">
-        Formato internacional (E.164). Ex.: <code>+5511999999999</code>.
-      </p>
-    </div>
-
-    {/* E-mail */}
-    <div>
-      <label htmlFor="contato-email" className="block text-sm font-medium text-brand-navy">
-        E-mail
-      </label>
-      <input
-        id="contato-email"
-        type="email"
-        name="email"
-        autoComplete="email"
-        required
-        className="mt-1 w-full rounded-lg border border-brand-navy/20 px-3 py-2 outline-none focus:ring-2 focus:ring-brand-navy/30 text-brand-navy"
-        placeholder="seuemail@dominio.com"
-      />
-    </div>
-
-    {/* Mensagem */}
-    <div>
-      <label htmlFor="contato-mensagem" className="block text-sm font-medium text-brand-navy">
-        Mensagem
-      </label>
-      <textarea
-        id="contato-mensagem"
-        name="mensagem"
-        rows={5}
-        required
-        className="mt-1 w-full rounded-lg border border-brand-navy/20 px-3 py-2 outline-none focus:ring-2 focus:ring-brand-navy/30 text-brand-navy"
-        placeholder="Como podemos ajudar?"
-      />
-    </div>
-
-    {/* Aceite LGPD */}
-    <div>
-      <input
-        id="contato-lgpd"
-        type="checkbox"
-        name="lgpd"
-        required
-        className="mt-1 h-4 w-4 rounded border-brand-navy/40 text-brand-navy focus:ring-brand-navy/40"
-      />
-      <label htmlFor="contato-lgpd" className="ml-2 align-middle text-sm text-brand-navy/90">
-        Autorizo o tratamento e o compartilhamento dos meus dados pessoais para fins de contato e atendimento,
-        conforme a LGPD. <Link to="/privacidade" className="underline hover:opacity-80">Saiba mais</Link>.
-      </label>
-    </div>
-
-    <button
-      type="submit"
-      disabled={sending}
-      className="mt-2 w-full rounded-xl bg-brand-navy px-5 py-3 text-sm font-semibold text-white 
-         shadow-sm transition-all duration-300 hover:bg-brand-primary hover:-translate-y-0.5 hover:shadow-md disabled:opacity-50"
-    >
-      {sending ? "Enviando..." : "Enviar"}
-    </button>
-  </div>
-</form>
-    </div>
-  </div>
-</section>
+      </section>
 
       {/* Rodapé */}
       <footer className="border-t border-brand-navy/10 bg-brand-primary py-10 text-white">
@@ -773,25 +714,19 @@ export default function App() {
         </div>
       </footer>
 
-      {/* Botão de voltar ao topo */}
+      {/* Botões utilitários */}
       <FloatingWhatsApp />
       <ScrollToTopButton />
     </div>
   );
 }
 
-/**
- * Container principal de conteúdo (limita largura e aplica padding horizontal)
- */
+/** Container principal */
 function MainContainer({ children }) {
   return <main className="mx-auto max-w-7xl px-4">{children}</main>;
 }
 
-/**
- * Section padrão
- * - Cria um bloco com título, subtítulo opcional e conteúdo
- * - Usa scroll-mt para compensar o header fixo ao navegar por âncora
- */
+/** Section padrão */
 function Section({ id, title, subtitle, children }) {
   return (
     <section id={id} className="scroll-mt-24 border-t border-brand-navy/10 bg-gray-50 py-24">
@@ -804,16 +739,13 @@ function Section({ id, title, subtitle, children }) {
   );
 }
 
-/**
- * Lista de serviços em cards com overlay local para exibir descrição detalhada.
- */
+/** Lista de serviços */
 function ServiceCards({ items = [], cols = "3" }) {
   const [openIndex, setOpenIndex] = React.useState(null);
 
   const grid =
     cols === "2" ? "md:grid-cols-2" : cols === "4" ? "md:grid-cols-2 lg:grid-cols-4" : "md:grid-cols-2 lg:grid-cols-3";
 
-  // Fecha o overlay ao pressionar ESC quando estiver aberto
   React.useEffect(() => {
     if (openIndex === null) return;
     const onKey = (e) => e.key === "Escape" && setOpenIndex(null);
@@ -823,23 +755,19 @@ function ServiceCards({ items = [], cols = "3" }) {
 
   return (
     <div className="relative ">
-      {/* Grid de cards */}
       <div className={cx("grid gap-4 ", grid)}>
         {items.map((it, i) => (
           <ServiceCard key={i} title={it.title} onOpen={() => setOpenIndex(i)} />
         ))}
       </div>
 
-      {/* Overlay LOCAL (cobre apenas esta seção) */}
       {openIndex !== null && (
         <div className="absolute inset-0 z-20 ">
-          {/* backdrop */}
           <button
             onClick={() => setOpenIndex(null)}
             className="absolute inset-0 w-full h-full bg-black/25 backdrop-blur-[1px] "
             aria-label="Fechar"
           />
-          {/* painel central */}
           <div className="absolute left-1/2 top-12 -translate-x-1/2 z-30 w-full max-w-xl px-4">
             <div
               className="rounded-2xl bg-white p-6 shadow-xl border border-brand-navy/10 "
@@ -866,9 +794,7 @@ function ServiceCards({ items = [], cols = "3" }) {
   );
 }
 
-/**
- * Card "clicável" para abrir detalhes do serviço no overlay local.
- */
+/** Card de serviço */
 function ServiceCard({ title, onOpen }) {
   return (
     <article className="rounded-xl border border-brand-navy/15 bg-white shadow-sm
@@ -881,9 +807,7 @@ function ServiceCard({ title, onOpen }) {
   );
 }
 
-/**
- * Grade genérica de cards (não utilizada em todas as seções).
- */
+/** Grid genérica de cards */
 function Cards({ items = [], cols = "3" }) {
   const grid = cols === "2" ? "md:grid-cols-2" : cols === "4" ? "md:grid-cols-2 lg:grid-cols-4" : "md:grid-cols-2 lg:grid-cols-3";
   return (
@@ -895,9 +819,7 @@ function Cards({ items = [], cols = "3" }) {
   );
 }
 
-/**
- * Card genérico para uso com a grade de cards.
- */
+/** Card genérico */
 function Card({ title, desc, anchorId }) {
   return (
     <article

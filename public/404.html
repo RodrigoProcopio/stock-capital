@@ -1,0 +1,20 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <title>Página não encontrada — Stock Capital</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Inter,Arial,sans-serif;background:#f6f7f9;margin:0;display:grid;place-items:center;height:100vh;color:#0f172a}
+    .card{background:#fff;border:1px solid #e2e8f0;border-radius:16px;box-shadow:0 10px 20px rgba(0,0,0,.06);padding:24px;max-width:520px}
+    a{color:#0b1d40;font-weight:600;text-decoration:none}
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>404 — Página não encontrada</h1>
+    <p>A rota <code id="p"></code> não existe. Você pode voltar para a <a href="/">página inicial</a>.</p>
+  </div>
+  <script>document.getElementById("p").textContent = location.pathname;</script>
+</body>
+</html>
