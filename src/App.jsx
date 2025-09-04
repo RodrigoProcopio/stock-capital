@@ -21,7 +21,7 @@ const NAV = [
   { id: "quem-somos", label: "Quem Somos" },
   { id: "nossa-equipe", label: "Nossa Equipe" },
   { id: "nossa-filosofia", label: "Nossa Filosofia" },
-  { id: "multi-family-office", label: "Multi Family Office" },
+  { id: "nossos-servicos", label: "Nossos Serviços" },
   { id: "governanca", label: "Governança" },
   { id: "publicacoes", label: "Publicações" },
   { id: "formulario-api", label: "Formulário de API" },
