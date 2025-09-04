@@ -99,8 +99,6 @@ Pasta: `netlify/functions`.
   Utilitários de consentimento/LGPD.
 * `admin-create-consent-fields.js`
   **Admin-only**: cria campos de consentimento no Start Form (idempotente).
-  ✅ Já protegido por `x-admin-token` + `CORS_ALLOWLIST`.
-  🔧 Removido CORS `*` estático para evitar confusão (só allowlist dinâmico).
 
 **Endpoints úteis**
 
