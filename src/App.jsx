@@ -292,6 +292,8 @@ export default function App() {
                   src={augustoImg}
                   alt="Augusto Lubian"
                   className="h-full w-full object-cover"
+                  width="1920"
+                  height="2560"
                   loading="lazy"
                   decoding="async"
                 />
@@ -309,13 +311,15 @@ export default function App() {
             {/* Card 2 */}
             <div className="flex flex-col items-center text-center">
               <div className="relative h-74 w-64 rounded-2xl overflow-hidden">
-                <img
-                  src={igorImg}
-                  alt="Igor Dudeque Luiz da Costa"
-                  className="h-full w-full object-cover"
-                  loading="lazy"
-                  decoding="async"
-                />
+              <img
+  src={igorImg}
+  alt="Igor Dudeque Luiz da Costa"
+  className="h-full w-full object-cover"
+  width="1920"
+  height="2560"
+  loading="lazy"
+  decoding="async"
+/>
                 <div className="absolute inset-0 bg-white/25" />
               </div>
 

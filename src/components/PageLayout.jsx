@@ -7,7 +7,16 @@ export default function PageLayout({ title, subtitle, children }) {
       {/* Header simples */}
       <header className="flex items-center justify-between px-6 py-4 border-b border-brand-navy/10">
         <Link to="/" className="flex items-center gap-3">
-          <img src={logo} alt="Logo Stock Capital" className="h-20 w-auto" />
+        <img
+  src={logo}
+  alt="Logo Stock Capital"
+  className="h-20 w-auto"
+  loading="eager"
+  decoding="async"
+  fetchpriority="high"
+  width={160}   // ajuste para o tamanho real da sua logo
+  height={80}   // ajuste para o tamanho real da sua logo
+/>
         </Link>
 
         <Link

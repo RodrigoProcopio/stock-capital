@@ -41,10 +41,14 @@ export default function FloatingWhatsApp() {
       }}
     >
       <img
-        src={whatsappIcon}
-        alt="WhatsApp"
-        className={`w-full h-full p-2 ${animate ? "animate-shake" : ""}`}
-      />
+  src={whatsappIcon}
+  alt="WhatsApp"
+  className={`w-full h-full p-2 ${animate ? "animate-shake" : ""}`}
+  loading="lazy"
+  decoding="async"
+  width={56}   // bate com o style do container
+  height={56}
+/>
     </a>
   );
 }
