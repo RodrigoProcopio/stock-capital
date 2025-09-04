@@ -2,12 +2,12 @@ import { useEffect, useState } from "react";
 import whatsappIcon from "../assets/WhatsApp.svg";
 
 // lê do Netlify
-const PHONE = import.meta.env.VITE_WA_PHONE ;
-const MESSAGE =
-  import.meta.env.VITE_WA_MESSAGE ;
+const PHONE = import.meta.env.VITE_WA_PHONE;
+const MESSAGE = import.meta.env.VITE_WA_MESSAGE;
 
-export default function FloatingWhatsApp() {
-  const [animate, setAnimate] = useState(false);
+if (!PHONE || !MESSAGE) {
+  console.error("❌ Variáveis VITE_WA_PHONE e VITE_WA_MESSAGE não foram definidas no ambiente!");
+}
 
   useEffect(() => {
     const interval = setInterval(() => {
