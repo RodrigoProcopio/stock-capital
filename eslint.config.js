@@ -1,4 +1,4 @@
-// eslint.config.js (ESLint 9 - flat config, com JSX habilitado)
+// eslint.config.js (ESLint 9 - flat config, JSX via parserOptions)
 import js from '@eslint/js';
 import react from 'eslint-plugin-react';
 import reactHooks from 'eslint-plugin-react-hooks';
@@ -20,7 +20,9 @@ export default [
     languageOptions: {
       ecmaVersion: 2023,
       sourceType: 'module',
-      ecmaFeatures: { jsx: true },        // 👈 habilita JSX
+      parserOptions: {
+        ecmaFeatures: { jsx: true }, // 👈 aqui é o lugar certo no flat config
+      },
       globals: {
         window: 'readonly',
         document: 'readonly',
