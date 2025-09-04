@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
+import React, { Suspense } from "react";
 import { Link } from "react-router-dom";
 import heroImg from "./assets/hero.webp";
 import logo from "./assets/logo.png";
@@ -6,8 +7,7 @@ import augustoImg from "./assets/augusto.webp";
 import igorImg from "./assets/igor.webp";
 import ScrollToTopButton from "./components/ScrollToTopButton";
 import FloatingWhatsApp from "./components/FloatingWhatsApp";
-import DesempenhoChart from "./components/DesempenhoChart";
-
+import LazyVisible from "./components/LazyVisible";
 
 /**
  * ------------------------------
@@ -398,12 +398,13 @@ export default function App() {
         </Section>
 
 {/* seção de desempenho */}
-<section id="desempenho" className="scroll-mt-24 border-t border-brand-navy/10 bg-gray-50 pt-20 pb-64">
-  <div className="mt-4 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-    <div className="h-[420px]">
+<section id="desempenho">
+  <h2 className="text-xl font-semibold mb-4">Desempenho</h2>
+  <LazyVisible>
+    <Suspense fallback={<div>Carregando gráfico…</div>}>
       <DesempenhoChart />
-    </div>
-  </div>
+    </Suspense>
+  </LazyVisible>
 </section>
 
         {/* Governança e Confiança */}
