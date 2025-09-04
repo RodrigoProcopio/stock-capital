@@ -7,54 +7,19 @@
     <!-- Favicon do CMS -->
     <link rel="icon" href="/favicon.ico" />
 
-    <!-- Estilo do painel (cores, etc.) -->
+    <!-- Estilo do painel -->
     <link rel="stylesheet" href="./brand.css" />
-    <!-- Script que injeta a logo no header do Decap -->
     <script src="./brand.js" defer></script>
   </head>
   <body>
-    <!-- Decap CMS -->
-<script src="https://unpkg.com/decap-cms@latest/dist/decap-cms.js"></script>
+    <!-- Decap CMS: bundle fixado e self-hosted -->
+    <script src="/admin/decap-cms-3.8.3.js"></script>
 
-<!-- Netlify Identity Widget -->
-<script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
+    <!-- Netlify Identity Widget -->
+    <script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
 
-<!-- Seus scripts -->
-<script src="/admin/preview.js"></script>
-
-    <script>
-      // Estilo do preview
-      CMS.registerPreviewStyle("/index.css");
-      document.title = "Stock Capital — CMS";
-
-      if (window.netlifyIdentity) {
-        window.netlifyIdentity.init();
-
-        // Debug: mostra se chegou token na URL
-        if (/#(?:invite_token|confirmation_token|recovery_token)=/.test(window.location.hash)) {
-          console.log("Token detectado:", window.location.hash);
-        }
-
-        // Evento login: trata fluxo normal e fluxo de convite/reset
-        window.netlifyIdentity.on("login", (user) => {
-          console.log("Usuário logado no CMS:", user);
-
-          if (/#(?:invite_token|confirmation_token|recovery_token)=/.test(window.location.hash)) {
-            // Se login veio de convite/confirm/reset → recarrega limpo sem hash
-            window.location.replace("/admin/");
-          }
-        });
-
-        window.netlifyIdentity.on("logout", () => {
-          console.log("Usuário saiu");
-        });
-
-        window.netlifyIdentity.on("error", (err) => {
-          console.error("Erro no Netlify Identity (admin):", err);
-        });
-      } else {
-        console.error("Identity widget não carregou.");
-      }
-    </script>
+    <!-- Seus scripts -->
+    <script src="/admin/preview.js"></script>
+    <script src="/admin/init.js"></script>
   </body>
 </html>
