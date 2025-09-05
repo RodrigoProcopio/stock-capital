@@ -1,10 +1,5 @@
 {
-    "nome": "IBOV",
-    "slug": "carteira3",
-    "series": [
-      { "date": "2025-01", "rendimento": -2.10 },
-      { "date": "2025-02", "rendimento": 1.35 },
-      { "date": "2025-03", "rendimento": 3.10 }
-    ]
-  }
-  
+  "nome": "IHFA²",
+  "slug": "carteira3",
+  "series": []
+}
