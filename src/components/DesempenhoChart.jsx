@@ -50,15 +50,88 @@ const lastNonNull = (arr, key) => {
   return null;
 };
 
+/* ============================================================================
+   NOVO: suporte a "soma simples" (para bater com a tabela do cliente)
+   ----------------------------------------------------------------------------
+   - Lê os retornos mensais da carteira (em %) e acumula por somatório.
+   - Robusto a diferentes formatos de JSON (tenta várias chaves comuns).
+============================================================================ */
+
+/** Tenta extrair a série mensal {date, retPct} da carteira */
+function extractMensal(carteira) {
+  // candidatos de onde pode vir a lista
+  const candidates = [
+    carteira?.mensal,
+    carteira?.series,
+    carteira?.dados,
+    carteira?.valores,
+    carteira, // em último caso, a própria coisa pode ser um array
+  ].find((x) => Array.isArray(x));
+
+  const rows = Array.isArray(candidates) ? candidates : [];
+
+  return rows
+    .map((row) => {
+      // possíveis chaves de data
+      const date =
+        row.date ??
+        row.data ??
+        row.mes ??
+        row.mês ??
+        row.periodo ??
+        row.período ??
+        null;
+
+      // possíveis chaves de retorno (em %)
+      let ret =
+        row.retorno ?? row.variacao ?? row.var ?? row.valor ?? row.value ?? row.pct ?? null;
+
+      // normaliza número; se vier string "1,23", troca vírgula por ponto
+      if (typeof ret === "string") {
+        ret = Number(ret.replace(",", "."));
+      }
+
+      // se o dado já for fração (ex.: 0.0123 = 1,23%), converte para %
+      // heurística: |ret| <= 1 => assume fração e multiplica por 100
+      if (typeof ret === "number" && Math.abs(ret) <= 1) {
+        ret = ret * 100;
+      }
+
+      return date ? { date: String(date), retPct: Number(ret) } : null;
+    })
+    .filter(Boolean);
+}
+
+/** Constrói [{date, value}] onde value é o acumulado por soma simples em % */
+function prepararSerieSomaSimples(carteira) {
+  const mensal = extractMensal(carteira);
+  let acc = 0;
+  return mensal.map(({ date, retPct }) => {
+    const v = Number.isFinite(retPct) ? retPct : 0;
+    acc += v; // soma simples (em %)
+    return { date, value: acc };
+  });
+}
+
+/** Wrapper que escolhe a metodologia */
+function prepararSeriePorMetodologia(carteira, metodologia) {
+  return metodologia === "simples"
+    ? prepararSerieSomaSimples(carteira)
+    : prepararSerieAcumulada(carteira); // padrão: composto
+}
+
 export default function DesempenhoChart() {
   const captionId = useId();
 
-  // séries acumuladas
-  const s1 = useMemo(() => prepararSerieAcumulada(c1), []);
-  const s2 = useMemo(() => prepararSerieAcumulada(c2), []);
-  const s3 = useMemo(() => prepararSerieAcumulada(c3), []);
-  const s4 = useMemo(() => prepararSerieAcumulada(c4), []);
-  const s5 = useMemo(() => prepararSerieAcumulada(c5), []);
+  // metodologia: "composto" (default) ou "simples"
+  const metodologia = (dash?.metodologia ?? "composto").toLowerCase();
+
+  // séries acumuladas conforme metodologia
+  const s1 = useMemo(() => prepararSeriePorMetodologia(c1, metodologia), [metodologia]);
+  const s2 = useMemo(() => prepararSeriePorMetodologia(c2, metodologia), [metodologia]);
+  const s3 = useMemo(() => prepararSeriePorMetodologia(c3, metodologia), [metodologia]);
+  const s4 = useMemo(() => prepararSeriePorMetodologia(c4, metodologia), [metodologia]);
+  const s5 = useMemo(() => prepararSeriePorMetodologia(c5, metodologia), [metodologia]);
 
   // eixo e alinhamento
   const datas = useMemo(() => unirDatas(s1, s2, s3, s4, s5), [s1, s2, s3, s4, s5]);
@@ -121,7 +194,8 @@ export default function DesempenhoChart() {
       <h2 className="text-black text-3xl font-semibold text-center">
         Desempenho Consolidado | Multi-Family Office
       </h2>
-      <p className="text-black/70 text-base mt-1 text-center">Retorno acumulado</p>
+      <p className="text-black/70 text-base mt-1 text-center">
+      </p>
 
       {/* A11y: figure + figcaption + tabela fallback */}
       <figure
@@ -217,7 +291,8 @@ export default function DesempenhoChart() {
 
         {/* Legenda/descrição do figure com resumo dos últimos valores */}
         <figcaption id={captionId} className="text-black/60 text-sm mt-3 text-center">
-          Dados atualizados mensalmente. Últimos valores — {latestSummary.join(" · ")}.
+          Dados atualizados mensalmente. 
+          Acumulado: {latestSummary.join(" · ")}.
         </figcaption>
 
         {/* Tabela fallback (a11y): visível para leitores de tela (Tailwind 'sr-only').

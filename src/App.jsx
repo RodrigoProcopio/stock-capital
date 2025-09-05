@@ -353,7 +353,7 @@ export default function App() {
 
         {/* Desempenho */}
         <section id="desempenho">
-          <h2 className="text-xl font-semibold mb-4">Desempenho</h2>
+          <h2 className="text-xl font-semibold mb-4"></h2>
           <LazyVisible>
             <Suspense fallback={<div>Carregando gráfico…</div>}>
               <DesempenhoChart />
