@@ -1,10 +1,38 @@
 {
-    "nome": "IPCA",
-    "slug": "carteira4",
-    "series": [
-      { "date": "2025-01", "rendimento": 0.42 },
-      { "date": "2025-02", "rendimento": 0.16 },
-      { "date": "2025-03", "rendimento": 0.47 }
-    ]
-  }
-  
+  "nome": "IHFA²",
+  "slug": "carteira4",
+  "series": [
+    {
+      "date": "2025-08",
+      "rendimento": 2.24
+    },
+    {
+      "date": "2025-07",
+      "rendimento": -0.92
+    },
+    {
+      "date": "2025-06",
+      "rendimento": 2.12
+    },
+    {
+      "date": "2025-05",
+      "rendimento": 1.13
+    },
+    {
+      "date": "2025-04",
+      "rendimento": 4
+    },
+    {
+      "date": "2025-03",
+      "rendimento": -0.07
+    },
+    {
+      "date": "2025-02",
+      "rendimento": 0.11
+    },
+    {
+      "date": "2025-01",
+      "rendimento": 0.88
+    }
+  ]
+}
