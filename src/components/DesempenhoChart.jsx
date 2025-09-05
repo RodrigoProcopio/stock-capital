@@ -147,7 +147,7 @@ export default function DesempenhoChart() {
       <h2 className="text-black text-3xl font-semibold text-center">
         Desempenho Consolidado | Multi-Family Office
       </h2>
-      <p className="text-black/70 text-base mt-1 text-center">Retorno acumulado (soma simples)</p>
+      <p className="text-black/70 text-base mt-1 text-center"></p>
 
       <figure
         aria-label="Gráfico de linhas com o retorno acumulado (soma simples) das carteiras ao longo do tempo"
@@ -240,7 +240,7 @@ export default function DesempenhoChart() {
         </div>
 
         <figcaption id={captionId} className="text-black/60 text-sm mt-3 text-center">
-          Dados atualizados mensalmente (metodologia: soma simples). Últimos valores — {latestSummary.join(" · ")}.
+          Dados atualizados mensalmente. Últimos valores — {latestSummary.join(" · ")}.
         </figcaption>
 
         <div className="sr-only">
