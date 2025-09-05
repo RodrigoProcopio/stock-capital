@@ -18,13 +18,6 @@ import c4 from "../content/rentabilidade/carteiras/carteira4.json";
 import c5 from "../content/rentabilidade/carteiras/carteira5.json";
 import dash from "../content/rentabilidade/dashboard.json";
 
-import {
-  prepararSerieAcumulada,   // usamos só para inferir retornos mensais
-  unirDatas,
-  alinharPorDatas,
-  montarDataset,
-} from "../lib/rentabilidade";
-
 const SITE_BG = "#f6f7f9";
 
 // variações monocromáticas (mantido)
@@ -50,67 +43,100 @@ const lastNonNull = (arr, key) => {
   return null;
 };
 
-/* ============================================================================
-   ÚNICA METODOLOGIA: SOMA SIMPLES
-   - Convertemos a série acumulada composta (que o lib já sabe montar)
-     em retornos mensais e somamos progressivamente.
-============================================================================ */
-function serieSimplesFromComposta(serieComposta) {
-  if (!Array.isArray(serieComposta) || serieComposta.length === 0) return [];
-  let soma = 0;
-  return serieComposta.map((pt, i) => {
-    const curr = Number(pt.value) || 0; // acumulado composto atual (%)
-    let r; // retorno mensal (%)
-    if (i === 0) {
-      r = curr;
-    } else {
-      const prev = Number(serieComposta[i - 1].value) || 0;
-      r = ((1 + curr / 100) / (1 + prev / 100) - 1) * 100;
-    }
-    soma += r;
-    return { date: pt.date, value: soma };
-  });
+// -------- Helpers (independentes do lib) --------
+
+// normaliza número (1.57, "1,57", "-0.9", "1.57%")
+function toNum(v) {
+  if (v == null) return null;
+  if (typeof v === "number") return v;
+  if (typeof v === "string") {
+    const n = Number(v.replace("%", "").replace(",", ".").trim());
+    return Number.isFinite(n) ? n : null;
+  }
+  return null;
 }
 
-function prepararSerieSimples(carteira) {
-  const comp = prepararSerieAcumulada(carteira); // confiável p/ extrair datas/ordem
-  return serieSimplesFromComposta(comp);
+// recebe {series: [{date:"YYYY-MM", rendimento:<%>}, ...]}
+// retorna [{date, value}] onde value é acumulado por soma simples
+function serieSomaSimples(carteira) {
+  const items = Array.isArray(carteira?.series) ? [...carteira.series] : [];
+  items.sort((a, b) => (a.date < b.date ? -1 : a.date > b.date ? 1 : 0));
+  let soma = 0;
+  const out = [];
+  for (const row of items) {
+    const r = toNum(row?.rendimento);
+    if (!Number.isFinite(r)) continue;
+    soma += r;
+    out.push({ date: String(row.date), value: soma });
+  }
+  return out;
+}
+
+// união ordenada de datas de N séries [{date,value}]
+function unirDatas(...series) {
+  const set = new Set();
+  for (const s of series) for (const p of s || []) set.add(p.date);
+  return Array.from(set).sort();
+}
+
+// índice rápido de {date -> value}
+function indexar(serie) {
+  const m = new Map();
+  for (const p of serie) m.set(p.date, Number(p.value) || 0);
+  return m;
+}
+
+// monta o dataset final [{date, carteira1, carteira2, ...}]
+function montarDatasetFinal(datas, sMap) {
+  // sMap: {carteira1: Map(date->value), ...}
+  return datas.map((d) => ({
+    date: d,
+    carteira1: sMap.carteira1?.get(d) ?? null,
+    carteira2: sMap.carteira2?.get(d) ?? null,
+    carteira3: sMap.carteira3?.get(d) ?? null,
+    carteira4: sMap.carteira4?.get(d) ?? null,
+    carteira5: sMap.carteira5?.get(d) ?? null,
+  }));
 }
 
 export default function DesempenhoChart() {
   const captionId = useId();
+  const exibir = dash?.exibir || {};
 
-  // séries (sempre simples)
-  const s1 = useMemo(() => prepararSerieSimples(c1), []);
-  const s2 = useMemo(() => prepararSerieSimples(c2), []);
-  const s3 = useMemo(() => prepararSerieSimples(c3), []);
-  const s4 = useMemo(() => prepararSerieSimples(c4), []);
-  const s5 = useMemo(() => prepararSerieSimples(c5), []);
+  // 1) séries por SOMA SIMPLES diretamente do JSON
+  const s1 = useMemo(() => serieSomaSimples(c1), []);
+  const s2 = useMemo(() => serieSomaSimples(c2), []);
+  const s3 = useMemo(() => serieSomaSimples(c3), []);
+  const s4 = useMemo(() => serieSomaSimples(c4), []);
+  const s5 = useMemo(() => serieSomaSimples(c5), []);
 
-  // eixo e alinhamento
+  // 2) eixo X
   const datas = useMemo(() => unirDatas(s1, s2, s3, s4, s5), [s1, s2, s3, s4, s5]);
-  const a1 = useMemo(() => alinharPorDatas(datas, s1), [datas, s1]);
-  const a2 = useMemo(() => alinharPorDatas(datas, s2), [datas, s2]);
-  const a3 = useMemo(() => alinharPorDatas(datas, s3), [datas, s3]);
-  const a4 = useMemo(() => alinharPorDatas(datas, s4), [datas, s4]);
-  const a5 = useMemo(() => alinharPorDatas(datas, s5), [datas, s5]);
 
-  const data = useMemo(() => montarDataset(datas, a1, a2, a3, a4, a5), [datas, a1, a2, a3, a4, a5]);
+  // 3) dataset final para o Recharts
+  const data = useMemo(() => {
+    const sMap = {
+      carteira1: indexar(s1),
+      carteira2: indexar(s2),
+      carteira3: indexar(s3),
+      carteira4: indexar(s4),
+      carteira5: indexar(s5),
+    };
+    return montarDatasetFinal(datas, sMap);
+  }, [datas, s1, s2, s3, s4, s5]);
 
-  const exibir = dash.exibir || {};
-
-  // metadados das séries ativas
+  // 4) séries ativas (só se há dados)
   const series = useMemo(() => {
     const arr = [];
-    if (exibir.carteira1) arr.push({ key: "carteira1", name: c1.nome || "Carteira 1" });
-    if (exibir.carteira2) arr.push({ key: "carteira2", name: c2.nome || "Carteira 2" });
-    if (exibir.carteira3) arr.push({ key: "carteira3", name: c3.nome || "Carteira 3" });
-    if (exibir.carteira4) arr.push({ key: "carteira4", name: c4.nome || "Carteira 4" });
-    if (exibir.carteira5) arr.push({ key: "carteira5", name: c5.nome || "Carteira 5" });
+    if (exibir.carteira1 && s1.length) arr.push({ key: "carteira1", name: c1.nome || "Carteira 1" });
+    if (exibir.carteira2 && s2.length) arr.push({ key: "carteira2", name: c2.nome || "Carteira 2" });
+    if (exibir.carteira3 && s3.length) arr.push({ key: "carteira3", name: c3.nome || "Carteira 3" });
+    if (exibir.carteira4 && s4.length) arr.push({ key: "carteira4", name: c4.nome || "Carteira 4" });
+    if (exibir.carteira5 && s5.length) arr.push({ key: "carteira5", name: c5.nome || "Carteira 5" });
     return arr;
-  }, [exibir]);
+  }, [exibir, s1.length, s2.length, s3.length, s4.length, s5.length]);
 
-  // resumo dos últimos valores (para figcaption/table)
+  // 5) resumo dos últimos valores
   const latestSummary = useMemo(() => {
     const out = [];
     for (const s of series) {
@@ -120,7 +146,7 @@ export default function DesempenhoChart() {
     return out;
   }, [series, data]);
 
-  // renderer que desenha label apenas no último ponto
+  // label só no último ponto
   const endLabel =
     (serieKey, nome) =>
     ({ x, y, value, index }) => {
@@ -139,24 +165,25 @@ export default function DesempenhoChart() {
       );
     };
 
-  // quantidade de linhas para a tabela fallback (evitar excesso para leitores)
   const tableRows = useMemo(() => data.slice(-12), [data]); // últimos 12 meses
 
   return (
     <div className="w-full rounded-2xl p-6" style={{ background: SITE_BG }}>
+      {/* títulos centralizados (mantidos) */}
       <h2 className="text-black text-3xl font-semibold text-center">
         Desempenho Consolidado | Multi-Family Office
       </h2>
-      <p className="text-black/70 text-base mt-1 text-center"></p>
 
+      {/* A11y: figure + figcaption + tabela fallback */}
       <figure
-        aria-label="Gráfico de linhas com o retorno acumulado (soma simples) das carteiras ao longo do tempo"
+        aria-label="Gráfico de linhas com o retorno acumulado das carteiras ao longo do tempo"
         aria-describedby={captionId}
         className="mt-4"
       >
         <div style={{ width: "100%", height: 420 }}>
           <ResponsiveContainer>
-            <LineChart data={data} margin={{ top: 24, right: 128, left: 0, bottom: 16 }}>
+            {/* aumenta a margem direita para caber os rótulos */}
+            <LineChart data={data} margin={{ top: 24, right: 140, left: 0, bottom: 16 }}>
               <CartesianGrid stroke="rgba(0,0,0,0.1)" vertical={false} />
               <XAxis dataKey="date" stroke="#000" tick={{ fontSize: "var(--fs-sm)", fill: "#000" }} />
               <YAxis
@@ -175,63 +202,28 @@ export default function DesempenhoChart() {
                 labelFormatter={(l) => `Mês: ${l}`}
               />
 
-              {exibir.carteira1 && (
-                <Line
-                  type="monotone"
-                  dataKey="carteira1"
-                  name={c1.nome}
-                  dot={false}
-                  activeDot={{ r: 3, fill: "#000" }}
-                  {...LINE_STYLES.carteira1}
-                >
+              {exibir.carteira1 && s1.length > 0 && (
+                <Line type="monotone" dataKey="carteira1" name={c1.nome} dot={false} activeDot={{ r: 3, fill: "#000" }} {...LINE_STYLES.carteira1}>
                   <LabelList dataKey="carteira1" content={endLabel("carteira1", c1.nome || "Carteira 1")} />
                 </Line>
               )}
-              {exibir.carteira2 && (
-                <Line
-                  type="monotone"
-                  dataKey="carteira2"
-                  name={c2.nome}
-                  dot={false}
-                  activeDot={{ r: 3, fill: "#000" }}
-                  {...LINE_STYLES.carteira2}
-                >
+              {exibir.carteira2 && s2.length > 0 && (
+                <Line type="monotone" dataKey="carteira2" name={c2.nome} dot={false} activeDot={{ r: 3, fill: "#000" }} {...LINE_STYLES.carteira2}>
                   <LabelList dataKey="carteira2" content={endLabel("carteira2", c2.nome || "Carteira 2")} />
                 </Line>
               )}
-              {exibir.carteira3 && (
-                <Line
-                  type="monotone"
-                  dataKey="carteira3"
-                  name={c3.nome}
-                  dot={false}
-                  activeDot={{ r: 3, fill: "#000" }}
-                  {...LINE_STYLES.carteira3}
-                >
+              {exibir.carteira3 && s3.length > 0 && (
+                <Line type="monotone" dataKey="carteira3" name={c3.nome} dot={false} activeDot={{ r: 3, fill: "#000" }} {...LINE_STYLES.carteira3}>
                   <LabelList dataKey="carteira3" content={endLabel("carteira3", c3.nome || "Carteira 3")} />
                 </Line>
               )}
-              {exibir.carteira4 && (
-                <Line
-                  type="monotone"
-                  dataKey="carteira4"
-                  name={c4.nome}
-                  dot={false}
-                  activeDot={{ r: 3, fill: "#000" }}
-                  {...LINE_STYLES.carteira4}
-                >
+              {exibir.carteira4 && s4.length > 0 && (
+                <Line type="monotone" dataKey="carteira4" name={c4.nome} dot={false} activeDot={{ r: 3, fill: "#000" }} {...LINE_STYLES.carteira4}>
                   <LabelList dataKey="carteira4" content={endLabel("carteira4", c4.nome || "Carteira 4")} />
                 </Line>
               )}
-              {exibir.carteira5 && (
-                <Line
-                  type="monotone"
-                  dataKey="carteira5"
-                  name={c5.nome}
-                  dot={false}
-                  activeDot={{ r: 3, fill: "#000" }}
-                  {...LINE_STYLES.carteira5}
-                >
+              {exibir.carteira5 && s5.length > 0 && (
+                <Line type="monotone" dataKey="carteira5" name={c5.nome} dot={false} activeDot={{ r: 3, fill: "#000" }} {...LINE_STYLES.carteira5}>
                   <LabelList dataKey="carteira5" content={endLabel("carteira5", c5.nome || "Carteira 5")} />
                 </Line>
               )}
@@ -239,10 +231,16 @@ export default function DesempenhoChart() {
           </ResponsiveContainer>
         </div>
 
-        <figcaption id={captionId} className="text-black/60 text-sm mt-3 text-center">
-          Dados atualizados mensalmente. Últimos valores — {latestSummary.join(" · ")}.
-        </figcaption>
+        {/* Legenda/descrição do figure com resumo dos últimos valores */}
+<figcaption
+  id={captionId}
+  className="text-black/60 text-sm mt-3 text-left whitespace-pre-line"
+>
+  {"¹ Retorno acima do IPCA\n² IFHA indica a rentabilidade dos fundos multimercado no Brasil"}
+</figcaption>
 
+
+        {/* Tabela fallback (a11y) */}
         <div className="sr-only">
           <table>
             <caption>Resumo tabular do desempenho acumulado (últimos 12 meses).</caption>
