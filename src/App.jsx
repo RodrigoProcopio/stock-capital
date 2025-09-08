@@ -3,6 +3,7 @@ import heroImg from "./assets/hero.webp";
 import logo from "./assets/logo.png";
 import augustoImg from "./assets/augusto.webp";
 import igorImg from "./assets/igor.webp";
+import LazyVisible from "./components/LazyVisible.jsx";
 
 
 /**
