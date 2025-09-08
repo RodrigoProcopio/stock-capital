@@ -69,96 +69,159 @@ collections:
       - { name: summary, label: "Resumo", widget: text }
       - { name: pdf,   label: "PDF", widget: file, media_library: { allow_multiple: false }, allow_types: ["pdf"] }
 
-    # >>> Rentabilidade: 5 carteiras fixas (editor altera NOME, MÊS e RENDIMENTO)
-  - name: "rentabilidade_carteiras"
-    label: "Rentabilidade • Carteiras (dados)"
+     # === Configurações dos Gráficos (carrossel) ===
+  - name: "charts_config"
+    label: "Gráficos • Configurações"
     format: "json"
     files:
-      - name: "carteira1"
-        label: "Carteira 1"
-        file: "src/content/rentabilidade/carteiras/carteira1.json"
+      - name: "mfo_desempenho"
+        label: "Gráfico: Desempenho"
+        file: "src/content/rentabilidade/charts/mfo-desempenho.json"
         fields:
-          - { label: "Nome (exibição)", name: "nome", widget: "string", hint: "Ex.: CDI, IHFA, IBOV..." }
-          - { label: "Slug (fixo)", name: "slug", widget: "hidden", default: "carteira1" }
-          - label: "Dados mensais"
+          - { name: type, label: "Tipo (fixo)", widget: "hidden", default: "desempenho" }
+          - { name: title, label: "Título", widget: "string" }
+          - { name: subtitle, label: "Subtítulo", widget: "string", required: false }
+          - { name: notes, label: "Notas (rodapé)", widget: "text", required: false }
+          - { name: autoplay_seconds, label: "Auto-play (segundos)", widget: "number", value_type: "int", min: 0, default: 8 }
+          - label: "Acumulação"
+            name: "accumulation"
+            widget: "select"
+            options: ["sum", "compound"]
+            default: "sum"
+          - label: "Séries (linhas do gráfico)"
             name: "series"
             widget: "list"
-            summary: "{{fields.date}} — {{fields.rendimento}}%"
+            summary: "{{fields.label}} ← {{fields.source}}"
             fields:
-              - { label: "Mês", name: "date", widget: "datetime", format: "YYYY-MM", date_format: "YYYY-MM", time_format: false }
-              - { label: "Rendimento (%)", name: "rendimento", widget: "number", value_type: "float", step: 0.01, min: -100, max: 100 }
+              - { name: label, label: "Rótulo da Série", widget: "string" }
+              - label: "Fonte (arquivo JSON)"
+                name: "source"
+                widget: "file"
+                media_library: { allow_multiple: false }
+                allow_types: ["json"]
+              - { name: y, label: "Campo Y no JSON (ex.: rendimento)", widget: "string", default: "rendimento" }
 
-      - name: "carteira2"
-        label: "Carteira 2"
-        file: "src/content/rentabilidade/carteiras/carteira2.json"
+      - name: "volatilidade_ltm"
+        label: "Gráfico: Volatilidade LTM"
+        file: "src/content/rentabilidade/charts/volatilidade-ltm.json"
         fields:
-          - { label: "Nome (exibição)", name: "nome", widget: "string" }
-          - { label: "Slug (fixo)", name: "slug", widget: "hidden", default: "carteira2" }
-          - label: "Dados mensais"
-            name: "series"
-            widget: "list"
-            summary: "{{fields.date}} — {{fields.rendimento}}%"
-            fields:
-              - { label: "Mês", name: "date", widget: "datetime", format: "YYYY-MM", date_format: "YYYY-MM", time_format: false }
-              - { label: "Rendimento (%)", name: "rendimento", widget: "number", value_type: "float", step: 0.01, min: -100, max: 100 }
-
-      - name: "carteira3"
-        label: "Carteira 3"
-        file: "src/content/rentabilidade/carteiras/carteira3.json"
-        fields:
-          - { label: "Nome (exibição)", name: "nome", widget: "string" }
-          - { label: "Slug (fixo)", name: "slug", widget: "hidden", default: "carteira3" }
-          - label: "Dados mensais"
-            name: "series"
-            widget: "list"
-            summary: "{{fields.date}} — {{fields.rendimento}}%"
-            fields:
-              - { label: "Mês", name: "date", widget: "datetime", format: "YYYY-MM", date_format: "YYYY-MM", time_format: false }
-              - { label: "Rendimento (%)", name: "rendimento", widget: "number", value_type: "float", step: 0.01, min: -100, max: 100 }
-
-      - name: "carteira4"
-        label: "Carteira 4"
-        file: "src/content/rentabilidade/carteiras/carteira4.json"
-        fields:
-          - { label: "Nome (exibição)", name: "nome", widget: "string" }
-          - { label: "Slug (fixo)", name: "slug", widget: "hidden", default: "carteira4" }
-          - label: "Dados mensais"
-            name: "series"
-            widget: "list"
-            summary: "{{fields.date}} — {{fields.rendimento}}%"
-            fields:
-              - { label: "Mês", name: "date", widget: "datetime", format: "YYYY-MM", date_format: "YYYY-MM", time_format: false }
-              - { label: "Rendimento (%)", name: "rendimento", widget: "number", value_type: "float", step: 0.01, min: -100, max: 100 }
-
-      - name: "carteira5"
-        label: "Carteira 5"
-        file: "src/content/rentabilidade/carteiras/carteira5.json"
-        fields:
-          - { label: "Nome (exibição)", name: "nome", widget: "string" }
-          - { label: "Slug (fixo)", name: "slug", widget: "hidden", default: "carteira5" }
-          - label: "Dados mensais"
-            name: "series"
-            widget: "list"
-            summary: "{{fields.date}} — {{fields.rendimento}}%"
-            fields:
-              - { label: "Mês", name: "date", widget: "datetime", format: "YYYY-MM", date_format: "YYYY-MM", time_format: false }
-              - { label: "Rendimento (%)", name: "rendimento", widget: "number", value_type: "float", step: 0.01, min: -100, max: 100 }
-
-  # >>> Qual delas aparece no gráfico (ligar/desligar)
-  - name: "rentabilidade_dashboard"
-    label: "Rentabilidade • Dashboard"
-    format: "json"
-    files:
-      - name: "dashboard"
-        label: "Configuração do Gráfico"
-        file: "src/content/rentabilidade/dashboard.json"
-        fields:
-          - label: "Carteiras exibidas"
-            name: "exibir"
+          - { name: type, label: "Tipo (fixo)", widget: "hidden", default: "volatilidade" }
+          - { name: title, label: "Título", widget: "string", default: "Volatilidade (últimos 12 meses)" }
+          - { name: subtitle, label: "Subtítulo", widget: "string", required: false }
+          - { name: notes, label: "Notas (rodapé)", widget: "text", required: false }
+          - { name: autoplay_seconds, label: "Auto-play (segundos)", widget: "number", value_type: "int", min: 0, default: 8 }
+          - label: "Fonte de dados (JSON)"
+            name: "source"
+            widget: "file"
+            media_library: { allow_multiple: false }
+            allow_types: ["json"]
+          - label: "Opções"
+            name: "options"
             widget: "object"
+            collapsed: false
             fields:
-              - { label: "Mostrar Carteira 1", name: "carteira1", widget: "boolean", default: true }
-              - { label: "Mostrar Carteira 2", name: "carteira2", widget: "boolean", default: true }
-              - { label: "Mostrar Carteira 3", name: "carteira3", widget: "boolean", default: true }
-              - { label: "Mostrar Carteira 4", name: "carteira4", widget: "boolean", default: false }
-              - { label: "Mostrar Carteira 5", name: "carteira5", widget: "boolean", default: false }
+              - { name: x, label: "Campo X (data)", widget: "string", default: "date"}
+              - { name: y, label: "Campo Y (volatilidade %)", widget: "string", default: "vol"}
+              - { name: label, label: "Nome da linha", widget: "string", default: "Volatilidade LTM" }
+              - { name: suffix, label: "Sufixo do rótulo final", widget: "string", default: "LTM³", required: false }
+
+      - name: "risco_retorno"
+        label: "Gráfico: Risco-Retorno"
+        file: "src/content/rentabilidade/charts/risco-retorno.json"
+        fields:
+          - { name: type, label: "Tipo (fixo)", widget: "hidden", default: "risco-retorno" }
+          - { name: title, label: "Título", widget: "string", default: "Índices de Risco-Retorno" }
+          - { name: subtitle, label: "Subtítulo", widget: "string", required: false }
+          - { name: notes, label: "Notas (rodapé)", widget: "text", required: false }
+          - { name: autoplay_seconds, label: "Auto-play (segundos)", widget: "number", value_type: "int", min: 0, default: 8 }
+          - label: "Fonte (JSON com sortino/sharpe)"
+            name: "source"
+            widget: "file"
+            media_library: { allow_multiple: false }
+            allow_types: ["json"]
+          - label: "Opções"
+            name: "options"
+            widget: "object"
+            collapsed: false
+            fields:
+              - { name: x,  label: "Campo X (data)", widget: "string", default: "date"}
+              - { name: y1, label: "Campo Y1 (Sortino)", widget: "string", default: "sortino"}
+              - { name: y2, label: "Campo Y2 (Sharpe)", widget: "string", default: "sharpe"}
+
+  # === Dados dos Gráficos ===
+  - name: "charts_data"
+    label: "Gráficos • Dados"
+    format: "json"
+    files:
+      - name: "desempenho_portfolio"
+        label: "Dados • Desempenho (Portfólio)"
+        file: "src/content/rentabilidade/data/desempenho/mfo-portfolio.json"
+        fields:
+          - label: "Série"
+            name: "series"
+            widget: "list"
+            summary: "{{fields.date}} — {{fields.rendimento}}%"
+            fields:
+              - { label: "Mês", name: "date", widget: "datetime", format: "YYYY-MM", date_format: "YYYY-MM", time_format: false }
+              - { label: "Rendimento (%)", name: "rendimento", widget: "number", step: 0.01 }
+
+      - name: "desempenho_alpha"
+        label: "Dados • Desempenho (Alpha)"
+        file: "src/content/rentabilidade/data/desempenho/alpha.json"
+        fields:
+          - label: "Série"
+            name: "series"
+            widget: "list"
+            summary: "{{fields.date}} — {{fields.rendimento}}%"
+            fields:
+              - { label: "Mês", name: "date", widget: "datetime", format: "YYYY-MM", date_format: "YYYY-MM", time_format: false }
+              - { label: "Rendimento (%)", name: "rendimento", widget: "number", step: 0.01 }
+
+      - name: "desempenho_ifha"
+        label: "Dados • Desempenho (IFHA)"
+        file: "src/content/rentabilidade/data/desempenho/ifha.json"
+        fields:
+          - label: "Série"
+            name: "series"
+            widget: "list"
+            summary: "{{fields.date}} — {{fields.rendimento}}%"
+            fields:
+              - { label: "Mês", name: "date", widget: "datetime", format: "YYYY-MM", date_format: "YYYY-MM", time_format: false }
+              - { label: "Rendimento (%)", name: "rendimento", widget: "number", step: 0.01 }
+
+      - name: "desempenho_ipca"
+        label: "Dados • Desempenho (IPCA)"
+        file: "src/content/rentabilidade/data/desempenho/ipca.json"
+        fields:
+          - label: "Série"
+            name: "series"
+            widget: "list"
+            summary: "{{fields.date}} — {{fields.rendimento}}%"
+            fields:
+              - { label: "Mês", name: "date", widget: "datetime", format: "YYYY-MM", date_format: "YYYY-MM", time_format: false }
+              - { label: "Rendimento (%)", name: "rendimento", widget: "number", step: 0.01 }
+
+      - name: "volatilidade_ltm_data"
+        label: "Dados • Volatilidade LTM"
+        file: "src/content/rentabilidade/data/volatilidade/ltm.json"
+        fields:
+          - label: "Série"
+            name: ""
+            widget: "list"
+            summary: "{{fields.date}} — {{fields.vol}}"
+            fields:
+              - { label: "Mês", name: "date", widget: "datetime", format: "YYYY-MM", date_format: "YYYY-MM", time_format: false }
+              - { label: "Volatilidade (%)", name: "vol", widget: "number", step: 0.01 }
+
+      - name: "risco_retorno_sortino_sharpe"
+        label: "Dados • Risco-Retorno"
+        file: "src/content/rentabilidade/data/risco-retorno/sortino-sharpe.json"
+        fields:
+          - label: "Série"
+            name: ""
+            widget: "list"
+            summary: "{{fields.date}} — S:{{fields.sortino}} / Sh:{{fields.sharpe}}"
+            fields:
+              - { label: "Mês", name: "date", widget: "datetime", format: "YYYY-MM", date_format: "YYYY-MM", time_format: false }
+              - { label: "Sortino", name: "sortino", widget: "number", step: 0.01 }
+              - { label: "Sharpe", name: "sharpe", widget: "number", step: 0.01 }

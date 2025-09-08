@@ -1,5 +1,6 @@
 // src/components/charts/types/ChartRiskReturn.jsx
 import React, { useEffect, useState } from "react";
+import { readJson } from "../../../lib/cmsLoader.js";
 import {
   ResponsiveContainer,
   LineChart,
@@ -16,16 +17,19 @@ const num = (v) => (Number(v) ?? 0).toFixed(2).replace(".", ",");
 export default function ChartRiskReturn({ config }) {
   const [data, setData] = useState([]);
 
-  useEffect(() => {
-    let alive = true;
-    (async () => {
-      const mod = await import(/* @vite-ignore */ `${config.source}`);
-      const raw = mod.default || mod;
+useEffect(() => {
+  let alive = true;
+  (async () => {
+    try {
+      const raw = readJson(String(config.source));
       const rows = Array.isArray(raw) ? raw : Array.isArray(raw?.series) ? raw.series : [];
       if (alive) setData(rows);
-    })().catch((e) => console.error(e));
-    return () => { alive = false; };
-  }, [config]);
+    } catch (e) {
+      console.error("ChartRiskReturn: falha ao carregar JSON", e);
+    }
+  })();
+  return () => { alive = false; };
+}, [config?.source]);
 
   const xKey = config.options?.x || "date";
   const y1 = config.options?.y1 || "sortino";
