@@ -4,6 +4,7 @@ import logo from "./assets/logo.png";
 import augustoImg from "./assets/augusto.webp";
 import igorImg from "./assets/igor.webp";
 
+
 /**
  * ------------------------------
  * Navegação principal

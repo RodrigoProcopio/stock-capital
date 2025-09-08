@@ -1,16 +1,27 @@
 // src/main.jsx
-import { useEffect } from "react";
+import { StrictMode, useEffect } from "react";
 import { createRoot } from "react-dom/client";
 import {
   createBrowserRouter,
+  RouterProvider,
   useLocation,
 } from "react-router-dom";
 
 import "./index.css";
 
-// Novas páginas LGPD/Privacidade
+// Páginas
+import App from "./App.jsx";
+import FormularioApi from "./pages/FormularioApi.jsx";
+import Cartas from "./pages/Cartas.jsx";
+import Relatorios from "./pages/Relatorios.jsx";
+import Insights from "./pages/Insights.jsx";
+import Compliance from "./pages/Compliance.jsx";
+import PoliticaPrivacidade from "./pages/PoliticaPrivacidade.jsx";
+import TermosUso from "./pages/TermosUso.jsx";
+import SolicitacaoLGPD from "./pages/SolicitacaoLGPD.jsx";
+import PoliticaRetencaoLGPD from "./pages/PoliticaRetencaoLGPD.jsx";
 
-// Utilitário: sobe a página ao navegar
+// Componente para rolar ao topo em cada navegação
 function ScrollToTop() {
   const { pathname } = useLocation();
   useEffect(() => {
@@ -19,7 +30,7 @@ function ScrollToTop() {
   return null;
 }
 
-// Wrapper para aplicar ScrollToTop em cada rota
+// Wrapper para injetar ScrollToTop
 function WithScroll({ children }) {
   return (
     <>
@@ -29,6 +40,7 @@ function WithScroll({ children }) {
   );
 }
 
+// Definição das rotas
 const router = createBrowserRouter([
   { path: "/", element: <WithScroll><App /></WithScroll> }, // Landing
   { path: "/formulario-api", element: <WithScroll><FormularioApi /></WithScroll> },
@@ -44,10 +56,12 @@ const router = createBrowserRouter([
   { path: "/termos", element: <WithScroll><TermosUso /></WithScroll> },
   { path: "/lgpd", element: <WithScroll><SolicitacaoLGPD /></WithScroll> },
   { path: "/docs/politica-retencao-lgpd", element: <WithScroll><PoliticaRetencaoLGPD /></WithScroll> },
-  // Opcional: catch-all de volta pra Home
+
+  // Catch-all → redireciona para Home
   { path: "*", element: <WithScroll><App /></WithScroll> },
 ]);
 
+// Renderização
 createRoot(document.getElementById("root")).render(
   <StrictMode>
     <RouterProvider router={router} />
