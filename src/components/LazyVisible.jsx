@@ -1,5 +1,5 @@
 // src/components/LazyVisible.jsx
-import React, { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 export default function LazyVisible({ children, rootMargin = "200px" }) {
   const ref = useRef(null);

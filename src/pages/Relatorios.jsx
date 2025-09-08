@@ -1,4 +1,3 @@
-import PageLayout from "../components/PageLayout";
 
 function loadDocs() {
   const files = import.meta.glob("/src/content/relatorios/*.json", { eager: true });

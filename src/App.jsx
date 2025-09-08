@@ -1,13 +1,8 @@
 import React, { useEffect, useRef, useState } from "react";
-import { Link } from "react-router-dom";
 import heroImg from "./assets/hero.webp";
 import logo from "./assets/logo.png";
 import augustoImg from "./assets/augusto.webp";
 import igorImg from "./assets/igor.webp";
-import ScrollToTopButton from "./components/ScrollToTopButton";
-import FloatingWhatsApp from "./components/FloatingWhatsApp";
-import LazyVisible from "./components/LazyVisible";
-import ChartsSection from "./components/charts/ChartsSection";
 
 /**
  * ------------------------------

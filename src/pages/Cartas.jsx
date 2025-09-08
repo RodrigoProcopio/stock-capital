@@ -1,4 +1,3 @@
-import PageLayout from "../components/PageLayout";
 
 // importa todos os .json da pasta
 const cartasModules = import.meta.glob("../content/cartas/*.json", { eager: true });

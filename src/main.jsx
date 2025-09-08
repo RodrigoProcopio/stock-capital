@@ -1,25 +1,14 @@
 // src/main.jsx
-import { StrictMode, useEffect } from "react";
+import { useEffect } from "react";
 import { createRoot } from "react-dom/client";
 import {
   createBrowserRouter,
-  RouterProvider,
   useLocation,
 } from "react-router-dom";
 
 import "./index.css";
-import App from "./App.jsx";
-import FormularioApi from "./pages/FormularioApi.jsx";
-import Cartas from "./pages/Cartas.jsx";
-import Relatorios from "./pages/Relatorios.jsx";
-import Insights from "./pages/Insights.jsx";
-import Compliance from "./pages/Compliance.jsx";
 
 // Novas páginas LGPD/Privacidade
-import PoliticaPrivacidade from "./pages/PoliticaPrivacidade.jsx";
-import TermosUso from "./pages/TermosUso.jsx";
-import SolicitacaoLGPD from "./pages/SolicitacaoLGPD.jsx";
-import PoliticaRetencaoLGPD from "./pages/PoliticaRetencaoLGPD.jsx";
 
 // Utilitário: sobe a página ao navegar
 function ScrollToTop() {

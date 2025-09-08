@@ -1,5 +1,3 @@
-import React from "react";
-import { Link } from "react-router-dom";
 
 /**
  * Componente reutilizável de consentimento LGPD

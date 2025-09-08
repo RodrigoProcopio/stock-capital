@@ -1,8 +1,4 @@
 // src/components/charts/ChartRenderer.jsx
-import React from "react";
-import ChartDesempenho from "./types/ChartDesempenho.jsx";
-import ChartVolatility from "./types/ChartVolatility.jsx";
-import ChartRiskReturn from "./types/ChartRiskReturn.jsx";
 
 export default function ChartRenderer({ config }) {
   if (!config || !config.type) {

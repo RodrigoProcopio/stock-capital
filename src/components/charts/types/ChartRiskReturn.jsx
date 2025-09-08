@@ -1,18 +1,13 @@
 // src/components/charts/types/ChartRiskReturn.jsx
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { readJson } from "../../../lib/cmsLoader.js";
-import {
-  ResponsiveContainer,
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
-  Tooltip,
-  CartesianGrid,
-  LabelList,
-} from "recharts";
 
-const num = (v) => (Number(v) ?? 0).toFixed(2).replace(".", ",");
+
+
+const num = (v) => {
+  const n = Number(v);
+  return (Number.isFinite(n) ? n : 0).toFixed(2).replace(".", ",");
+};
 
 export default function ChartRiskReturn({ config }) {
   const [data, setData] = useState([]);

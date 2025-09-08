@@ -1,7 +1,8 @@
-// eslint.config.js
+// eslint.config.mjs
 import js from '@eslint/js';
 import react from 'eslint-plugin-react';
 import reactHooks from 'eslint-plugin-react-hooks';
+import unusedImports from 'eslint-plugin-unused-imports';
 
 const browserGlobals = {
   window: 'readonly',
@@ -30,16 +31,23 @@ const nodeGlobals = {
   AbortController: 'readonly',
   fetch: 'readonly',     // Node 18+
   Response: 'readonly',
-  exports: 'writable',   // para handlers CJS que usam exports
+  exports: 'writable',   // p/ CJS
   module: 'readonly',
   require: 'readonly',
-  global: 'readonly',    // 👈 resolve “global is not defined”
+  global: 'readonly',
 };
 
 export default [
-  // Ignorar estáticos e build
+  // Ignorar build/artefatos
   {
-    ignores: ['node_modules/**', 'dist/**', 'public/**'],
+    ignores: [
+      'node_modules/**',
+      'dist/**',
+      'public/**',
+      '.netlify/**',
+      '**/functions-serve/**',
+      '**/chunks/**',
+    ],
   },
 
   js.configs.recommended,
@@ -53,7 +61,7 @@ export default [
       parserOptions: { ecmaFeatures: { jsx: true } },
       globals: browserGlobals,
     },
-    plugins: { react, 'react-hooks': reactHooks },
+    plugins: { react, 'react-hooks': reactHooks, 'unused-imports': unusedImports },
     settings: { react: { version: 'detect' } },
     rules: {
       'react/react-in-jsx-scope': 'off',
@@ -61,17 +69,27 @@ export default [
       'react-hooks/rules-of-hooks': 'error',
       'react-hooks/exhaustive-deps': 'warn',
       'no-console': 'off',
-      'no-unused-vars': ['warn', { argsIgnorePattern: '^_', varsIgnorePattern: '^_' }],
+
+      // Remove imports não usados automaticamente no --fix
+      'no-unused-vars': 'off',
+      'unused-imports/no-unused-imports': 'error',
+      'unused-imports/no-unused-vars': ['warn', {
+        args: 'after-used',
+        argsIgnorePattern: '^_',
+        varsIgnorePattern: '^_',
+        ignoreRestSiblings: true,
+      }],
+
       'no-undef': 'error',
     },
   },
 
-  // Netlify Functions ESM (.js) — usa import/export
+  // Netlify Functions ESM (.js)
   {
     files: ['netlify/functions/**/*.js'],
     languageOptions: {
       ecmaVersion: 2023,
-      sourceType: 'module',   // 👈 resolve o parsing error do admin-create-consent-fields.js
+      sourceType: 'module',
       globals: nodeGlobals,
     },
     rules: {
@@ -82,18 +100,17 @@ export default [
     },
   },
 
-  // Netlify Functions CJS (.cjs) — CommonJS/Script
+  // Netlify Functions CJS (.cjs)
   {
     files: ['netlify/functions/**/*.cjs'],
     languageOptions: {
       ecmaVersion: 2023,
       sourceType: 'script',
-      globals: nodeGlobals, // inclui 'global'
+      globals: nodeGlobals,
     },
     rules: {
       'no-console': 'off',
       'no-unused-vars': ['warn', { argsIgnorePattern: '^_', varsIgnorePattern: '^_' }],
-      // Desliga no-empty nas CJS (há blocos intencionais vazios)
       'no-empty': 'off',
       'no-undef': 'error',
     },

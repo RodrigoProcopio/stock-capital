@@ -1,18 +1,13 @@
 // src/components/charts/types/ChartDesempenho.jsx
-import React, { useEffect, useMemo, useState } from "react";
-import {
-  ResponsiveContainer,
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
-  Tooltip,
-  CartesianGrid,
-  LabelList,
-} from "recharts";
+import { useEffect, useMemo, useState } from "react";
+
+
 import { readJson } from "../../../lib/cmsLoader.js";
 
-const ptPct = (v) => `${(Number(v) ?? 0).toFixed(2).replace(".", ",")}%`;
+const ptPct = (v) => {
+  const n = Number(v);
+  return `${(Number.isFinite(n) ? n : 0).toFixed(2).replace(".", ",")}%`;
+};
 
 function buildAccumulated(arr = [], mode = "compound") {
   const sorted = [...arr].sort((a, b) => (a.date < b.date ? -1 : a.date > b.date ? 1 : 0));

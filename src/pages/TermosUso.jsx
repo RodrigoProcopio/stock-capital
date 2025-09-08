@@ -1,6 +1,3 @@
-import React from "react";
-import { Link } from "react-router-dom";
-import PageLayout from "../components/PageLayout";
 
 export default function TermosUso() {
   return (

@@ -1,7 +1,6 @@
 // src/components/charts/ChartsCarousel.jsx
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import useEmblaCarousel from "embla-carousel-react";
-import ChartRenderer from "./ChartRenderer.jsx";
 
 export default function ChartsCarousel({ charts = [] }) {
   const [emblaRef, emblaApi] = useEmblaCarousel({ loop: false, align: "start" });

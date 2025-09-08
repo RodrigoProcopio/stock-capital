@@ -1,6 +1,5 @@
 // src/components/charts/ChartsSection.jsx
-import React, { useEffect, useState } from "react";
-import ChartsCarousel from "./ChartsCarousel.jsx";
+import { useEffect, useState } from "react";
 import { readJson } from "../../lib/cmsLoader.js";
 import INDEX from "/src/content/rentabilidade/charts/index.json"; // caminho estático => entra no bundle
 

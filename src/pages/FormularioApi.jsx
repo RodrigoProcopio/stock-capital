@@ -1,7 +1,6 @@
 // src/pages/FormularioApi.jsx
-import React, { useMemo, useState, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import PageLayout from "../components/PageLayout";
+import { useMemo, useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 // import LgpdConsent from "../components/LgpdConsent"; // (não usado aqui)
 const POLICY_VERSION = "v1";
 
