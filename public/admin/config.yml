@@ -206,7 +206,7 @@ collections:
         file: "src/content/rentabilidade/data/volatilidade/ltm.json"
         fields:
           - label: "Série"
-            name: ""
+            name: "series"  
             widget: "list"
             summary: "{{fields.date}} — {{fields.vol}}"
             fields:
@@ -218,7 +218,7 @@ collections:
         file: "src/content/rentabilidade/data/risco-retorno/sortino-sharpe.json"
         fields:
           - label: "Série"
-            name: ""
+            name: "series"
             widget: "list"
             summary: "{{fields.date}} — S:{{fields.sortino}} / Sh:{{fields.sharpe}}"
             fields:

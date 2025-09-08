@@ -1,4 +1,4 @@
-[
+{"series":[
   { "date": "2023-12", "sortino": 1.90, "sharpe": 0.80 },
   { "date": "2024-01", "sortino": 3.00, "sharpe": 1.30 },
   { "date": "2024-02", "sortino": 2.50, "sharpe": 1.00 },
@@ -16,3 +16,4 @@
   { "date": "2025-02", "sortino": 2.80, "sharpe": 0.70 },
   { "date": "2025-03", "sortino": 3.40, "sharpe": 1.01 }
 ]
+}
