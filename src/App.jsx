@@ -640,20 +640,33 @@ export default function App() {
                   <label htmlFor="contato-telefone" className="block text-sm font-medium text-brand-navy">
                     Telefone (Whatsapp)
                   </label>
-                  <input
-                    id="contato-telefone"
-                    type="tel"
-                    name="telefone"
-                    inputMode="tel"
-                    autoComplete="tel"
-                    pattern="^\\+?[1-9]\\d{1,14}$"
-                    aria-describedby="contato-telefone-hint"
-                    className="mt-1 w-full rounded-lg border border-brand-navy/20 px-3 py-2 outline-none focus:ring-2 focus:ring-brand-navy/30 text-brand-navy"
-                    placeholder="+5511999999999"
-                  />
-                  <p id="contato-telefone-hint" className="mt-1 text-xs text-slate-500">
-                    Formato internacional (E.164). Ex.: <code>+5511999999999</code>.
-                  </p>
+<input
+  id="contato-telefone"
+  type="tel"
+  name="telefone"
+  inputMode="tel"
+  autoComplete="tel"
+  // Só aceita "+" no início e dígitos; remove espaços, () e "-"
+  onInput={(e) => {
+    let v = e.currentTarget.value;
+    // remove tudo que não for dígito ou "+"
+    v = v.replace(/[^\d+]/g, "");
+    // mantém apenas 1 "+" e só no início
+    if (v.includes("+")) v = "+" + v.replace(/\+/g, "").replace(/^0+/, "");
+    // remove zeros à esquerda após o "+"
+    v = v.replace(/^\+0+/, "+");
+    e.currentTarget.value = v;
+  }}
+  // E.164: opcional "+", 1º dígito 1-9, 8–14 dígitos seguintes (total 9–15)
+  pattern="^\+?[1-9]\d{8,14}$"
+  title="Use o formato internacional (E.164). Ex.: +5541999999999"
+  aria-describedby="contato-telefone-hint"
+  className="mt-1 w-full rounded-lg border border-brand-navy/20 px-3 py-2 outline-none focus:ring-2 focus:ring-brand-navy/30 text-brand-navy"
+  placeholder="+5541999999999"
+/>
+<p id="contato-telefone-hint" className="mt-1 text-xs text-slate-500">
+  Formato internacional. Ex.: <code>+5541999999999</code>.
+</p>
                 </div>
 
                 {/* E-mail */}
