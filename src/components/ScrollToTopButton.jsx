@@ -1,4 +1,6 @@
 import { useEffect, useState } from "react";
+import { ChevronUp } from "lucide-react";
+
 // se estiver usando lucide-react, senão use um svg simples
 
 export default function ScrollToTopButton() {
