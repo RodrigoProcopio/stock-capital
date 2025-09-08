@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState, Suspense } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import heroImg from "./assets/hero.webp";
 import logo from "./assets/logo.png";
@@ -7,8 +7,7 @@ import igorImg from "./assets/igor.webp";
 import ScrollToTopButton from "./components/ScrollToTopButton";
 import FloatingWhatsApp from "./components/FloatingWhatsApp";
 import LazyVisible from "./components/LazyVisible";
-
-const DesempenhoChart = React.lazy(() => import("./components/DesempenhoChart"));
+import ChartsSection from "./components/charts/ChartsSection";
 
 /**
  * ------------------------------
@@ -311,15 +310,15 @@ export default function App() {
             {/* Card 2 */}
             <div className="flex flex-col items-center text-center">
               <div className="relative h-74 w-64 rounded-2xl overflow-hidden">
-              <img
-  src={igorImg}
-  alt="Igor Dudeque Luiz da Costa"
-  className="h-full w-full object-cover"
-  width="1920"
-  height="2560"
-  loading="lazy"
-  decoding="async"
-/>
+                <img
+                  src={igorImg}
+                  alt="Igor Dudeque Luiz da Costa"
+                  className="h-full w-full object-cover"
+                  width="1920"
+                  height="2560"
+                  loading="lazy"
+                  decoding="async"
+                />
                 <div className="absolute inset-0 bg-white/25" />
               </div>
 
@@ -351,15 +350,21 @@ export default function App() {
           />
         </Section>
 
-        {/* Desempenho */}
-        <section id="desempenho">
-          <h2 className="text-xl font-semibold mb-4"></h2>
-          <LazyVisible>
-            <Suspense fallback={<div>Carregando gráfico…</div>}>
-              <DesempenhoChart />
-            </Suspense>
-          </LazyVisible>
-        </section>
+{/* Desempenho - Carrossel com Gráficos */}
+<section id="desempenho" className="scroll-mt-24 border-t border-brand-navy/10 bg-gray-50 py-24">
+  <div className="mb-12 text-center">
+    <h2 className="text-3xl font-semibold text-brand-navy"></h2>
+    <p className="mt-1 max-w-3xl mx-auto text-center [text-wrap:balance]"></p>
+  </div>
+
+  <LazyVisible>
+    {/* antes: max-w-5xl */}
+    <div className="max-w-7xl mx-auto px-4">
+      <ChartsSection />
+    </div>
+  </LazyVisible>
+</section>
+
 
         {/* Governança */}
         <Section id="governanca" title="Governança e Confiança" subtitle="">
@@ -426,7 +431,7 @@ export default function App() {
 
             <Link
               to="/publicacoes/compliance"
-              className="block rounded-2xl border border-brand-navy/15 bg-white p-6 shadow hover:shadow-md text-center hover:-translate-y-1 hover:shadow-lg hover:border-brand-navy/30 transition-all duração-200"
+              className="block rounded-2xl border border-brand-navy/15 bg-white p-6 shadow hover:shadow-md text-center hover:-translate-y-1 hover:shadow-lg hover:border-brand-navy/30 transition-all duration-200"
             >
               <h3 className="text-lg font-semibold text-brand-navy">Compliance</h3>
               <p className="mt-2 text-slate-600">Documentos e políticas de conformidade e ética.</p>
@@ -444,7 +449,7 @@ export default function App() {
           <div className="flex justify-center">
             <Link
               to="/formulario-api"
-              className="rounded-xl bg-brand-navy px-5 py-3 text-sm font-semibold text-white hover:bg-brand-navy/90 hover:shadow-md transition-all duração-200"
+              className="rounded-xl bg-brand-navy px-5 py-3 text-sm font-semibold text-white hover:bg-brand-navy/90 hover:shadow-md transition-all duration-200"
             >
               Preencher formulário
             </Link>
@@ -492,7 +497,7 @@ export default function App() {
               {/* Telefone */}
               <div className="flex items-start gap-4">
                 <svg className="h-6 w-6 text-white mt-1" viewBox="0 0 24 24" fill="none">
-                  <path d="M22 16.92v2a2 2 0 01-2.18 2 19.8 19.8 0 01-8.63-3.07 19.5 19.5 0 01-6-6A19.8 19.8 0 012.92 4.2 2 2 0 014.86 2h2a2 2 0 012 1.72c.1.76.27 1.5.5 2.21a2 2 0 01-.45 2.11L8 9a16 16 0 006 6l.95-.91a2 2 0 012.11-.45c.71.23 1.45.4 2.21.5A2 2 0 0122 16.92z" stroke="currentColor" strokeWidth="1.8" />
+                  <path d="M22 16.92v2a2 2 0 01-2.18 2 19.8 19.8 0 01-8.63-3.07 19.5 19.5 0 01-6-6A19.8 19.8 0 012.92 4.2 A2 2 0 014.86 2h2a2 2 0 012 1.72c.1.76.27 1.5.5 2.21a2 2 0 01-.45 2.11L8 9a16 16 0 006 6l.95-.91a2 2 0 012.11-.45c.71.23 1.45.4 2.21.5A2 2 0 0122 16.92z" stroke="currentColor" strokeWidth="1.8" />
                 </svg>
                 <div>
                   <h3 className="font-semibold text-white">Telefone</h3>
@@ -701,7 +706,7 @@ export default function App() {
                   type="submit"
                   disabled={sending}
                   className="mt-2 w-full rounded-xl bg-brand-navy px-5 py-3 text-sm font-semibold text-white 
-                             shadow-sm transition-all duração-300 hover:bg-brand-primary hover:-translate-y-0.5 hover:shadow-md disabled:opacity-50"
+                             shadow-sm transition-all duration-300 hover:bg-brand-primary hover:-translate-y-0.5 hover:shadow-md disabled:opacity-50"
                 >
                   {sending ? "Enviando..." : "Enviar"}
                 </button>

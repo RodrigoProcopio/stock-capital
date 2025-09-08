@@ -1,0 +1,30 @@
+{
+  "type": "desempenho",
+  "title": "Desempenho Consolidado | Multi-Family Office",
+  "subtitle": "",
+  "accumulation": "sum",
+  "notes": "¹ Retorno acima do IPCA · ² IFHA indica a rentabilidade dos fundos multimercado no Brasil",
+  "autoplay_seconds": 8,
+  "series": [
+    {
+      "label": "Portfólio",
+      "source": "/src/content/rentabilidade/data/desempenho/mfo-portfolio.json",
+      "y": "rendimento"
+    },
+    {
+      "label": "Alpha¹",
+      "source": "/src/content/rentabilidade/data/desempenho/alpha.json",
+      "y": "rendimento"
+    },
+    {
+      "label": "IFHA²",
+      "source": "/src/content/rentabilidade/data/desempenho/ifha.json",
+      "y": "rendimento"
+    },
+    {
+      "label": "IPCA",
+      "source": "/src/content/rentabilidade/data/desempenho/ipca.json",
+      "y": "rendimento"
+    }
+  ]
+}

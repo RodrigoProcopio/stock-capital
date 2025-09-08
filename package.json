@@ -19,6 +19,7 @@
   },
   "dependencies": {
     "@netlify/blobs": "^10.0.10",
+    "embla-carousel-react": "^8.6.0",
     "lucide-react": "^0.542.0",
     "node-fetch": "^3.3.2",
     "react": "^18.3.1",

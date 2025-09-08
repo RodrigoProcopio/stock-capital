@@ -1,0 +1,18 @@
+[
+  { "date": "2023-12", "sortino": 1.90, "sharpe": 0.80 },
+  { "date": "2024-01", "sortino": 3.00, "sharpe": 1.30 },
+  { "date": "2024-02", "sortino": 2.50, "sharpe": 1.00 },
+  { "date": "2024-03", "sortino": 3.70, "sharpe": 0.90 },
+  { "date": "2024-04", "sortino": 4.60, "sharpe": 1.20 },
+  { "date": "2024-05", "sortino": 4.50, "sharpe": 1.10 },
+  { "date": "2024-06", "sortino": 4.80, "sharpe": 1.00 },
+  { "date": "2024-07", "sortino": 4.20, "sharpe": 0.90 },
+  { "date": "2024-08", "sortino": 5.00, "sharpe": 1.10 },
+  { "date": "2024-09", "sortino": 5.10, "sharpe": 1.00 },
+  { "date": "2024-10", "sortino": 6.20, "sharpe": 1.30 },
+  { "date": "2024-11", "sortino": 5.90, "sharpe": 1.20 },
+  { "date": "2024-12", "sortino": 4.00, "sharpe": 0.60 },
+  { "date": "2025-01", "sortino": 1.60, "sharpe": 0.20 },
+  { "date": "2025-02", "sortino": 2.80, "sharpe": 0.70 },
+  { "date": "2025-03", "sortino": 3.40, "sharpe": 1.01 }
+]

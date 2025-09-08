@@ -1,0 +1,14 @@
+{
+  "nome": "Alpha¹",
+  "slug": "carteira3",
+  "series": [
+    { "date": "2025-08", "rendimento": 1.61 },
+    { "date": "2025-07", "rendimento": 0.94 },
+    { "date": "2025-06", "rendimento": 1.56 },
+    { "date": "2025-05", "rendimento": 2.74 },
+    { "date": "2025-04", "rendimento": 1.67 },
+    { "date": "2025-03", "rendimento": 2.04 },
+    { "date": "2025-02", "rendimento": 0.69 },
+    { "date": "2025-01", "rendimento": 0.84 }
+  ]
+}

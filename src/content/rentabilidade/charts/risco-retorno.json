@@ -1,0 +1,8 @@
+{
+  "type": "risco-retorno",
+  "title": "Índices de Risco-Retorno",
+  "subtitle": "",
+  "source": "/src/content/rentabilidade/data/risco-retorno/sortino-sharpe.json",
+  "options": { "x": "date", "y1": "sortino", "y2": "sharpe" },
+  "autoplay_seconds": 8
+}

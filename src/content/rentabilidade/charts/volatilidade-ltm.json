@@ -1,0 +1,9 @@
+{
+  "type": "volatilidade",
+  "title": "Volatilidade — LTM³",
+  "subtitle": "",
+  "source": "/src/content/rentabilidade/data/volatilidade/ltm.json",
+  "options": { "x": "date", "y": "vol" },
+  "autoplay_seconds": 8,
+  "notes": "³ LTM: últimos 12 meses"
+}
