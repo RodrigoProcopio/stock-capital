@@ -10,15 +10,10 @@ import {
   CartesianGrid,
   LabelList,
 } from "recharts";
+import { readJson } from "../../../lib/cmsLoader.js";
 
-// 12.34 -> "12,34%"
 const ptPct = (v) => `${(Number(v) ?? 0).toFixed(2).replace(".", ",")}%`;
 
-/**
- * Constrói série acumulada a partir dos retornos mensais em %.
- * mode = "sum"  -> soma simples (1.00 + 2.00 = 3.00)
- * mode = "compound" (padrão) -> capitalização ( (1+1%)*(1+2%) - 1 )
- */
 function buildAccumulated(arr = [], mode = "compound") {
   const sorted = [...arr].sort((a, b) => (a.date < b.date ? -1 : a.date > b.date ? 1 : 0));
 
@@ -30,7 +25,6 @@ function buildAccumulated(arr = [], mode = "compound") {
     });
   }
 
-  // compound
   let accMul = 1;
   return sorted.map(({ date, rendimento }) => {
     const r = Number(rendimento) / 100;
@@ -60,32 +54,26 @@ export default function ChartDesempenho({ config }) {
     (async () => {
       try {
         const mode = (config.accumulation || "compound").toLowerCase(); // "sum" | "compound"
-        const loaded = await Promise.all(
-          (config.series || []).map(async (s) => {
-            const mod = await import(/* @vite-ignore */ `${s.source}`);
-            const raw = mod.default || mod;
-            const rows = Array.isArray(raw) ? raw : Array.isArray(raw?.series) ? raw.series : [];
-            const data = buildAccumulated(rows, mode);
-            const label =
-              s.label ||
-              raw?.nome ||
-              s.source?.split("/").pop()?.replace(".json", "") ||
-              "Série";
-            return { label, data, yKey: s.y || "rendimento" };
-          })
-        );
+        const loaded = (config.series || []).map((s) => {
+          const raw = readJson(String(s.source));
+          const rows = Array.isArray(raw) ? raw : Array.isArray(raw?.series) ? raw.series : [];
+          const data = buildAccumulated(rows, mode);
+          const label =
+            s.label ||
+            raw?.nome ||
+            s.source?.split("/").pop()?.replace(".json", "") ||
+            "Série";
+          return { label, data, yKey: s.y || "rendimento" };
+        });
         const withData = loaded.filter((s) => s.data?.length);
         if (alive) setSeries(withData);
       } catch (e) {
         console.error("Erro carregando séries de desempenho:", e);
       }
     })();
-    return () => {
-      alive = false;
-    };
+    return () => { alive = false; };
   }, [config]);
 
-  // eixo X unificado
   const baseData = useMemo(() => {
     const set = new Set();
     series.forEach((s) => s.data?.forEach((p) => set.add(p.date)));
@@ -96,16 +84,9 @@ export default function ChartDesempenho({ config }) {
     return <div className="h-[460px] grid place-items-center">Carregando…</div>;
   }
 
-  // domínio Y: até 16% por padrão; aumenta automaticamente se alguma série passar disso
-  const maxY = Math.max(
-    16,
-    ...series.flatMap((s) => s.data.map((d) => Number(d.rendimento) || 0))
-  );
-  const top = Math.ceil(maxY / 4) * 4; // arredonda para múltiplo de 4
+  const maxY = Math.max(16, ...series.flatMap((s) => s.data.map((d) => Number(d.rendimento) || 0)));
+  const top = Math.ceil(maxY / 4) * 4;
   const yTicks = Array.from({ length: Math.floor(top / 4) + 1 }, (_, i) => i * 4);
-
-  // se o gráfico estiver em modo "sum", os dados já estão em %
-  const isSum = (config.accumulation || "compound").toLowerCase() === "sum";
 
   return (
     <figure className="w-full">
@@ -120,16 +101,8 @@ export default function ChartDesempenho({ config }) {
         <LineChart data={baseData} margin={{ top: 12, right: 170, left: 48, bottom: 28 }}>
           <CartesianGrid strokeDasharray="3 3" />
           <XAxis dataKey="date" type="category" allowDuplicatedCategory={false} tickMargin={8} />
-          <YAxis
-            ticks={yTicks}
-            domain={[0, top]}
-            tickFormatter={(v) => `${v}%`}
-            width={44}
-          />
-          <Tooltip
-            formatter={(v, name) => [ptPct(v), name]}
-            labelFormatter={(l) => `Mês: ${l}`}
-          />
+          <YAxis ticks={yTicks} domain={[0, top]} tickFormatter={(v) => `${v}%`} width={44} />
+          <Tooltip formatter={(v, name) => [ptPct(v), name]} labelFormatter={(l) => `Mês: ${l}`} />
 
           {series.map((s, idx) => {
             const sty = styleFor(s.label, idx);
@@ -146,7 +119,6 @@ export default function ChartDesempenho({ config }) {
                 strokeDasharray={sty.strokeDasharray}
                 dot={false}
               >
-                {/* rótulo final, idêntico ao do arte */}
                 <LabelList
                   dataKey={yKey}
                   position="right"
