@@ -1,4 +1,7 @@
 // src/components/charts/ChartRenderer.jsx
+import ChartDesempenho from "./types/ChartDesempenho.jsx";
+import ChartVolatility from "./types/ChartVolatility.jsx";
+import ChartRiskReturn from "./types/ChartRiskReturn.jsx";  // 👈 faltava este
 
 export default function ChartRenderer({ config }) {
   if (!config || !config.type) {

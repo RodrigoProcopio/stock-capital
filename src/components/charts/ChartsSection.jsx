@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 import { readJson } from "../../lib/cmsLoader.js";
 import INDEX from "/src/content/rentabilidade/charts/index.json"; // caminho estático => entra no bundle
+import ChartsCarousel from "./ChartsCarousel.jsx";
 
 export default function ChartsSection() {
   const [charts, setCharts] = useState([]);

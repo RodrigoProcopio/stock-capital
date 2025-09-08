@@ -1,8 +1,18 @@
 // src/components/charts/types/ChartRiskReturn.jsx
 import { useEffect, useState } from "react";
 import { readJson } from "../../../lib/cmsLoader.js";
-
-
+// src/components/charts/types/ChartRiskReturn.jsx
+// src/components/charts/types/ChartRiskReturn.jsx
+import {
+  ResponsiveContainer,
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  Tooltip,
+  CartesianGrid,
+  LabelList,
+} from "recharts";
 
 const num = (v) => {
   const n = Number(v);

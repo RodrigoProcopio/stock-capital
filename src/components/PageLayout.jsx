@@ -1,4 +1,5 @@
 import logo from "../assets/logo.png";
+import { Link } from "react-router-dom";
 
 export default function PageLayout({ title, subtitle, children }) {
   return (

@@ -1,7 +1,15 @@
 // src/components/charts/types/ChartVolatility.jsx
 import { useEffect, useState } from "react";
-
-
+import {
+  ResponsiveContainer,
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  Tooltip,
+  CartesianGrid,
+  LabelList,
+} from "recharts";
 import { readJson } from "../../../lib/cmsLoader.js";
 
 const num = (v) => {

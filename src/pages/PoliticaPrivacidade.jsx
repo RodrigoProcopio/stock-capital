@@ -1,3 +1,4 @@
+import PageLayout from "../components/PageLayout.jsx";
 
 export default function PoliticaPrivacidade() {
   return (

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import PageLayout from "../components/PageLayout.jsx";
 
 export default function SolicitacaoLGPD() {
   const [nome, setNome] = useState("");

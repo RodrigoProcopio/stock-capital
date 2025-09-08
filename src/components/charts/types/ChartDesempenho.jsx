@@ -1,7 +1,16 @@
 // src/components/charts/types/ChartDesempenho.jsx
 import { useEffect, useMemo, useState } from "react";
-
-
+// src/components/charts/types/ChartDesempenho.jsx
+import {
+  ResponsiveContainer,
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  Tooltip,
+  CartesianGrid,
+  LabelList,
+} from "recharts";
 import { readJson } from "../../../lib/cmsLoader.js";
 
 const ptPct = (v) => {
