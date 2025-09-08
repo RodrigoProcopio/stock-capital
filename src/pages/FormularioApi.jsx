@@ -2,6 +2,8 @@
 import { useMemo, useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import PageLayout from "../components/PageLayout.jsx";
+import { Link } from "react-router-dom";
+
 // import LgpdConsent from "../components/LgpdConsent"; // (não usado aqui)
 const POLICY_VERSION = "v1";
 
