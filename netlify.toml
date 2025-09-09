@@ -97,6 +97,7 @@
   from = "/api/send-contact"
   to   = "/.netlify/functions/send-contact-to-pipefy"
   status = 200
+  force = true
 
 # ─────────────────────────────────────────────────────────
 # HEADERS para /api/*

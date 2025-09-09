@@ -9,6 +9,8 @@ import { Link } from "react-router-dom";
 import FloatingWhatsApp from "./components/FloatingWhatsApp.jsx";
 import ScrollToTopButton from "./components/ScrollToTopButton.jsx";
 
+const POLICY_VERSION = "v1";
+
 /**
  * ------------------------------
  * Navegação principal

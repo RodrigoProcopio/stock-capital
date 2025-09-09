@@ -1,10 +1,11 @@
 // CommonJS v1 – send-contact-to-pipefy.cjs (Opção 2 - ENVs por rota *_CONTACT)
+// === Ajustado para aceitar PT-BR: nome/telefone/mensagem/lgpd ===
 const { getStore } = require("@netlify/blobs");
 const validator = require("validator");
 const { createHash, randomUUID } = require("crypto");
 
 /** ==================== Helpers ==================== */
-const E164_RE = /^\+?[1-9]\d{1,14}$/;
+const E164_RE = /^\+?[1-9]\d{1,14}$/; // E.164 (2–15 dígitos, com + opcional)
 const sha256 = (v) => createHash("sha256").update(String(v)).digest("hex");
 const maskEmail = (email = "") => { const [u,d] = String(email).toLowerCase().split("@"); return d ? `${u?.[0] ?? ""}***@${d}` : ""; };
 const maskPhone = (phone = "") => String(phone).replace(/\d(?=\d{4})/g, "*");
@@ -180,12 +181,48 @@ exports.handler = async (event) => {
     return { statusCode: 204, headers: { ...cors, "X-Correlation-Id": correlationId }, body: "" };
   }
 
-  // Whitelist enxuta para contato
-  const ALLOWED = ["name", "email", "phone", "message", "consent", "policyVersion"];
-  const data = {};
-  for (const k of ALLOWED) if (k in body) data[k] = typeof body[k] === "string" ? body[k].trim() : body[k];
+  // =============== NORMALIZAÇÃO DE CAMPOS =================
+  // 1) Começa aceitando tanto EN quanto PT
+  const ALLOWED = [
+    "name","email","phone","message","consent","policyVersion",
+    // aliases PT usados no App.jsx
+    "nome","telefone","mensagem","lgpd",
+    // extras ignoráveis
+    "form_id","hp"
+  ];
 
-  // Validações (contato: exige message)
+  // 2) Copia apenas chaves permitidas
+  const safe = {};
+  for (const k of ALLOWED) if (k in body) safe[k] = body[k];
+
+  // 3) Normaliza PT -> EN e extrai LGPD
+  const data = {
+    name:   typeof safe.name === "string"   ? safe.name.trim()   : (typeof safe.nome === "string" ? safe.nome.trim() : ""),
+    email:  typeof safe.email === "string"  ? safe.email.trim()  : "",
+    phone:  typeof safe.phone === "string"  ? safe.phone.trim()
+            : (typeof safe.telefone === "string" ? safe.telefone.trim() : ""),
+    message:typeof safe.message === "string"? safe.message.trim()
+            : (typeof safe.mensagem === "string" ? safe.mensagem.trim() : ""),
+    consent: (safe.consent === true)
+             || (typeof safe.lgpd === "object" && safe.lgpd?.accepted === true)
+             || safe.lgpd === true
+             || safe.lgpd === "on"
+             || safe.lgpd === "true",
+    policyVersion:
+            typeof safe.policyVersion === "string" && safe.policyVersion.trim()
+              ? safe.policyVersion.trim()
+              : (typeof safe.lgpd?.policyVersion === "string" ? safe.lgpd.policyVersion.trim() : "v1"),
+  };
+
+  // 4) Sanitiza telefone (remove espaços e duplica "+")
+  if (data.phone) {
+    let v = String(data.phone).replace(/[^\d+]/g, "");
+    if (v.includes("+")) v = "+" + v.replace(/\+/g, "").replace(/^0+/, "");
+    v = v.replace(/^\+0+/, "+");
+    data.phone = v;
+  }
+
+  // =============== VALIDAÇÕES =================
   const errors = {};
   if (!data.name || String(data.name).length > 100) errors.name = "Nome obrigatório (<= 100).";
   if (!data.email || !validator.isEmail(String(data.email)) || String(data.email).length > 254) errors.email = "Email inválido.";
@@ -199,7 +236,7 @@ exports.handler = async (event) => {
     return json(422, { error: "Validation failed", details: errors }, { ...cors, "X-Correlation-Id": correlationId });
   }
 
-  // Rate limit
+  // =============== RATE LIMIT =================
   let store = null;
   try { store = await getRateStore(); } catch (e) {
     console.log(JSON.stringify({ level: "error", msg: "blobs_setup_failed", correlationId, err: String(e?.message || e) }));
