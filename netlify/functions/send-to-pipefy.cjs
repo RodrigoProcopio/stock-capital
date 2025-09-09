@@ -1,4 +1,5 @@
 // CommonJS v1 – send-to-pipefy.cjs (Opção 2 - ENVs por rota *_FORM)
+// Aceita payload do formulário de suitability ("/api/form") e envia ao Pipefy.
 const { getStore } = require("@netlify/blobs");
 const validator = require("validator");
 const { createHash, randomUUID } = require("crypto");
@@ -85,23 +86,22 @@ async function sendToPipefy(data, correlationId) {
   }
 
   // ===== Mapeamentos por rota (FORM) =====
-  const F_EMAIL  = process.env.PIPEFY_FIELD_EMAIL_FORM
-                || process.env.PIPEFY_FIELD_EMAIL
-                || "e_mail";
-  const F_PHONE  = process.env.PIPEFY_FIELD_PHONE_FORM
-                || "telefone_para_contato_whatsapp"; // fixa o do pipe Análise
-  const F_MSG    = process.env.PIPEFY_FIELD_MESSAGE_FORM
-                || ""; // NÃO envia mensagem por engano
-  const F_POLICY = process.env.PIPEFY_FIELD_POLICY_VERSION_FORM
-                || ""; // opcional
+  const F_NAME   = process.env.PIPEFY_FIELD_NAME_FORM   || "nome_do_cliente";
+  const F_EMAIL  = process.env.PIPEFY_FIELD_EMAIL_FORM  || process.env.PIPEFY_FIELD_EMAIL || "e_mail";
+  const F_PHONE  = process.env.PIPEFY_FIELD_PHONE_FORM  || "telefone_para_contato_whatsapp";
+  const F_MSG    = process.env.PIPEFY_FIELD_MESSAGE_FORM || ""; // opcional
+  const F_POLICY = process.env.PIPEFY_FIELD_POLICY_VERSION_FORM || ""; // opcional
 
   const F_LGPD_AT = process.env.PIPEFY_FIELD_LGPD_CONSENT_AT_FORM || "";
   const F_LGPD_IP = process.env.PIPEFY_FIELD_LGPD_IP_HASH_FORM    || "";
   const F_LGPD_UA = process.env.PIPEFY_FIELD_LGPD_UA_FORM         || "";
 
   const fields_attributes = [];
-  fields_attributes.push({ field_id: F_EMAIL, field_value: data.email });
-  fields_attributes.push({ field_id: F_PHONE, field_value: data.phone || "" });
+
+  // campos principais (nome/email/telefone/mensagem/policy)
+  fields_attributes.push({ field_id: F_NAME,  field_value: data.nome_do_cliente || data.name || "" });
+  fields_attributes.push({ field_id: F_EMAIL, field_value: data.e_mail || data.email || "" });
+  fields_attributes.push({ field_id: F_PHONE, field_value: data.telefone_para_contato_whatsapp || data.phone || "" });
   if (F_MSG)    fields_attributes.push({ field_id: F_MSG,    field_value: data.message || "" });
   if (F_POLICY) fields_attributes.push({ field_id: F_POLICY, field_value: data.policyVersion || "v1" });
 
@@ -111,11 +111,12 @@ async function sendToPipefy(data, correlationId) {
     if (F_LGPD_UA) fields_attributes.push({ field_id: F_LGPD_UA, field_value: data.ua || "" });
   }
 
-  // Repassa todos os campos do questionário recebidos
+  // Repassa os campos do questionário recebidos; arrays → string
   const used = new Set(fields_attributes.map((f) => f.field_id));
   for (const fid of PIPE_QUESTIONNAIRE_FIELDS) {
     if (fid in data && !used.has(fid)) {
-      fields_attributes.push({ field_id: fid, field_value: data[fid] });
+      const v = Array.isArray(data[fid]) ? data[fid].join(", ") : data[fid];
+      fields_attributes.push({ field_id: fid, field_value: v });
       used.add(fid);
     }
   }
@@ -217,12 +218,23 @@ exports.handler = async (event) => {
   const data = {};
   for (const k of ALLOWED) if (k in body) data[k] = typeof body[k] === "string" ? body[k].trim() : body[k];
 
+  // ===== Aliases / Normalização antes das validações =====
+  if (!data.nome_do_cliente && data.name) data.nome_do_cliente = String(data.name).trim();
+  if (!data.e_mail && data.email) data.e_mail = String(data.email).trim();
+  if (!data.telefone_para_contato_whatsapp && data.phone) {
+    data.telefone_para_contato_whatsapp = String(data.phone).trim();
+  }
+
   // Validações mínimas (form não exige message)
   const errors = {};
-  if (!data.nome_do_cliente && (!data.name || String(data.name).length > 100)) errors.name = "Nome obrigatório (<= 100).";
+  const nameToValidate = data.nome_do_cliente || data.name;
+  if (!nameToValidate || String(nameToValidate).length > 100) errors.name = "Nome obrigatório (<= 100).";
   const emailToValidate = data.e_mail || data.email;
   if (!emailToValidate || !validator.isEmail(String(emailToValidate)) || String(emailToValidate).length > 254) errors.email = "Email inválido.";
-  if (data.phone && !E164_RE.test(String(data.phone))) errors.phone = "Telefone no formato E.164 (ex: +5511999999999).";
+
+  const phoneToValidate = data.telefone_para_contato_whatsapp || data.phone || "";
+  if (phoneToValidate && !E164_RE.test(String(phoneToValidate))) errors.phone = "Telefone no formato E.164 (ex: +5511999999999).";
+
   if (data.message && String(data.message).length > 5000) errors.message = "Mensagem muito longa (<= 5000).";
   if (data.consent !== true) errors.consent = "Consentimento LGPD é obrigatório.";
   if (data.policyVersion && String(data.policyVersion).length > 20) errors.policyVersion = "policyVersion muito longo.";
@@ -259,7 +271,7 @@ exports.handler = async (event) => {
     }
   }
 
-  // Normaliza email/phone para a chamada
+  // Normaliza final para chamada
   const email = data.e_mail || data.email;
   const phone = data.telefone_para_contato_whatsapp || data.phone || "";
 
