@@ -3,22 +3,12 @@
   --brand-navy:#1c2846;
 }
 
-.sc-admin-logo img {
-  height: 60px;   /* antes estava 100% ou muito grande */
-  display: block;
-}
-
-/* espaço para o header customizado */
-#nc-root {
-  padding-top: 60px; /* ajuste conforme a altura do seu header */
-}
-
-/* ===== LOGIN ===== */
+/* ====== LOGIN ====== */
 .nc-loginPage-logo,
 .login-logo,
 [class*="Login_logo"]{
-  width:220px !important;
-  height:70px !important;
+  width:180px !important;          /* menor */
+  height:56px !important;          /* menor */
   background:url("/admin/logo.png") center/contain no-repeat !important;
   display:block !important;
 }
@@ -26,21 +16,37 @@
 .login-logo svg,
 [class*="Login_logo"] svg{ display:none !important; }
 
-/* ===== HEADER (após login) ===== */
-.nc-appHeader{ 
-  background:#fff !important; 
+/* ====== APP HEADER (barra do CMS) ====== */
+.nc-appHeader{
+  background:#fff !important;
   border-bottom:1px solid rgba(0,0,0,.06) !important;
-  min-height:64px;
-  align-items:center;
-  gap:12px;
+  height:48px !important;          /* altura real da barra */
+  min-height:48px !important;
+  padding:6px 12px !important;     /* compacta a barra */
+  align-items:center !important;
+  gap:12px !important;
 }
 
-/* Esconde SVG padrão para dar lugar à sua logo (o JS injeta o fundo) */
+/* aplica a logo na área de marca da barra */
+.nc-appHeader-brand,
+.nc-appHeader-logo,
+[class*="AppHeader_brand"]{
+  width:160px !important;          /* largura da área da logo */
+  height:28px !important;          /* altura visual da logo */
+  background:url("/admin/logo.png") left center / contain no-repeat !important;
+  display:block !important;
+}
 .nc-appHeader-brand svg,
 .nc-appHeader-logo svg,
 [class*="AppHeader_brand"] svg{ display:none !important; }
 
-/* Botões principais nas cores da marca */
+/* ====== CONTEÚDO: não deixe “muito para baixo” ====== */
+/* o Decap já reserva espaço para a appbar; mantenha um respiro mínimo */
+#nc-root{
+  padding-top: 12px;               /* antes: 60px — agora a barra fica “mais para cima” */
+}
+
+/* ====== BOTÕES ====== */
 .nc-toolbar button,
 .nc-collectionTopBar button,
 button[class*="Button_root"]{
@@ -54,11 +60,11 @@ button[class*="Button_root"]:hover{
   filter:brightness(1.08);
 }
 
-/* Links */
+/* ====== LINKS ====== */
 a{ color:var(--brand-primary); }
 a:hover{ filter:brightness(1.1); }
 
-/* Cartões/listas */
+/* ====== CARTÕES/LISTAS ====== */
 [class*="Card_root"],
 .nc-entryListing-card{
   border:1px solid rgba(0,0,0,.06) !important;
@@ -66,9 +72,19 @@ a:hover{ filter:brightness(1.1); }
   border-radius:14px !important;
 }
 
-/* Inputs focados */
+/* ====== FOCUS DE INPUTS ====== */
 input:focus, textarea:focus, select:focus{
   outline:none !important;
   box-shadow:0 0 0 3px rgba(28,40,70,.18) !important;
   border-color:rgba(28,40,70,.45) !important;
 }
+
+/* ====== OPCIONAL: esconder links extras automáticos do cabeçalho ======
+   (só ative se ainda aparecerem textos como “Site … / Abrir site”)
+*/
+/*
+.nc-appHeader a[href="/"],
+.nc-appHeader a[href^="http"]:not([role]){
+  display:none !important;
+}
+*/
