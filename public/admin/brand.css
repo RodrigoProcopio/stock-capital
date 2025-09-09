@@ -3,8 +3,17 @@
   --brand-navy:#1c2846;
 }
 
+/* Header compacto, fixo no topo */
+.sc-admin-header{
+  position: fixed; top: 0; left: 0; right: 0;
+  height: 48px;                 /* altura real do cabeçalho */
+  padding: 6px 12px;            /* deixa baixinho */
+  display: flex; align-items: center; gap: 12px;
+  background:#0f172a; color:#fff; border-bottom:1px solid #0b1224; z-index:1000;
+}
+
 .sc-admin-logo img {
-  height: 40px;   /* antes estava 100% ou muito grande */
+  height: 40px;   
   display: block;
 }
 
@@ -51,6 +60,8 @@
   padding-top: 12px;               /* antes: 60px — agora a barra fica “mais para cima” */
 }
 
+.nc-appbar, .nc-collectionPage-header{ margin-top: 0 !important; }
+
 /* ====== BOTÕES ====== */
 .nc-toolbar button,
 .nc-collectionTopBar button,
@@ -84,12 +95,3 @@ input:focus, textarea:focus, select:focus{
   border-color:rgba(28,40,70,.45) !important;
 }
 
-/* ====== OPCIONAL: esconder links extras automáticos do cabeçalho ======
-   (só ative se ainda aparecerem textos como “Site … / Abrir site”)
-*/
-/*
-.nc-appHeader a[href="/"],
-.nc-appHeader a[href^="http"]:not([role]){
-  display:none !important;
-}
-*/
