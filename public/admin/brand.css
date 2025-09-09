@@ -3,6 +3,10 @@
   --brand-navy:#1c2846;
 }
 
+/* Header compacto, fixo no topo */
+.sc-admin-header { display: none !important; }
+
+
 .sc-admin-logo img {
   height: 40px;   
   display: block;
