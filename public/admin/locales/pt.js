@@ -1,15 +1,32 @@
 // public/admin/locales/pt.js
 window.DECAP_CMS_LOCALE_PT = {
-  app: { header: { content: "Conteúdos", media: "Mídia", quickAdd: "Adicionar", logout: "Sair" } },
+  app: {
+    header: {
+      content: "Conteúdos",
+      media: "Mídia",
+      quickAdd: "Adicionar",
+      logout: "Sair",
+    },
+  },
   collection: {
-    sidebar: { searchAll: "Buscar tudo" },
+    sidebar: {
+      searchAll: "Buscar tudo",
+    },
     entries: {
       loadingEntries: "Carregando itens...",
-      noEntries: "Nenhum item",
+      noEntries: "Nenhum item encontrado",
       createNew: "Novo {{collectionLabel}}",
+      newEntry: "Novo",
+      addNew: "Novo {{collectionLabel}}",
     },
   },
   editor: {
+    editorControlPane: {
+      widget: {
+        required: "Obrigatório",
+        invalid: "Valor inválido",
+      },
+    },
     editorToolbar: {
       publishing: "Publicando...",
       publish: "Publicar",
@@ -18,14 +35,31 @@ window.DECAP_CMS_LOCALE_PT = {
       publishChanges: "Publicar alterações",
       save: "Salvar",
       saving: "Salvando...",
+      updating: "Atualizando...",
     },
     editor: {
-      onLeavePageConfirm: "Existem alterações não salvas. Sair assim mesmo?",
+      onLeavePageConfirm:
+        "Existem alterações não salvas. Tem certeza que deseja sair?",
     },
   },
   mediaLibrary: {
-    mediaLibraryCard: { draft: "Rascunho" },
-    mediaLibrary: { onDelete: "Tem certeza de que deseja excluir?" },
+    mediaLibrary: {
+      loading: "Carregando...",
+      noResults: "Sem resultados.",
+      deleteSelected: "Excluir selecionados",
+    },
+    mediaLibraryCard: {
+      draft: "Rascunho",
+    },
+    mediaLibraryActions: {
+      insert: "Inserir",
+      choose: "Escolher um arquivo",
+      url: "Inserir de URL",
+    },
   },
-  ui: { default: { loading: "Carregando..." } },
+  ui: {
+    default: {
+      loading: "Carregando...",
+    },
+  },
 };

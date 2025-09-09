@@ -4,8 +4,13 @@
 }
 
 .sc-admin-logo img {
-  height: 40px;   /* antes estava 100% ou muito grande */
+  height: 60px;   /* antes estava 100% ou muito grande */
   display: block;
+}
+
+/* espaço para o header customizado */
+#nc-root {
+  padding-top: 60px; /* ajuste conforme a altura do seu header */
 }
 
 /* ===== LOGIN ===== */
