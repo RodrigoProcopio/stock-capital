@@ -225,3 +225,15 @@ collections:
               - { label: "Mês", name: "date", widget: "datetime", format: "YYYY-MM", date_format: "YYYY-MM", time_format: false }
               - { label: "Sortino", name: "sortino", widget: "number", step: 0.01 }
               - { label: "Sharpe", name: "sharpe", widget: "number", step: 0.01 }
+
+load_config_file: true
+publish_mode: editorial_workflow
+media_folder: "public/uploads"
+public_folder: "/uploads"
+
+# …
+editor:
+  preview: true
+display_url: https://stockcapitalmfo.com.br
+
+

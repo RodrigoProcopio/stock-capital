@@ -19,10 +19,10 @@
       frame-ancestors 'none';
       img-src 'self' data: blob:;
       font-src 'self' data: https://fonts.gstatic.com;
-      media-src 'self' data:;
+      media-src 'self' data: blob:;
       style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
       script-src 'self';
-      connect-src 'self' https://api.pipefy.com https://*.netlify.app;
+      connect-src 'self' data: blob: https://*.netlify.app https://api.pipefy.com;
       worker-src 'self' blob:;
       manifest-src 'self';
       form-action 'self';
@@ -36,7 +36,7 @@
     X-XSS-Protection = "0"
 
 # ─────────────────────────────────────────────────────────
-# /admin  (rota exata) — aplicar mesma CSP do CMS
+# /admin (rota exata) — CSP específica para o CMS
 # ─────────────────────────────────────────────────────────
 [[headers]]
   for = "/admin"
@@ -50,12 +50,10 @@
       frame-src 'self' https://identity.netlify.com;
       img-src 'self' data: blob: https://avatars.githubusercontent.com;
       font-src 'self' data: https://fonts.gstatic.com;
-      media-src 'self' data:;
+      media-src 'self' data: blob:;
       style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
       script-src 'self' 'unsafe-eval' 'wasm-unsafe-eval' blob: https://identity.netlify.com;
-      connect-src 'self' https://identity.netlify.com https://git-gateway.netlify.com https://api.netlify.com;
-      # Se usar backend GitHub direto, descomente:
-      # connect-src 'self' https://identity.netlify.com https://git-gateway.netlify.com https://api.netlify.com https://api.github.com https://github.com;
+      connect-src 'self' data: blob: https://identity.netlify.com https://git-gateway.netlify.com https://api.netlify.com https://www.netlifystatus.com;
       worker-src 'self' blob:;
       manifest-src 'self';
       form-action 'self';
@@ -63,7 +61,7 @@
     """
 
 # ─────────────────────────────────────────────────────────
-# /admin/* — subrotas do CMS (mantém igual)
+# /admin/* — subrotas do CMS
 # ─────────────────────────────────────────────────────────
 [[headers]]
   for = "/admin/*"
@@ -77,12 +75,10 @@
       frame-src 'self' https://identity.netlify.com;
       img-src 'self' data: blob: https://avatars.githubusercontent.com;
       font-src 'self' data: https://fonts.gstatic.com;
-      media-src 'self' data:;
+      media-src 'self' data: blob:;
       style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
       script-src 'self' 'unsafe-eval' 'wasm-unsafe-eval' blob: https://identity.netlify.com;
-      connect-src 'self' https://identity.netlify.com https://git-gateway.netlify.com https://api.netlify.com;
-      # Se usar backend GitHub direto, descomente:
-      # connect-src 'self' https://identity.netlify.com https://git-gateway.netlify.com https://api.netlify.com https://api.github.com https://github.com;
+      connect-src 'self' data: blob: https://identity.netlify.com https://git-gateway.netlify.com https://api.netlify.com https://www.netlifystatus.com;
       worker-src 'self' blob:;
       manifest-src 'self';
       form-action 'self';
@@ -124,7 +120,7 @@
 [build.environment]
   NODE_VERSION = "20"
 
-# www -> apex (opcional)
+# www -> apex
 [[redirects]]
   from = "https://www.stockcapitalmfo.com.br/*"
   to   = "https://stockcapitalmfo.com.br/:splat"
