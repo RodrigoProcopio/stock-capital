@@ -4,13 +4,7 @@
 }
 
 /* Header compacto, fixo no topo */
-.sc-admin-header{
-  position: fixed; top: 0; left: 0; right: 0;
-  height: 48px;                 /* altura real do cabeçalho */
-  padding: 6px 12px;            /* deixa baixinho */
-  display: flex; align-items: center; gap: 12px;
-  background:#0f172a; color:#fff; border-bottom:1px solid #0b1224; z-index:1000;
-}
+.sc-admin-header { display: none !important; }
 
 .sc-admin-logo img {
   height: 40px;   

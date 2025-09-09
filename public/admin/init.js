@@ -8,10 +8,13 @@ if (window.CMS?.registerPreviewStyle) {
   window.CMS.registerPreviewStyle("/admin/preview.css", { raw: false });
 }
 
-if (window.CMS && window.DECAP_CMS_LOCALE_PT) {
+if (window.DECAP_CMS_LOCALE_PT) {
   window.CMS.registerLocale("pt", window.DECAP_CMS_LOCALE_PT);
-  window.CMS.setLocale("pt");
 }
+// o idioma é definido pelo config.yml -> locale: "pt"
+// (se existir CMS.setLocale, usamos, mas sem quebrar)
+if (window.CMS.setLocale) window.CMS.setLocale("pt");
+
 
 /* Netlify Identity */
 if (window.netlifyIdentity) {
