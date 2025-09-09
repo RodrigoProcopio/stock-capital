@@ -3,6 +3,11 @@
   --brand-navy:#1c2846;
 }
 
+.sc-admin-logo img {
+  height: 40px;   /* antes estava 100% ou muito grande */
+  display: block;
+}
+
 /* ====== LOGIN ====== */
 .nc-loginPage-logo,
 .login-logo,
