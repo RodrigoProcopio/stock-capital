@@ -4,7 +4,7 @@ backend:
 
 # permite usar npx decap-server em dev (opcional)
 local_backend: true
-
+locale: "pt" 
 site_url: "/"
 logo_url: "/admin/logo.png"
 

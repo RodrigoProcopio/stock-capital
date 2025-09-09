@@ -8,6 +8,11 @@ if (window.CMS?.registerPreviewStyle) {
   window.CMS.registerPreviewStyle("/admin/preview.css", { raw: false });
 }
 
+if (window.CMS && window.DECAP_CMS_LOCALE_PT) {
+  window.CMS.registerLocale("pt", window.DECAP_CMS_LOCALE_PT);
+  window.CMS.setLocale("pt");
+}
+
 /* Netlify Identity */
 if (window.netlifyIdentity) {
   window.netlifyIdentity.init();
