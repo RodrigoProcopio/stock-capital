@@ -6,18 +6,21 @@
     <meta name="robots" content="noindex,nofollow,noarchive" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <!-- Decap CMS UMD (LOCAL) -->
-    <script src="/admin/decap-cms-3.8.3.js"></script>
-
-    <!-- Netlify Identity Widget -->
-    <script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
-
-    <!-- CSS estático do preview -->
-    <link rel="stylesheet" href="/admin/preview.css">
+    <!-- CSS do preview -->
+    <link rel="stylesheet" href="/admin/preview.css" />
   </head>
   <body>
-    <!-- Seus scripts, depois do Decap -->
-    <script src="/admin/preview.js"></script>
-    <script src="/admin/init.js"></script>
+    <!-- Raiz exigida pelo Decap -->
+    <div id="nc-root"></div>
+
+    <!-- 1) Decap CMS (bundle LOCAL) -->
+    <script src="/admin/decap-cms-3.8.3.js" defer></script>
+
+    <!-- 2) Netlify Identity -->
+    <script src="https://identity.netlify.com/v1/netlify-identity-widget.js" defer></script>
+
+    <!-- 3) Seus scripts (depois do Decap) -->
+    <script src="/admin/preview.js" defer></script>
+    <script src="/admin/init.js" defer></script>
   </body>
 </html>
