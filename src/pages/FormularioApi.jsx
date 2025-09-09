@@ -741,7 +741,29 @@ async function submit() {
     const isEmpty = Array.isArray(v) ? v.length === 0 : String(v ?? "").trim() === "";
     if (!isEmpty) payload[fid] = v; // arrays vão como array; o backend converte para string
   }
+  
+// Campos do Pipefy que são SELECT de 1 opção (não aceitam múltiplos)
+const SINGLE_SELECT_FIELDS = [
+  F.finalidade,          // "Qual a principal finalidade de investir?"
+  F.dependentesPerfil,   // "Especifique o Perfil de Dependentes"
+  F.moeda,               // "Qual moeda você tem preferência em estar posicionado?"
+  F.inv24m,              // "Quais investimentos você realizou nos últimos 24 meses?"
+  F.tiposInvest,         // "Quais os tipos de investimentos que você mais se identifica?"
+];
 
+// ...depois de montar `payload` com os campos do form:
+for (const fid of Object.values(F)) {
+  const v = form[fid];
+  const isEmpty = Array.isArray(v) ? v.length === 0 : String(v ?? "").trim() === "";
+  if (!isEmpty) payload[fid] = v;
+}
+
+// 🔧 Coerção: se algum desses campos veio como array, manda só a 1ª opção
+for (const fid of SINGLE_SELECT_FIELDS) {
+  if (Array.isArray(payload[fid])) {
+    payload[fid] = payload[fid][0] || "";
+  }
+}
   const correlationId = (crypto?.randomUUID?.() || Math.random().toString(36).slice(2));
 
   setLoading(true);
