@@ -693,92 +693,112 @@ export default function FormularioApi() {
   const Current = steps[step].Component;
   const canContinue = useMemo(() => validators[step](), [form, step]);
 
-  async function submit() {
-    // Validação por etapas (UX)
-    // se o honeypot estiver preenchido, aborta (e "finge" sucesso p/ confundir bots)
+async function submit() {
+  // UX: validações por etapa
+  // honeypot: se preenchido, finge sucesso (confunde bots)
   if (String(hp || "").trim().length > 0) {
     showToast("Formulário enviado com sucesso!", "success");
     return;
   }
-    for (let i = 0; i < REQUIRED_BY_STEP.length - 1; i++) {
-      const missing = getMissingInStep(i, form);
-      if (missing.length) {
-        setStep(i);
-        const msg = missing.slice(0, 3).map((k) => `• ${labelOf(k)}`).join("\n");
-        showToast(`Antes de enviar, responda:\n${msg}`, "warning", 4800);
-        window.scrollTo({ top: 0 });
-        return;
-      }
+
+  for (let i = 0; i < REQUIRED_BY_STEP.length - 1; i++) {
+    const missing = getMissingInStep(i, form);
+    if (missing.length) {
+      setStep(i);
+      const msg = missing.slice(0, 3).map((k) => `• ${labelOf(k)}`).join("\n");
+      showToast(`Antes de enviar, responda:\n${msg}`, "warning", 4800);
+      window.scrollTo({ top: 0 });
+      return;
     }
-    if (!form.lgpd) {
-      setStep(4);
-      showToast("Você precisa aceitar a LGPD para continuar.", "warning");
+  }
+  if (!form.lgpd) {
+    setStep(4);
+    showToast("Você precisa aceitar a LGPD para continuar.", "warning");
+    return;
+  }
+
+  // Principais
+  const name = String(form[F.nome] || "").trim();
+  const email = String(form[F.email] || "").trim();
+  const phoneE164 = toE164BR(form[F.tel]);
+  const phone = E164_RE.test(phoneE164) ? phoneE164 : undefined; // telefone opcional no backend
+  const message = buildMessageFromForm(form); // resumo textual para histórico
+
+  // Monta payload: campos principais + TODOS os campos do questionário
+  const payload = {
+    name,
+    email,
+    phone,
+    message,
+    consent: true,
+    policyVersion: POLICY_VERSION,
+    hp, // honeypot
+  };
+
+  // Inclui cada field-id do Pipefy presente no form
+  for (const fid of Object.values(F)) {
+    const v = form[fid];
+    const isEmpty = Array.isArray(v) ? v.length === 0 : String(v ?? "").trim() === "";
+    if (!isEmpty) payload[fid] = v; // arrays vão como array; o backend converte para string
+  }
+
+  const correlationId = (crypto?.randomUUID?.() || Math.random().toString(36).slice(2));
+
+  setLoading(true);
+  try {
+    const res = await fetch("/api/form", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-Correlation-Id": correlationId,
+      },
+      body: JSON.stringify(payload),
+    });
+
+    const data = await res.json().catch(() => ({}));
+    const cid = data.correlationId || res.headers.get("X-Correlation-Id") || correlationId;
+
+    if (res.ok && data.ok) {
+      showToast(`Formulário enviado com sucesso! (ID: ${cid})`, "success");
+      window.scrollTo({ top: 0 });
+      // opcional: resetar o formulário após sucesso
+      // setForm({ ...estadoInicial });
       return;
     }
 
-    // Monta payload whitelisted para o backend
-    const name = String(form[F.nome] || "").trim();
-    const email = String(form[F.email] || "").trim();
-    const phoneE164 = toE164BR(form[F.tel]);
-    const phone = E164_RE.test(phoneE164) ? phoneE164 : undefined; // telefone é opcional no backend
-    const message = buildMessageFromForm(form);
-
-    const correlationId = crypto.randomUUID();
-    setLoading(true);
-    try {
-      const res = await fetch("/api/form", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "X-Correlation-Id": correlationId, // opcional, ajuda no rastreio
-        },
-        body: JSON.stringify({
-          name,
-          email,
-          phone,
-          message,
-          consent: true,
-          policyVersion: POLICY_VERSION,
-        }),
-      });
-
-      const data = await res.json().catch(() => ({}));
-      const cid = data.correlationId || res.headers.get("X-Correlation-Id") || correlationId;
-
-      if (res.ok && data.ok) {
-        showToast(`Formulário enviado com sucesso! (ID: ${cid})`, "success");
-        window.scrollTo({ top: 0 });
-        // opcional: resetar
-        // setForm(/* estado inicial */);
-        return;
-      }
-
-      // Tratamento de respostas do backend
-      if (res.status === 422) {
-        const fields = Object.keys(data.details || {});
-        showToast(`Verifique os campos: ${fields.join(", ")}`, "warning", 4800);
-        return;
-      }
-      if (res.status === 429) {
-        showToast("Muitas tentativas. Tente novamente em instantes.", "warning");
-        return;
-      }
-      if (res.status === 413) {
-        showToast("Mensagem muito grande. Reduza o tamanho do texto.", "warning");
-        return;
-      }
-      if (res.status === 403) {
-        showToast("Origem não permitida (CORS).", "error");
-        return;
-      }
-      showToast(`Falha (${res.status}). ID: ${cid}${data?.detail ? `\n${data.detail}` : ""}`, "error", 8000);
-    } catch (e) {
-      console.error(e);
-      showToast("Erro de conexão. Tente novamente.", "error");
-    } finally {
-      setLoading(false);
+    // Tratamento por status comuns
+    if (res.status === 422) {
+      const fields = Object.keys(data.details || {});
+      showToast(`Verifique os campos: ${fields.join(", ")}`, "warning", 4800);
+      return;
     }
+    if (res.status === 429) {
+      showToast("Muitas tentativas. Tente novamente em instantes.", "warning");
+      return;
+    }
+    if (res.status === 413) {
+      showToast("Mensagem muito grande. Reduza o tamanho do texto.", "warning");
+      return;
+    }
+    if (res.status === 403) {
+      showToast("Origem não permitida (CORS).", "error");
+      return;
+    }
+    if (res.status === 502) {
+      // Mostra o detalhe que o Pipefy devolveu (ex.: campo obrigatório faltando/valor inválido)
+      showToast(`Falha (502). ID: ${cid}\n${data?.detail || ""}`, "error", 8000);
+      return;
+    }
+
+    // Fallback
+    showToast(`Falha (${res.status}). ID: ${cid}${data?.detail ? `\n${data.detail}` : ""}`, "error", 8000);
+  } catch (e) {
+    console.error(e);
+    showToast("Erro de conexão. Tente novamente.", "error");
+  } finally {
+    setLoading(false);
   }
+}
 
   const progressPct = ((step + 1) / steps.length) * 100;
 
