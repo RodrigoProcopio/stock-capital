@@ -1,13 +1,9 @@
-// CommonJS v1 – send-to-pipefy.cjs (Opção 2 - ENVs por rota *_FORM)
-// Aceita payload do formulário de suitability ("/api/form") e envia ao Pipefy.
+// netlify/functions/send-to-pipefy.cjs
 const { getStore } = require("@netlify/blobs");
 const validator = require("validator");
 const { createHash, randomUUID } = require("crypto");
 
-/** ==================== Constantes / Helpers ==================== */
 const E164_RE = /^\+?[1-9]\d{1,14}$/;
-
-// Campos do Start Form do pipe "Análise de Perfil de Investidor"
 const PIPE_QUESTIONNAIRE_FIELDS = [
   "nome_do_cliente",
   "telefone_para_contato_whatsapp",
@@ -78,27 +74,23 @@ async function sendToPipefy(data, correlationId) {
     return { ok: true, skipped: true };
   }
 
-  // fetch polyfill p/ Node < 18
   let _fetch = global.fetch;
   if (!_fetch) {
     try { _fetch = (await import("node-fetch")).default; }
     catch { return { ok: false, error: "fetch_unavailable_runtime_lt18" }; }
   }
 
-  // ===== Mapeamentos por rota (FORM) =====
   const F_NAME   = process.env.PIPEFY_FIELD_NAME_FORM   || "nome_do_cliente";
   const F_EMAIL  = process.env.PIPEFY_FIELD_EMAIL_FORM  || process.env.PIPEFY_FIELD_EMAIL || "e_mail";
   const F_PHONE  = process.env.PIPEFY_FIELD_PHONE_FORM  || "telefone_para_contato_whatsapp";
-  const F_MSG    = process.env.PIPEFY_FIELD_MESSAGE_FORM || ""; // opcional
-  const F_POLICY = process.env.PIPEFY_FIELD_POLICY_VERSION_FORM || ""; // opcional
+  const F_MSG    = process.env.PIPEFY_FIELD_MESSAGE_FORM || "";
+  const F_POLICY = process.env.PIPEFY_FIELD_POLICY_VERSION_FORM || "";
 
   const F_LGPD_AT = process.env.PIPEFY_FIELD_LGPD_CONSENT_AT_FORM || "";
   const F_LGPD_IP = process.env.PIPEFY_FIELD_LGPD_IP_HASH_FORM    || "";
   const F_LGPD_UA = process.env.PIPEFY_FIELD_LGPD_UA_FORM         || "";
 
   const fields_attributes = [];
-
-  // campos principais (nome/email/telefone/mensagem/policy)
   fields_attributes.push({ field_id: F_NAME,  field_value: data.nome_do_cliente || data.name || "" });
   fields_attributes.push({ field_id: F_EMAIL, field_value: data.e_mail || data.email || "" });
   fields_attributes.push({ field_id: F_PHONE, field_value: data.telefone_para_contato_whatsapp || data.phone || "" });
@@ -111,7 +103,6 @@ async function sendToPipefy(data, correlationId) {
     if (F_LGPD_UA) fields_attributes.push({ field_id: F_LGPD_UA, field_value: data.ua || "" });
   }
 
-  // Repassa os campos do questionário recebidos; arrays → string
   const used = new Set(fields_attributes.map((f) => f.field_id));
   for (const fid of PIPE_QUESTIONNAIRE_FIELDS) {
     if (fid in data && !used.has(fid)) {
@@ -168,7 +159,7 @@ async function getRateStore() {
   if (!fetchImpl) { try { fetchImpl = (await import("node-fetch")).default; } catch {} }
 
   if (hasManual) return getStore("rate-limits", { siteID, token, fetch: fetchImpl });
-  return getStore("rate-limits"); // se não houver, só desabilita contagem (sem quebrar)
+  return getStore("rate-limits");
 }
 
 /** ==================== Handler ==================== */
@@ -192,12 +183,10 @@ exports.handler = async (event) => {
     return json(200, { ok: true, skipped: true, correlationId }, { ...cors, "X-Correlation-Id": correlationId });
   }
 
-  // Limite de payload (via header)
   const maxBytes = Number(process.env.MAX_BODY_BYTES || 102400);
   const contentLength = Number(getHeader(event, "content-length") || "0");
   if (contentLength > maxBytes) return json(413, { error: "Payload too large" }, { ...cors, "X-Correlation-Id": correlationId });
 
-  // Parse do body
   let body;
   try {
     body = event.isBase64Encoded
@@ -207,44 +196,37 @@ exports.handler = async (event) => {
     return json(400, { error: "Invalid JSON" }, { ...cors, "X-Correlation-Id": correlationId });
   }
 
-  // Honeypot
   if (String(body?.hp || "").trim().length > 0) {
     console.log(JSON.stringify({ level: "warn", msg: "honeypot_triggered", correlationId }));
     return { statusCode: 204, headers: { ...cors, "X-Correlation-Id": correlationId }, body: "" };
   }
 
-  // Whitelist de campos permitidos
-  const ALLOWED = ["name", "email", "phone", "message", "consent", "policyVersion", ...PIPE_QUESTIONNAIRE_FIELDS];
+  const ALLOWED = ["name","email","phone","message","consent","policyVersion", ...PIPE_QUESTIONNAIRE_FIELDS];
   const data = {};
   for (const k of ALLOWED) if (k in body) data[k] = typeof body[k] === "string" ? body[k].trim() : body[k];
 
-  // ===== Aliases / Normalização antes das validações =====
+  // normalização
   if (!data.nome_do_cliente && data.name) data.nome_do_cliente = String(data.name).trim();
   if (!data.e_mail && data.email) data.e_mail = String(data.email).trim();
-  if (!data.telefone_para_contato_whatsapp && data.phone) {
-    data.telefone_para_contato_whatsapp = String(data.phone).trim();
-  }
+  if (!data.telefone_para_contato_whatsapp && data.phone) data.telefone_para_contato_whatsapp = String(data.phone).trim();
 
-  // Validações mínimas (form não exige message)
+  // validações
   const errors = {};
   const nameToValidate = data.nome_do_cliente || data.name;
   if (!nameToValidate || String(nameToValidate).length > 100) errors.name = "Nome obrigatório (<= 100).";
   const emailToValidate = data.e_mail || data.email;
   if (!emailToValidate || !validator.isEmail(String(emailToValidate)) || String(emailToValidate).length > 254) errors.email = "Email inválido.";
-
   const phoneToValidate = data.telefone_para_contato_whatsapp || data.phone || "";
   if (phoneToValidate && !E164_RE.test(String(phoneToValidate))) errors.phone = "Telefone no formato E.164 (ex: +5511999999999).";
-
   if (data.message && String(data.message).length > 5000) errors.message = "Mensagem muito longa (<= 5000).";
   if (data.consent !== true) errors.consent = "Consentimento LGPD é obrigatório.";
   if (data.policyVersion && String(data.policyVersion).length > 20) errors.policyVersion = "policyVersion muito longo.";
 
   if (Object.keys(errors).length) {
     console.log(JSON.stringify({ level: "warn", msg: "validation_failed", correlationId, fields: Object.keys(errors), dur_ms: Date.now() - startedAt }));
-    return json(422, { error: "Validation failed", details: errors }, { ...cors, "X-Correlation-Id": correlationId });
+    return json(422, { error: "Validation failed", details: errors, correlationId }, { ...cors, "X-Correlation-Id": correlationId });
   }
 
-  // Rate limit
   let store = null;
   try { store = await getRateStore(); } catch (e) {
     console.log(JSON.stringify({ level: "error", msg: "blobs_setup_failed", correlationId, err: String(e?.message || e) }));
@@ -263,7 +245,7 @@ exports.handler = async (event) => {
       if (raw) { try { current = typeof raw === "string" ? JSON.parse(raw) : raw; } catch {} }
       if (current.c >= maxPerWindow) {
         console.log(JSON.stringify({ level: "warn", msg: "rate_limited", correlationId, ip_hash: sha256(`${ip}:${process.env.PII_SALT || ""}`), windowSec, maxPerWindow, dur_ms: Date.now() - startedAt }));
-        return json(429, { error: "Too Many Requests" }, { ...cors, "Retry-After": String(windowSec), "X-Correlation-Id": correlationId });
+        return json(429, { error: "Too Many Requests", correlationId }, { ...cors, "Retry-After": String(windowSec), "X-Correlation-Id": correlationId });
       }
       await store.set(key, JSON.stringify({ c: current.c + 1 }));
     } catch (e) {
@@ -271,10 +253,8 @@ exports.handler = async (event) => {
     }
   }
 
-  // Normaliza final para chamada
   const email = data.e_mail || data.email;
   const phone = data.telefone_para_contato_whatsapp || data.phone || "";
-
   const ua = getHeader(event, "user-agent") || "";
   const ip_hash = sha256(`${ip}:${process.env.PII_SALT || ""}`);
 
@@ -282,7 +262,7 @@ exports.handler = async (event) => {
 
   if (!pipeRes.ok) {
     console.log(JSON.stringify({ level: "error", msg: "pipefy_failed", correlationId, status: pipeRes.status || null, error: pipeRes.error || null, dur_ms: Date.now() - startedAt }));
-    return json(502, { error: "Upstream error", detail: pipeRes.error || null, correlationId }, { ...cors, "X-Correlation-Id": correlationId });
+    return json(502, { error: "Upstream error", message: "Pipefy rejected the request", detail: pipeRes.error || null, correlationId }, { ...cors, "X-Correlation-Id": correlationId });
   }
 
   console.log(JSON.stringify({

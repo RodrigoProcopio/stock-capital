@@ -771,7 +771,7 @@ export default function FormularioApi() {
         showToast("Origem não permitida (CORS).", "error");
         return;
       }
-      showToast(`Falha (${res.status}). ID: ${cid}`, "error", 4800);
+      showToast(`Falha (${res.status}). ID: ${cid}${data?.detail ? `\n${data.detail}` : ""}`, "error", 8000);
     } catch (e) {
       console.error(e);
       showToast("Erro de conexão. Tente novamente.", "error");
