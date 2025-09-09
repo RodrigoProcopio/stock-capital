@@ -2,19 +2,18 @@
 <html lang="pt-BR">
   <head>
     <meta charset="utf-8" />
-    <title>Stock Capital – CMS</title>
-    <link rel="icon" href="/favicon.ico" />
-    <link rel="stylesheet" href="./brand.css" />
-    <script src="./brand.js" defer></script>
+    <title>Stock Capital — CMS</title>
+    <meta name="robots" content="noindex,nofollow,noarchive" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <!-- Decap CMS (UMD) -->
+    <script src="https://unpkg.com/decap-cms@^3.8.3/dist/decap-cms.js"></script>
+    <!-- Netlify Identity Widget -->
+    <script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
+    <!-- Seu CSS de preview (estático) -->
+    <link rel="stylesheet" href="/admin/preview.css">
   </head>
   <body>
-    <!-- Decap CMS: bundle fixo e self-hosted -->
-    <script src="/admin/decap-cms-3.8.3.js"></script>
-
-    <!-- Netlify Identity (se usa Git Gateway) -->
-    <script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
-
-    <!-- Seus scripts, sem inline -->
+    <!-- Inicialização do CMS e Identity -->
     <script src="/admin/preview.js"></script>
     <script src="/admin/init.js"></script>
   </body>
