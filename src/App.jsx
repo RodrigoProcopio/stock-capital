@@ -3,6 +3,7 @@ import heroImg from "./assets/hero.webp";
 import logo from "./assets/logo.png";
 import augustoImg from "./assets/augusto.webp";
 import igorImg from "./assets/igor.webp";
+import axelImg from "./assets/axel.webp";
 import LazyVisible from "./components/LazyVisible.jsx";
 import ChartsSection from "./components/charts/ChartsSection.jsx";
 import { Link } from "react-router-dom";
@@ -305,7 +306,7 @@ export default function App() {
                 <h3 className="text-lg font-semibold text-brand-navy">
                   Augusto Lubian <span className="font-normal">| CDAA, PQO</span>
                 </h3>
-                <p className="text-sm text-slate-600">CEO</p>
+                <p className="text-sm text-slate-600">Chief Executive Officer</p>
               </div>
             </div>
 
@@ -328,11 +329,35 @@ export default function App() {
                 <h3 className="text-lg font-semibold text-brand-navy">
                   Igor Dudeque <span className="font-normal">| CEA®, Behavioural Finance</span>
                 </h3>
-                <p className="text-sm text-slate-600">Director of Investments Strategies</p>
+                <p className="text-sm text-slate-600">Chief Investment Officer</p>
+              </div>
+            </div>
+
+                        {/* Card 3 */}
+            <div className="flex flex-col items-center text-center">
+              <div className="relative h-74 w-64 rounded-2xl overflow-hidden">
+                <img
+                  src={axelImg}
+                  alt="Axel Barrionuevo"
+                  className="h-full w-full object-cover"
+                  width="1920"
+                  height="2560"
+                  loading="lazy"
+                  decoding="async"
+                />
+                <div className="absolute inset-0 bg-white/25" />
+              </div>
+
+              <div className="mt-4">
+                <h3 className="text-lg font-semibold text-brand-navy">
+                  Axel Barrionuevo <span className="font-normal">| PQO </span>
+                </h3>
+                <p className="text-sm text-slate-600">Chief Operating Officer</p>
               </div>
             </div>
           </div>
         </Section>
+        
 
         {/* Nossos Serviços */}
         <Section id="nossos-servicos" title="Nossos Serviços">
