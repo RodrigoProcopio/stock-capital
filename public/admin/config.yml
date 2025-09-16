@@ -171,8 +171,8 @@ collections:
             widget: "list"
             summary: "{{fields.date}} — {{fields.rendimento}}%"
             fields:
-              - { label: "Mês",          name: "date",       widget: "datetime", format: "YYYY-MM", date_format: "YYYY-MM", time_format: false }
-              - { label: "Rendimento (%)", name: "rendimento", widget: "number", step: 0.01 }
+              - { label: "Mês", name: "date", widget: "datetime", format: "YYYY-MM", date_format: "YYYY-MM", time_format: false }
+              - { label: "Rendimento (%)", name: "rendimento", widget: "number", value_type: "float", step: 0.01 }
 
       - name: "desempenho_alpha"
         label: "Dados • Desempenho (Alpha)"
@@ -183,8 +183,8 @@ collections:
             widget: "list"
             summary: "{{fields.date}} — {{fields.rendimento}}%"
             fields:
-              - { label: "Mês",            name: "date",       widget: "datetime", format: "YYYY-MM", date_format: "YYYY-MM", time_format: false }
-              - { label: "Rendimento (%)", name: "rendimento", widget: "number", step: 0.01 }
+              - { label: "Mês", name: "date", widget: "datetime", format: "YYYY-MM", date_format: "YYYY-MM", time_format: false }
+              - { label: "Rendimento (%)", name: "rendimento", widget: "number", value_type: "float", step: 0.01 }
 
       - name: "desempenho_ifha"
         label: "Dados • Desempenho (IFHA)"
@@ -195,8 +195,8 @@ collections:
             widget: "list"
             summary: "{{fields.date}} — {{fields.rendimento}}%"
             fields:
-              - { label: "Mês",            name: "date",       widget: "datetime", format: "YYYY-MM", date_format: "YYYY-MM", time_format: false }
-              - { label: "Rendimento (%)", name: "rendimento", widget: "number", step: 0.01 }
+              - { label: "Mês", name: "date", widget: "datetime", format: "YYYY-MM", date_format: "YYYY-MM", time_format: false }
+              - { label: "Rendimento (%)", name: "rendimento", widget: "number", value_type: "float", step: 0.01 }
 
       - name: "desempenho_ipca"
         label: "Dados • Desempenho (IPCA)"
@@ -207,8 +207,8 @@ collections:
             widget: "list"
             summary: "{{fields.date}} — {{fields.rendimento}}%"
             fields:
-              - { label: "Mês",            name: "date",       widget: "datetime", format: "YYYY-MM", date_format: "YYYY-MM", time_format: false }
-              - { label: "Rendimento (%)", name: "rendimento", widget: "number", step: 0.01 }
+              - { label: "Mês", name: "date", widget: "datetime", format: "YYYY-MM", date_format: "YYYY-MM", time_format: false }
+              - { label: "Rendimento (%)", name: "rendimento", widget: "number", value_type: "float", step: 0.01 }
 
       - name: "volatilidade_ltm_data"
         label: "Dados • Volatilidade LTM"
@@ -219,8 +219,8 @@ collections:
             widget: "list"
             summary: "{{fields.date}} — {{fields.vol}}"
             fields:
-              - { label: "Mês",             name: "date", widget: "datetime", format: "YYYY-MM", date_format: "YYYY-MM", time_format: false }
-              - { label: "Volatilidade (%)", name: "vol",  widget: "number", step: 0.01 }
+              - { label: "Mês", name: "date", widget: "datetime", format: "YYYY-MM", date_format: "YYYY-MM", time_format: false }
+              - { label: "Volatilidade (%)", name: "vol", widget: "number", value_type: "float", step: 0.01 }
 
       - name: "risco_retorno_sortino_sharpe"
         label: "Dados • Risco-Retorno"
@@ -231,6 +231,6 @@ collections:
             widget: "list"
             summary: "{{fields.date}} — S:{{fields.sortino}} / Sh:{{fields.sharpe}}"
             fields:
-              - { label: "Mês",     name: "date",    widget: "datetime", format: "YYYY-MM", date_format: "YYYY-MM", time_format: false }
-              - { label: "Sortino", name: "sortino", widget: "number", step: 0.01 }
-              - { label: "Sharpe",  name: "sharpe",  widget: "number", step: 0.01 }
+              - { label: "Mês", name: "date", widget: "datetime", format: "YYYY-MM", date_format: "YYYY-MM", time_format: false }
+              - { label: "Sortino", name: "sortino", widget: "number", value_type: "float", step: 0.01 }
+              - { label: "Sharpe",  name: "sharpe",  widget: "number", value_type: "float", step: 0.01 }
