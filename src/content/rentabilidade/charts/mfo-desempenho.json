@@ -25,6 +25,11 @@
       "label": "IPCA",
       "source": "/src/content/rentabilidade/data/desempenho/ipca.json",
       "y": "rendimento"
+    },
+    {
+      "y": "rendimento",
+      "label": "Patrimônio Consolidado (R$)",
+      "source": "/src/content/rentabilidade/data/desempenho/patrimonioconsolidado.json"
     }
   ]
 }
