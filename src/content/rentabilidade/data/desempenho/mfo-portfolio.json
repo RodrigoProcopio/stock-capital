@@ -1,46 +1,5 @@
 {
   "nome": "Portfólio",
   "slug": "carteira2",
-  "series": [
-    {
-      "date": "2025-01",
-      "rendimento": 0.95
-    },
-    {
-      "date": "2025-03",
-      "rendimento": 1.09
-    },
-    {
-      "date": "2025-04",
-      "rendimento": 2.12
-    },
-    {
-      "date": "2025-05",
-      "rendimento": 1.15
-    },
-    {
-      "date": "2025-06",
-      "rendimento": 0.98
-    },
-    {
-      "date": "2025-07",
-      "rendimento": -0.05
-    },
-    {
-      "date": "2025-08",
-      "rendimento": 1.38
-    },
-    {
-      "date": "2025-09",
-      "rendimento": 1.68
-    },
-    {
-      "date": "2025-10",
-      "rendimento": 0.17
-    },
-    {
-      "date": "2025-02",
-      "rendimento": 0.24
-    }
-  ]
+  "series": []
 }
