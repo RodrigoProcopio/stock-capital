@@ -17,22 +17,38 @@ const ptPct = (v) => {
   return `${(Number.isFinite(n) ? n : 0).toFixed(2).replace(".", ",")}%`;
 };
 
+// opcional: deixa a data "2025-02" como "fev/2025"
+const fmtMes = (iso) => {
+  const [y, m] = String(iso).split("-").map(Number);
+  const d = new Date(y || 1970, (m || 1) - 1, 1);
+  return d.toLocaleDateString("pt-BR", { month: "short", year: "numeric" });
+};
+
+/**
+ * buildAccumulated agora devolve OS DOIS VALORES:
+ * - rendimento: acumulado (mantém a linha e o rótulo final)
+ * - mensal: valor isolado do mês (para o tooltip)
+ */
 function buildAccumulated(arr = [], mode = "compound") {
   const sorted = [...arr].sort((a, b) => (a.date < b.date ? -1 : a.date > b.date ? 1 : 0));
 
   if (mode === "sum") {
     let acc = 0;
     return sorted.map(({ date, rendimento }) => {
-      acc += Number(rendimento) || 0;
-      return { date, rendimento: acc };
+      const mensal = Number(rendimento) || 0;
+      acc += mensal;
+      return { date, rendimento: acc, mensal };
     });
   }
 
+  // compound
   let accMul = 1;
   return sorted.map(({ date, rendimento }) => {
+    const mensal = Number(rendimento) || 0;      // % do mês (ex.: 1.13)
     const r = Number(rendimento) / 100;
-    accMul *= 1 + (isFinite(r) ? r : 0);
-    return { date, rendimento: (accMul - 1) * 100 };
+    accMul *= 1 + (Number.isFinite(r) ? r : 0);
+    const acumulado = (accMul - 1) * 100;        // % acumulado até o mês
+    return { date, rendimento: acumulado, mensal };
   });
 }
 
@@ -49,18 +65,21 @@ function styleFor(label, idx) {
   return styles[idx % styles.length];
 }
 
-/* ✅ Tooltip customizado — mostra valor isolado do mês para todas as séries */
+/** Tooltip customizado: mostra apenas o valor ISOLADO do mês (mensal) de cada série */
 function CustomTooltip({ active, payload, label }) {
   if (!active || !payload || payload.length === 0) return null;
 
   return (
     <div className="bg-white border border-gray-200 rounded p-2 shadow text-sm">
-      <p><strong>{label}</strong></p>
-      {payload.map((p) => (
-        <p key={p.name} style={{ color: p.color }}>
-          {p.name}: {ptPct(p.value)}
-        </p>
-      ))}
+      <p><strong>{fmtMes(label)}</strong></p>
+      {payload.map((p) => {
+        const mensal = p?.payload?.mensal; // vem de buildAccumulated
+        return (
+          <p key={p.name} style={{ color: p.color }}>
+            {p.name}: {ptPct(mensal)}
+          </p>
+        );
+      })}
     </div>
   );
 }
@@ -90,17 +109,13 @@ export default function ChartDesempenho({ config }) {
         console.error("Erro carregando séries de desempenho:", e);
       }
     })();
-    return () => {
-      alive = false;
-    };
+    return () => { alive = false; };
   }, [config]);
 
   const baseData = useMemo(() => {
     const set = new Set();
     series.forEach((s) => s.data?.forEach((p) => set.add(p.date)));
-    return Array.from(set)
-      .sort()
-      .map((date) => ({ date }));
+    return Array.from(set).sort().map((date) => ({ date }));
   }, [series]);
 
   if (!series.length) {
@@ -125,13 +140,13 @@ export default function ChartDesempenho({ config }) {
           <CartesianGrid strokeDasharray="3 3" />
           <XAxis dataKey="date" type="category" allowDuplicatedCategory={false} tickMargin={8} />
           <YAxis ticks={yTicks} domain={[0, top]} tickFormatter={(v) => `${v}%`} width={44} />
-          
-          {/* Tooltip customizado */}
+
+          {/* Tooltip customizado: mostra valores mensais (isolados) de cada série */}
           <Tooltip content={<CustomTooltip />} />
 
           {series.map((s, idx) => {
             const sty = styleFor(s.label, idx);
-            const yKey = s.yKey || "rendimento";
+            const yKey = s.yKey || "rendimento"; // continua traçando o ACUMULADO
             return (
               <Line
                 key={idx}
@@ -144,6 +159,7 @@ export default function ChartDesempenho({ config }) {
                 strokeDasharray={sty.strokeDasharray}
                 dot={false}
               >
+                {/* Label final continua mostrando o acumulado + nome da série */}
                 <LabelList
                   dataKey={yKey}
                   position="right"
