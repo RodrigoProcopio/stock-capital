@@ -8,23 +8,24 @@
   "series": [
     {
       "label": "Portfólio",
-      "source": "/src/content/rentabilidade/data/desempenho/mfo-portfolio.json",
+      "source": "src/content/rentabilidade/data/desempenho/mfo-portfolio.json",
       "y": "rendimento"
     },
     {
       "label": "Alpha¹",
-      "source": "/src/content/rentabilidade/data/desempenho/alpha.json",
+      "source": "src/content/rentabilidade/data/desempenho/alpha.json",
       "y": "rendimento"
     },
     {
       "label": "IFHA²",
-      "source": "/src/content/rentabilidade/data/desempenho/ifha.json",
+      "source": "src/content/rentabilidade/data/desempenho/ifha.json",
       "y": "rendimento"
     },
     {
       "label": "IPCA",
-      "source": "/src/content/rentabilidade/data/desempenho/ipca.json",
+      "source": "src/content/rentabilidade/data/desempenho/ipca.json",
       "y": "rendimento"
     }
   ]
 }
+
