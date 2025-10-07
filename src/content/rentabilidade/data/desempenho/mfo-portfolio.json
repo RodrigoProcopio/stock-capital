@@ -4,43 +4,43 @@
   "series": [
     {
       "date": "2025-01",
-      "rendimento": 1.62
+      "rendimento": 0.95
     },
     {
       "date": "2025-02",
-      "rendimento": -1.72
+      "rendimento": 0.23
     },
     {
       "date": "2025-03",
-      "rendimento": 1.45
+      "rendimento": 1.08
     },
     {
       "date": "2025-04",
-      "rendimento": 3.48
+      "rendimento": 2.12
     },
     {
       "date": "2025-05",
-      "rendimento": 2.36
+      "rendimento": 1.15
     },
     {
       "date": "2025-06",
-      "rendimento": 0.68
+      "rendimento": 0.97
     },
     {
       "date": "2025-07",
-      "rendimento": 0.53
+      "rendimento": -0.05
     },
     {
       "date": "2025-08",
-      "rendimento": 1.19
+      "rendimento": 1.38
     },
     {
       "date": "2025-09",
-      "rendimento": 1.22
+      "rendimento": 1.68
     },
     {
       "date": "2025-10",
-      "rendimento": 1.95
+      "rendimento": 0.17
     }
   ]
 }
