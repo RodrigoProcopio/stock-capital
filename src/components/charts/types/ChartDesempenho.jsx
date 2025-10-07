@@ -1,6 +1,5 @@
 // src/components/charts/types/ChartDesempenho.jsx
 import { useEffect, useMemo, useState } from "react";
-// src/components/charts/types/ChartDesempenho.jsx
 import {
   ResponsiveContainer,
   LineChart,
@@ -50,6 +49,22 @@ function styleFor(label, idx) {
   return styles[idx % styles.length];
 }
 
+/* ✅ Tooltip customizado — mostra valor isolado do mês para todas as séries */
+function CustomTooltip({ active, payload, label }) {
+  if (!active || !payload || payload.length === 0) return null;
+
+  return (
+    <div className="bg-white border border-gray-200 rounded p-2 shadow text-sm">
+      <p><strong>{label}</strong></p>
+      {payload.map((p) => (
+        <p key={p.name} style={{ color: p.color }}>
+          {p.name}: {ptPct(p.value)}
+        </p>
+      ))}
+    </div>
+  );
+}
+
 export default function ChartDesempenho({ config }) {
   const [series, setSeries] = useState([]);
 
@@ -75,13 +90,17 @@ export default function ChartDesempenho({ config }) {
         console.error("Erro carregando séries de desempenho:", e);
       }
     })();
-    return () => { alive = false; };
+    return () => {
+      alive = false;
+    };
   }, [config]);
 
   const baseData = useMemo(() => {
     const set = new Set();
     series.forEach((s) => s.data?.forEach((p) => set.add(p.date)));
-    return Array.from(set).sort().map((date) => ({ date }));
+    return Array.from(set)
+      .sort()
+      .map((date) => ({ date }));
   }, [series]);
 
   if (!series.length) {
@@ -106,7 +125,9 @@ export default function ChartDesempenho({ config }) {
           <CartesianGrid strokeDasharray="3 3" />
           <XAxis dataKey="date" type="category" allowDuplicatedCategory={false} tickMargin={8} />
           <YAxis ticks={yTicks} domain={[0, top]} tickFormatter={(v) => `${v}%`} width={44} />
-          <Tooltip formatter={(v, name) => [ptPct(v), name]} labelFormatter={(l) => `Mês: ${l}`} />
+          
+          {/* Tooltip customizado */}
+          <Tooltip content={<CustomTooltip />} />
 
           {series.map((s, idx) => {
             const sty = styleFor(s.label, idx);
