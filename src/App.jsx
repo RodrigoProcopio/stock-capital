@@ -502,7 +502,7 @@ export default function App() {
                 <div>
                   <h3 className="font-semibold text-white">Endereço</h3>
                   <p className="text-white/80">
-                    Rua Francisco Rocha, 198 — Curitiba/PR - Brasil<br />CEP 80420-130
+                    Alameda Dom Pedro II, 155 — Curitiba/PR - Brasil<br />CEP 80420-160
                   </p>
                 </div>
               </div>
@@ -526,7 +526,7 @@ export default function App() {
                 </svg>
                 <div>
                   <h3 className="font-semibold text-white">Telefone</h3>
-                  <p className="text-white/80">(41) 0000-0000</p>
+                  <p className="text-white/80">(41) 98788-8230</p>
                 </div>
               </div>
 
