@@ -526,7 +526,7 @@ export default function App() {
                 </svg>
                 <div>
                   <h3 className="font-semibold text-white">Telefone</h3>
-                  <p className="text-white/80">(41) 98788-8230</p>
+                  <p className="text-white/80">(41) 99766-4434</p>
                 </div>
               </div>
 
