@@ -284,7 +284,7 @@ export default function App() {
 
         {/* Nossa Equipe */}
         <Section id="nossa-equipe" title="Nossa Equipe">
-          <div className="flex flex-wrap justify-center gap-12">
+          <div className="mx-auto grid max-w-4xl grid-cols-1 justify-items-center gap-12 md:grid-cols-2">
             {/* Card 1 */}
             <div className="flex flex-col items-center text-center">
               <div className="relative h-74 w-64 rounded-2xl overflow-hidden">
@@ -332,9 +332,7 @@ export default function App() {
             </div>
           </div>
         </Section>
-        
-
-        {/* Nossos Serviços */}
+                {/* Nossos Serviços */}
         <Section id="nossos-servicos" title="Nossos Serviços">
           <ServiceCards
             cols="3"
