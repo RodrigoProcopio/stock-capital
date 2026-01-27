@@ -330,29 +330,6 @@ export default function App() {
                 <p className="text-sm text-slate-600">Chief Investment Officer</p>
               </div>
             </div>
-
-                        {/* Card 3 */}
-            <div className="flex flex-col items-center text-center">
-              <div className="relative h-74 w-64 rounded-2xl overflow-hidden">
-                <img
-                  src={axelImg}
-                  alt="Axel Barrionuevo"
-                  className="h-full w-full object-cover"
-                  width="1920"
-                  height="2560"
-                  loading="lazy"
-                  decoding="async"
-                />
-                <div className="absolute inset-0 bg-white/25" />
-              </div>
-
-              <div className="mt-4">
-                <h3 className="text-lg font-semibold text-brand-navy">
-                  Axel Barrionuevo <span className="font-normal">| PQO </span>
-                </h3>
-                <p className="text-sm text-slate-600">Chief Operating Officer</p>
-              </div>
-            </div>
           </div>
         </Section>
         
