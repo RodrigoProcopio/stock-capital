@@ -439,11 +439,9 @@ export default function FundoInvestimento() {
         <SectionCard
           id="documentos"
           title="Documentos"
-          subtitle="Cards de download (mesmo padrão do Compliance)."
         >
           {docs.length === 0 ? (
             <div className="rounded-xl border border-brand-navy/15 bg-white p-5 text-sm text-slate-600">
-              Nenhum documento cadastrado ainda. Cadastre no CMS em: <b>Documentos</b> (título + data + PDF).
             </div>
           ) : (
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
