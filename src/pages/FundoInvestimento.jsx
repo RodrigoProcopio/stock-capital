@@ -444,7 +444,7 @@ export default function FundoInvestimento() {
             <div className="rounded-xl border border-brand-navy/15 bg-white p-5 text-sm text-slate-600">
             </div>
           ) : (
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 items-stretch">
               {docs.map((d, i) => (
                 <DocCard key={i} titulo={d.titulo} data={d.data} pdf={d.pdf} />
               ))}
@@ -463,7 +463,13 @@ export default function FundoInvestimento() {
 
 function DocCard({ titulo, data, pdf }) {
   return (
-    <article className="rounded-xl border border-brand-navy/15 bg-white p-5 shadow-sm hover:shadow-md transition">
+    <article className="
+  flex flex-col justify-between
+  h-full
+  rounded-xl border border-brand-navy/15 
+  bg-white p-5 shadow-sm 
+  hover:shadow-md transition
+">
       <h3 className="font-semibold text-brand-navy">{titulo}</h3>
       {data && <p className="mt-1 text-xs text-slate-500">{data}</p>}
       {pdf && (
