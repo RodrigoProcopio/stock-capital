@@ -385,7 +385,7 @@ export default function FundoInvestimento() {
               <div className="mt-3 h-[280px] w-full">
                 {exposicao.length === 0 ? (
                   <div className="flex h-full items-center justify-center text-sm text-slate-600">
-                    Sem dados de exposição. Cadastre no CMS em: <b>Exposição → Itens</b>.
+                    Sem dados de exposição.
                   </div>
                 ) : (
                   <ResponsiveContainer width="100%" height="100%">
