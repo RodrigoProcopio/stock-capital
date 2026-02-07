@@ -161,7 +161,7 @@ collections:
               - { label: "Sharpe", name: "sharpe", widget: "number", value_type: "float" }
 
   # ==============================
-  # FUNDOS (NOVO)
+  # FUNDOS
   # ==============================
 
   - name: "fundos"
@@ -175,6 +175,7 @@ collections:
     fields:
       - { label: "ID", name: "id", widget: "string" }
       - { label: "Slug", name: "slug", widget: "string" }
+      - { label: "Categoria (label)", name: "categoria_label", widget: "string", required: false }
       - { label: "Nome do Fundo", name: "nome", widget: "string" }
       - { label: "Símbolo", name: "simbolo", widget: "string" }
 
@@ -182,30 +183,117 @@ collections:
         name: "topo"
         widget: "object"
         fields:
-          - { label: "Taxa Administração Destaque", name: "taxa_administracao_destaque", widget: "string" }
+          - { label: "Taxa Administração Destaque", name: "taxa_administracao_destaque", widget: "string", required: false }
+          - { label: "Texto Prospecto (abaixo da taxa)", name: "prospecto_label", widget: "string", required: false }
+
+          - label: "Card • Valor da Cota"
+            name: "valor_cota"
+            widget: "object"
+            fields:
+              - { label: "Título do card (opcional)", name: "label", widget: "string", required: false }
+              - { label: "Data de referência (YYYY-MM-DD)", name: "data_referencia", widget: "datetime", format: "YYYY-MM-DD", date_format: "YYYY-MM-DD", time_format: false, required: false }
+              - { label: "Valor (R$)", name: "valor", widget: "number", value_type: "float", required: false }
+
+          - label: "Card • Variação da Cota"
+            name: "variacao_cota"
+            widget: "object"
+            fields:
+              - { label: "Título do card (opcional)", name: "label", widget: "string", required: false }
+              - { label: "Data de referência (YYYY-MM-DD)", name: "data_referencia", widget: "datetime", format: "YYYY-MM-DD", date_format: "YYYY-MM-DD", time_format: false, required: false }
+              - { label: "Valor (%)", name: "valor", widget: "number", value_type: "float", required: false }
+
+          - label: "Card • Rendimento Total da Cota"
+            name: "rendimento_total_cota"
+            widget: "object"
+            fields:
+              - { label: "Título do card (opcional)", name: "label", widget: "string", required: false }
+              - { label: "Data de referência (YYYY-MM-DD)", name: "data_referencia", widget: "datetime", format: "YYYY-MM-DD", date_format: "YYYY-MM-DD", time_format: false, required: false }
+              - { label: "Valor (%)", name: "valor", widget: "number", value_type: "float", required: false }
+
+      - label: "Avisos / Disclaimer"
+        name: "avisos"
+        widget: "object"
+        required: false
+        fields:
+          - { label: "Texto principal", name: "texto_principal", widget: "text", required: false }
+
+      - label: "Objetivo do Fundo"
+        name: "objetivo"
+        widget: "text"
+        required: false
+
+      - label: "Perfil do Investidor"
+        name: "perfil_investidor"
+        widget: "text"
+        required: false
 
       - label: "Características-chave"
         name: "caracteristicas_chave"
         widget: "object"
         fields:
-          - { label: "Patrimônio", name: "patrimonio_liquido", widget: "string" }
-          - { label: "Benchmark", name: "benchmark", widget: "string" }
+          - { label: "Patrimônio líquido do fundo", name: "patrimonio_liquido", widget: "string", required: false }
+          - { label: "Bolsa", name: "bolsa", widget: "string", required: false }
+          - { label: "Classe de ativos", name: "classe_de_ativos", widget: "string", required: false }
+          - { label: "Código CVM", name: "codigo_cvm", widget: "string", required: false }
+          - { label: "Domicílio", name: "domicilio", widget: "string", required: false }
+          - { label: "Data de constituição", name: "data_constituicao", widget: "string", required: false }
+          - { label: "Moeda", name: "moeda", widget: "string", required: false }
+          - { label: "Índice de benchmark", name: "benchmark", widget: "string", required: false }
+
+      - label: "Características do portfólio"
+        name: "caracteristicas_portfolio"
+        widget: "object"
+        fields:
+          - { label: "Número de ativos na carteira", name: "numero_ativos_carteira", widget: "number", value_type: "int", required: false }
+          - { label: "Retorno 12m", name: "retorno_12m", widget: "string", required: false }
+          - { label: "Volatilidade", name: "volatilidade", widget: "string", required: false }
+          - { label: "Beta (Versus CDI)", name: "beta", widget: "string", required: false }
+          - { label: "Sharpe", name: "sharpe", widget: "string", required: false }
+          - { label: "Máximo drawdown", name: "maximo_drawdown", widget: "string", required: false }
+
+      - label: "Exposição"
+        name: "exposicao"
+        widget: "object"
+        fields:
+          - label: "Itens (Setores)"
+            name: "itens"
+            widget: "list"
+            summary: "{{fields.setor}} — {{fields.percentual}}%"
+            fields:
+              - { label: "Setor", name: "setor", widget: "string" }
+              - { label: "Percentual (%)", name: "percentual", widget: "number", value_type: "float", min: 0, max: 100 }
 
       - label: "Rentabilidade"
         name: "rentabilidade"
         widget: "object"
         fields:
+          - { label: "Formato do mês (texto)", name: "formato_mes", widget: "string", default: "MM/AAAA", required: false }
           - label: "Tabela Mensal"
             name: "tabela_mensal"
             widget: "list"
+            summary: "{{fields.mes}} • Fundo: {{fields.fundo}}% • CDI: {{fields.cdi}}%"
             fields:
-              - { label: "Mês (MM/AAAA)", name: "mes", widget: "string" }
+              - {
+                  label: "Mês (MM/AAAA)",
+                  name: "mes",
+                  widget: "string",
+                  pattern: ["^(0[1-9]|1[0-2])\\/(19|20)\\d{2}$", "Use MM/AAAA. Ex: 02/2026"]
+                }
               - { label: "Fundo (%)", name: "fundo", widget: "number", value_type: "float" }
               - { label: "CDI (%)", name: "cdi", widget: "number", value_type: "float" }
+
+      - label: "Taxas"
+        name: "taxas"
+        widget: "list"
+        required: false
+        fields:
+          - { label: "Nome", name: "nome", widget: "string" }
+          - { label: "Valor", name: "valor", widget: "string" }
 
       - label: "Documentos"
         name: "documentos"
         widget: "list"
         fields:
           - { label: "Título", name: "titulo", widget: "string" }
+          - { label: "Data (DD/MM/AAAA)", name: "data", widget: "string", required: false }
           - { label: "PDF", name: "pdf", widget: "file", allow_types: ["pdf"] }
