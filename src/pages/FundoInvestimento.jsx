@@ -2,6 +2,8 @@
 import React, { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import logo from "../assets/logo.png";
+import FloatingWhatsApp from "../components/FloatingWhatsApp.jsx";
+import ScrollToTopButton from "../components/ScrollToTopButton.jsx";
 
 // JSON do Fundo (CMS)
 import fundo from "../content/fundos/stock-capital-fif-multimercado-cp-rl.json";
@@ -293,11 +295,7 @@ export default function FundoInvestimento() {
         <FundHeader data={data} />
 
         {/* Visão geral */}
-        <SectionCard
-          id="visao-geral"
-          title="Características-chave"
-          subtitle="Informações gerais do fundo."
-        >
+        <SectionCard id="visao-geral" title="Características-chave" subtitle="Informações gerais do fundo.">
           <Table2Col
             rows={[
               { label: "Patrimônio líquido do fundo", value: data?.caracteristicas_chave?.patrimonio_liquido ?? "—" },
@@ -307,7 +305,7 @@ export default function FundoInvestimento() {
               { label: "Domicílio", value: data?.caracteristicas_chave?.domicilio ?? "—" },
               { label: "Data de constituição", value: data?.caracteristicas_chave?.data_constituicao ?? "—" },
               { label: "Moeda", value: data?.caracteristicas_chave?.moeda ?? "—" },
-              { label: "Índice de benchmark", value: data?.caracteristicas_chave?.benchmark ?? "—" }
+              { label: "Índice de benchmark", value: data?.caracteristicas_chave?.benchmark ?? "—" },
             ]}
           />
         </SectionCard>
@@ -318,7 +316,6 @@ export default function FundoInvestimento() {
           title="Rentabilidade"
           subtitle={`Tabela mensal (${data?.rentabilidade?.formato_mes ?? "MM/AAAA"}) e crescimento hipotético (base 100).`}
         >
-          {/* Gráfico crescimento hipotético */}
           <div className="h-[320px] w-full rounded-xl border border-brand-navy/15 p-4">
             {crescimento.length === 0 ? (
               <div className="flex h-full items-center justify-center text-sm text-slate-600">
@@ -339,7 +336,6 @@ export default function FundoInvestimento() {
             )}
           </div>
 
-          {/* Tabela mensal */}
           <div className="mt-6 overflow-hidden rounded-xl border border-brand-navy/15">
             <table className="w-full text-sm">
               <thead className="bg-brand-100/30">
@@ -371,11 +367,7 @@ export default function FundoInvestimento() {
         </SectionCard>
 
         {/* Portfólio */}
-        <SectionCard
-          id="portfolio"
-          title="Características do portfólio"
-          subtitle="Indicadores e repartições de exposição."
-        >
+        <SectionCard id="portfolio" title="Características do portfólio" subtitle="Indicadores e repartições de exposição.">
           <div className="grid gap-6 lg:grid-cols-2">
             <Table2Col
               rows={[
@@ -384,13 +376,12 @@ export default function FundoInvestimento() {
                 { label: "Volatilidade", value: data?.caracteristicas_portfolio?.volatilidade ?? "—" },
                 { label: "Beta (Versus CDI)", value: data?.caracteristicas_portfolio?.beta ?? "—" },
                 { label: "Sharpe", value: data?.caracteristicas_portfolio?.sharpe ?? "—" },
-                { label: "Máximo drawdown", value: data?.caracteristicas_portfolio?.maximo_drawdown ?? "—" }
+                { label: "Máximo drawdown", value: data?.caracteristicas_portfolio?.maximo_drawdown ?? "—" },
               ]}
             />
 
             <div className="rounded-xl border border-brand-navy/15 p-4">
               <div className="text-sm font-semibold text-brand-navy">Repartições da Exposição</div>
-
               <div className="mt-3 h-[280px] w-full">
                 {exposicao.length === 0 ? (
                   <div className="flex h-full items-center justify-center text-sm text-slate-600">
@@ -436,12 +427,10 @@ export default function FundoInvestimento() {
         </SectionCard>
 
         {/* Documentos */}
-        <SectionCard
-          id="documentos"
-          title="Documentos"
-        >
+        <SectionCard id="documentos" title="Documentos">
           {docs.length === 0 ? (
             <div className="rounded-xl border border-brand-navy/15 bg-white p-5 text-sm text-slate-600">
+              Nenhum documento cadastrado ainda.
             </div>
           ) : (
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 items-stretch">
@@ -451,12 +440,18 @@ export default function FundoInvestimento() {
             </div>
           )}
         </SectionCard>
-
-        {/* Rodapé pequeno */}
-        <div className="pb-10 text-center text-xs text-slate-500">
-          {data?.labels?.prospecto ?? "De acordo com o prospecto atual"}
-        </div>
       </main>
+
+      {/* Botões flutuantes */}
+      <FloatingWhatsApp />
+      <ScrollToTopButton />
+
+      {/* Rodapé */}
+      <footer className="border-t border-brand-navy/10 bg-brand-primary py-10 text-white">
+        <div className="mx-auto max-w-7xl px-4 text-center text-sm text-white/90">
+          © {new Date().getFullYear()} Stock Capital MFO — Todos os direitos reservados.
+        </div>
+      </footer>
     </div>
   );
 }
