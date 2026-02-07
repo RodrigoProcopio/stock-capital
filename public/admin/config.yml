@@ -2,19 +2,15 @@ backend:
   name: git-gateway
   branch: main
 
-# permite usar npx decap-server em dev (opcional)
 local_backend: true
-locale: "pt" 
+locale: "pt"
 site_url: "/"
 logo_url: "/admin/logo.png"
 
-media_folder: "public/uploads"   # arquivos físicos no repo
-public_folder: "/uploads"        # como o site acessa os uploads
+media_folder: "public/uploads"
+public_folder: "/uploads"
 
-# carrega init.js/preview.js
 load_config_file: true
-
-# modo de publicação
 publish_mode: simple
 
 slug:
@@ -26,6 +22,11 @@ editor:
 display_url: https://stockcapitalmfo.com.br
 
 collections:
+
+  # ==============================
+  # PUBLICAÇÕES
+  # ==============================
+
   - name: "cartas"
     label: "Cartas"
     folder: "src/content/cartas"
@@ -34,10 +35,10 @@ collections:
     format: "json"
     slug: "{{slug}}"
     fields:
-      - { name: "title",   label: "Título",  widget: "string" }
-      - { name: "date",    label: "Data",    widget: "datetime", format: "DD/MM/YYYY", date_format: "DD/MM/YYYY", time_format: false }
-      - { name: "summary", label: "Resumo",  widget: "text", required: false }
-      - { name: "pdf",     label: "PDF",     widget: "file", media_library: { allow_multiple: false }, allow_types: ["pdf"] }
+      - { name: "title", label: "Título", widget: "string" }
+      - { name: "date", label: "Data", widget: "datetime", format: "DD/MM/YYYY", date_format: "DD/MM/YYYY", time_format: false }
+      - { name: "summary", label: "Resumo", widget: "text", required: false }
+      - { name: "pdf", label: "PDF", widget: "file", media_library: { allow_multiple: false }, allow_types: ["pdf"] }
 
   - name: "relatorios"
     label: "Relatórios"
@@ -47,10 +48,10 @@ collections:
     format: "json"
     slug: "{{slug}}"
     fields:
-      - { name: "title",   label: "Título",  widget: "string" }
-      - { name: "date",    label: "Data",    widget: "datetime", format: "DD/MM/YYYY", date_format: "DD/MM/YYYY", time_format: false }
-      - { name: "summary", label: "Resumo",  widget: "text", required: false }
-      - { name: "pdf",     label: "PDF",     widget: "file", media_library: { allow_multiple: false }, allow_types: ["pdf"] }
+      - { name: "title", label: "Título", widget: "string" }
+      - { name: "date", label: "Data", widget: "datetime", format: "DD/MM/YYYY", date_format: "DD/MM/YYYY", time_format: false }
+      - { name: "summary", label: "Resumo", widget: "text", required: false }
+      - { name: "pdf", label: "PDF", widget: "file", media_library: { allow_multiple: false }, allow_types: ["pdf"] }
 
   - name: "insights"
     label: "Insights"
@@ -60,10 +61,10 @@ collections:
     format: "json"
     slug: "{{slug}}"
     fields:
-      - { name: "title",   label: "Título",  widget: "string" }
-      - { name: "date",    label: "Data",    widget: "datetime", format: "DD/MM/YYYY", date_format: "DD/MM/YYYY", time_format: false }
-      - { name: "summary", label: "Resumo",  widget: "text", required: false }
-      - { name: "pdf",     label: "PDF",     widget: "file", media_library: { allow_multiple: false }, allow_types: ["pdf"] }
+      - { name: "title", label: "Título", widget: "string" }
+      - { name: "date", label: "Data", widget: "datetime", format: "DD/MM/YYYY", date_format: "DD/MM/YYYY", time_format: false }
+      - { name: "summary", label: "Resumo", widget: "text", required: false }
+      - { name: "pdf", label: "PDF", widget: "file", media_library: { allow_multiple: false }, allow_types: ["pdf"] }
 
   - name: "compliance"
     label: "Compliance"
@@ -73,95 +74,69 @@ collections:
     format: "json"
     slug: "{{slug}}"
     fields:
-      - { name: "title",   label: "Título",  widget: "string" }
-      - { name: "date",    label: "Data",    widget: "datetime", format: "DD/MM/YYYY", date_format: "DD/MM/YYYY", time_format: false }
-      - { name: "summary", label: "Resumo",  widget: "text", required: false }
-      - { name: "pdf",     label: "PDF",     widget: "file", media_library: { allow_multiple: false }, allow_types: ["pdf"] }
+      - { name: "title", label: "Título", widget: "string" }
+      - { name: "date", label: "Data", widget: "datetime", format: "DD/MM/YYYY", date_format: "DD/MM/YYYY", time_format: false }
+      - { name: "summary", label: "Resumo", widget: "text", required: false }
+      - { name: "pdf", label: "PDF", widget: "file", media_library: { allow_multiple: false }, allow_types: ["pdf"] }
 
-  # === Configurações dos Gráficos (carrossel) ===
+  # ==============================
+  # GRÁFICOS - CONFIG
+  # ==============================
+
   - name: "charts_config"
     label: "Gráficos • Configurações"
     format: "json"
     files:
+
       - name: "mfo_desempenho"
         label: "Gráfico: Desempenho"
         file: "src/content/rentabilidade/charts/mfo-desempenho.json"
         fields:
-          - { name: "type", label: "Tipo (fixo)", widget: "hidden", default: "desempenho" }
+          - { name: "type", widget: "hidden", default: "desempenho" }
           - { name: "title", label: "Título", widget: "string" }
           - { name: "subtitle", label: "Subtítulo", widget: "string", required: false }
-          - { name: "notes", label: "Notas (rodapé)", widget: "text", required: false }
-          - { name: "autoplay_seconds", label: "Auto-play (segundos)", widget: "number", value_type: "int", min: 0, default: 8 }
+          - { name: "notes", label: "Notas", widget: "text", required: false }
+          - { name: "autoplay_seconds", label: "Auto-play", widget: "number", value_type: "int", min: 0, default: 8 }
+
           - label: "Acumulação"
             name: "accumulation"
             widget: "select"
             options: ["sum", "compound"]
             default: "sum"
-          - label: "Séries (linhas do gráfico)"
+
+          - label: "Séries"
             name: "series"
             widget: "list"
-            summary: "{{fields.label}} ← {{fields.source}}"
             fields:
-              - { name: "label", label: "Rótulo da Série", widget: "string" }
-              - label: "Fonte (arquivo JSON)"
-                name: "source"
-                widget: "file"
-                media_library: { allow_multiple: false }
-                allow_types: ["json"]
-              - { name: "y", label: "Campo Y no JSON (ex.: rendimento)", widget: "string", default: "rendimento" }
+              - { name: "label", label: "Rótulo", widget: "string" }
+              - { name: "source", label: "Fonte (JSON)", widget: "file", allow_types: ["json"] }
+              - { name: "y", label: "Campo Y", widget: "string", default: "rendimento" }
 
       - name: "volatilidade_ltm"
-        label: "Gráfico: Volatilidade LTM"
+        label: "Gráfico: Volatilidade"
         file: "src/content/rentabilidade/charts/volatilidade-ltm.json"
         fields:
-          - { name: "type", label: "Tipo (fixo)", widget: "hidden", default: "volatilidade" }
-          - { name: "title", label: "Título", widget: "string", default: "Volatilidade (últimos 12 meses)" }
-          - { name: "subtitle", label: "Subtítulo", widget: "string", required: false }
-          - { name: "notes", label: "Notas (rodapé)", widget: "text", required: false }
-          - { name: "autoplay_seconds", label: "Auto-play (segundos)", widget: "number", value_type: "int", min: 0, default: 8 }
-          - label: "Fonte de dados (JSON)"
-            name: "source"
-            widget: "file"
-            media_library: { allow_multiple: false }
-            allow_types: ["json"]
-          - label: "Opções"
-            name: "options"
-            widget: "object"
-            collapsed: false
-            fields:
-              - { name: "x", label: "Campo X (data)", widget: "string", default: "date" }
-              - { name: "y", label: "Campo Y (volatilidade %)", widget: "string", default: "vol" }
-              - { name: "label", label: "Nome da linha", widget: "string", default: "Volatilidade LTM" }
-              - { name: "suffix", label: "Sufixo do rótulo final", widget: "string", default: "LTM³", required: false }
+          - { name: "type", widget: "hidden", default: "volatilidade" }
+          - { name: "title", label: "Título", widget: "string" }
+          - { name: "source", label: "Fonte (JSON)", widget: "file", allow_types: ["json"] }
 
       - name: "risco_retorno"
         label: "Gráfico: Risco-Retorno"
         file: "src/content/rentabilidade/charts/risco-retorno.json"
         fields:
-          - { name: "type", label: "Tipo (fixo)", widget: "hidden", default: "risco-retorno" }
-          - { name: "title", label: "Título", widget: "string", default: "Índices de Risco-Retorno" }
-          - { name: "subtitle", label: "Subtítulo", widget: "string", required: false }
-          - { name: "notes", label: "Notas (rodapé)", widget: "text", required: false }
-          - { name: "autoplay_seconds", label: "Auto-play (segundos)", widget: "number", value_type: "int", min: 0, default: 8 }
-          - label: "Fonte (JSON com sortino/sharpe)"
-            name: "source"
-            widget: "file"
-            media_library: { allow_multiple: false }
-            allow_types: ["json"]
-          - label: "Opções"
-            name: "options"
-            widget: "object"
-            collapsed: false
-            fields:
-              - { name: "x",  label: "Campo X (data)",   widget: "string", default: "date" }
-              - { name: "y1", label: "Campo Y1 (Sortino)", widget: "string", default: "sortino" }
-              - { name: "y2", label: "Campo Y2 (Sharpe)",  widget: "string", default: "sharpe" }
+          - { name: "type", widget: "hidden", default: "risco-retorno" }
+          - { name: "title", label: "Título", widget: "string" }
+          - { name: "source", label: "Fonte (JSON)", widget: "file", allow_types: ["json"] }
 
-  # === Dados dos Gráficos ===
+  # ==============================
+  # GRÁFICOS - DADOS
+  # ==============================
+
   - name: "charts_data"
     label: "Gráficos • Dados"
     format: "json"
     files:
+
       - name: "desempenho_portfolio"
         label: "Dados • Desempenho (Portfólio)"
         file: "src/content/rentabilidade/data/desempenho/mfo-portfolio.json"
@@ -169,58 +144,9 @@ collections:
           - label: "Série"
             name: "series"
             widget: "list"
-            summary: "{{fields.date}} — {{fields.rendimento}}%"
             fields:
               - { label: "Mês", name: "date", widget: "datetime", format: "YYYY-MM", date_format: "YYYY-MM", time_format: false }
-              - { label: "Rendimento (%)", name: "rendimento", widget: "number", value_type: "float", step: 0.01 }
-
-      - name: "desempenho_alpha"
-        label: "Dados • Desempenho (Alpha)"
-        file: "src/content/rentabilidade/data/desempenho/alpha.json"
-        fields:
-          - label: "Série"
-            name: "series"
-            widget: "list"
-            summary: "{{fields.date}} — {{fields.rendimento}}%"
-            fields:
-              - { label: "Mês", name: "date", widget: "datetime", format: "YYYY-MM", date_format: "YYYY-MM", time_format: false }
-              - { label: "Rendimento (%)", name: "rendimento", widget: "number", value_type: "float", step: 0.01 }
-
-      - name: "desempenho_ifha"
-        label: "Dados • Desempenho (IFHA)"
-        file: "src/content/rentabilidade/data/desempenho/ifha.json"
-        fields:
-          - label: "Série"
-            name: "series"
-            widget: "list"
-            summary: "{{fields.date}} — {{fields.rendimento}}%"
-            fields:
-              - { label: "Mês", name: "date", widget: "datetime", format: "YYYY-MM", date_format: "YYYY-MM", time_format: false }
-              - { label: "Rendimento (%)", name: "rendimento", widget: "number", value_type: "float", step: 0.01 }
-
-      - name: "desempenho_ipca"
-        label: "Dados • Desempenho (IPCA)"
-        file: "src/content/rentabilidade/data/desempenho/ipca.json"
-        fields:
-          - label: "Série"
-            name: "series"
-            widget: "list"
-            summary: "{{fields.date}} — {{fields.rendimento}}%"
-            fields:
-              - { label: "Mês", name: "date", widget: "datetime", format: "YYYY-MM", date_format: "YYYY-MM", time_format: false }
-              - { label: "Rendimento (%)", name: "rendimento", widget: "number", value_type: "float", step: 0.01 }
-
-      - name: "volatilidade_ltm_data"
-        label: "Dados • Volatilidade LTM"
-        file: "src/content/rentabilidade/data/volatilidade/ltm.json"
-        fields:
-          - label: "Série"
-            name: "series"  
-            widget: "list"
-            summary: "{{fields.date}} — {{fields.vol}}"
-            fields:
-              - { label: "Mês", name: "date", widget: "datetime", format: "YYYY-MM", date_format: "YYYY-MM", time_format: false }
-              - { label: "Volatilidade (%)", name: "vol", widget: "number", value_type: "float", step: 0.01 }
+              - { label: "Rendimento (%)", name: "rendimento", widget: "number", value_type: "float" }
 
       - name: "risco_retorno_sortino_sharpe"
         label: "Dados • Risco-Retorno"
@@ -229,130 +155,57 @@ collections:
           - label: "Série"
             name: "series"
             widget: "list"
-            summary: "{{fields.date}} — S:{{fields.sortino}} / Sh:{{fields.sharpe}}"
             fields:
               - { label: "Mês", name: "date", widget: "datetime", format: "YYYY-MM", date_format: "YYYY-MM", time_format: false }
-              - { label: "Sortino", name: "sortino", widget: "number", value_type: "float", step: 0.01 }
-              - { label: "Sharpe",  name: "sharpe",  widget: "number", value_type: "float", step: 0.01 }
+              - { label: "Sortino", name: "sortino", widget: "number", value_type: "float" }
+              - { label: "Sharpe", name: "sharpe", widget: "number", value_type: "float" }
 
-        - name: "fundos"
-    label: "Fundo • Página"
-    label_singular: "Fundo"
+  # ==============================
+  # FUNDOS (NOVO)
+  # ==============================
+
+  - name: "fundos"
+    label: "Fundos"
     folder: "src/content/fundos"
     create: true
-    format: "json"
     extension: "json"
+    format: "json"
     slug: "{{slug}}"
+
     fields:
       - { label: "ID", name: "id", widget: "string" }
-      - { label: "Slug (URL)", name: "slug", widget: "string", hint: "Ex: fundo-de-investimento" }
+      - { label: "Slug", name: "slug", widget: "string" }
       - { label: "Nome do Fundo", name: "nome", widget: "string" }
       - { label: "Símbolo", name: "simbolo", widget: "string" }
-      - { label: "Categoria (label)", name: "categoria_label", widget: "string", default: "RENDA VARIÁVEL" }
 
       - label: "Topo"
         name: "topo"
         widget: "object"
         fields:
-          - label: "Valor da Cota"
-            name: "valor_cota"
-            widget: "object"
-            fields:
-              - { label: "Label (texto exibido)", name: "label", widget: "string", required: false }
-              - { label: "Data de referência (YYYY-MM-DD)", name: "data_referencia", widget: "string", required: false }
-              - { label: "Valor (R$)", name: "valor", widget: "number", value_type: "float", required: false }
-              - { label: "Moeda", name: "moeda", widget: "string", default: "BRL" }
-              - { label: "Prefixo", name: "formato", widget: "string", default: "R$" }
-
-          - label: "Variação da Cota"
-            name: "variacao_cota"
-            widget: "object"
-            fields:
-              - { label: "Label (texto exibido)", name: "label", widget: "string", required: false }
-              - { label: "Data de referência (YYYY-MM-DD)", name: "data_referencia", widget: "string", required: false }
-              - { label: "Valor (%)", name: "valor", widget: "number", value_type: "float", required: false }
-              - { label: "Unidade", name: "unidade", widget: "string", default: "%" }
-
-          - label: "Rendimento Total da Cota"
-            name: "rendimento_total_cota"
-            widget: "object"
-            fields:
-              - { label: "Label (texto exibido)", name: "label", widget: "string", required: false }
-              - { label: "Data de referência (YYYY-MM-DD)", name: "data_referencia", widget: "string", required: false }
-              - { label: "Valor (%)", name: "valor", widget: "number", value_type: "float", required: false }
-              - { label: "Unidade", name: "unidade", widget: "string", default: "%" }
-
-          - { label: "Taxa de Administração (destaque)", name: "taxa_administracao_destaque", widget: "string", default: "2,30%" }
-          - { label: "Texto Prospecto", name: "prospecto_label", widget: "string", default: "De acordo com o prospecto atual" }
+          - { label: "Taxa Administração Destaque", name: "taxa_administracao_destaque", widget: "string" }
 
       - label: "Características-chave"
         name: "caracteristicas_chave"
         widget: "object"
         fields:
-          - { label: "Patrimônio líquido do fundo", name: "patrimonio_liquido", widget: "string" }
-          - { label: "Bolsa", name: "bolsa", widget: "string" }
-          - { label: "Classe de ativos", name: "classe_de_ativos", widget: "string" }
-          - { label: "Código CVM", name: "codigo_cvm", widget: "string" }
-          - { label: "Domicílio", name: "domicilio", widget: "string" }
-          - { label: "Data de constituição (MM/AAAA ou DD/MM/AAAA)", name: "data_constituicao", widget: "string" }
-          - { label: "Moeda", name: "moeda", widget: "string" }
-          - { label: "Benchmark", name: "benchmark", widget: "string", default: "CDI" }
-
-      - label: "Características do portfólio"
-        name: "caracteristicas_portfolio"
-        widget: "object"
-        fields:
-          - { label: "Número de ativos na carteira", name: "numero_ativos_carteira", widget: "number", value_type: "int" }
-          - { label: "Retorno 12m", name: "retorno_12m", widget: "string" }
-          - { label: "Volatilidade", name: "volatilidade", widget: "string" }
-          - { label: "Beta (valor)", name: "beta", widget: "string" }
-          - { label: "Beta (referência)", name: "beta_referencia", widget: "string", default: "CDI" }
-          - { label: "Sharpe", name: "sharpe", widget: "string" }
-          - { label: "Máximo drawdown", name: "maximo_drawdown", widget: "string" }
-
-      - label: "Exposição (setores)"
-        name: "exposicao"
-        widget: "object"
-        fields:
-          - label: "Itens"
-            name: "itens"
-            widget: "list"
-            fields:
-              - { label: "Setor", name: "setor", widget: "string" }
-              - { label: "Percentual (%)", name: "percentual", widget: "number", value_type: "float" }
+          - { label: "Patrimônio", name: "patrimonio_liquido", widget: "string" }
+          - { label: "Benchmark", name: "benchmark", widget: "string" }
 
       - label: "Rentabilidade"
         name: "rentabilidade"
         widget: "object"
         fields:
-          - { label: "Benchmark (label)", name: "benchmark_label", widget: "string", default: "CDI" }
-          - { label: "Formato do mês", name: "formato_mes", widget: "string", default: "MM/AAAA" }
           - label: "Tabela Mensal"
             name: "tabela_mensal"
             widget: "list"
-            summary: "{{fields.mes}} • Fundo: {{fields.fundo}}% • CDI: {{fields.cdi}}%"
             fields:
-              - {
-                  label: "Mês (MM/AAAA)",
-                  name: "mes",
-                  widget: "string",
-                  pattern: ["^(0[1-9]|1[0-2])\\/(19|20)\\d{2}$", "Use MM/AAAA. Ex: 02/2026"]
-                }
+              - { label: "Mês (MM/AAAA)", name: "mes", widget: "string" }
               - { label: "Fundo (%)", name: "fundo", widget: "number", value_type: "float" }
               - { label: "CDI (%)", name: "cdi", widget: "number", value_type: "float" }
-
-      - label: "Taxas"
-        name: "taxas"
-        widget: "list"
-        fields:
-          - { label: "Nome", name: "nome", widget: "string" }
-          - { label: "Valor", name: "valor", widget: "string" }
 
       - label: "Documentos"
         name: "documentos"
         widget: "list"
         fields:
           - { label: "Título", name: "titulo", widget: "string" }
-          - { label: "Data (DD/MM/AAAA)", name: "data", widget: "string", required: false }
-          - { label: "PDF", name: "pdf", widget: "file", media_folder: "/public/uploads", public_folder: "/uploads" }
-
+          - { label: "PDF", name: "pdf", widget: "file", allow_types: ["pdf"] }
