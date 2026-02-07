@@ -210,23 +210,6 @@ collections:
               - { label: "Data de referência (YYYY-MM-DD)", name: "data_referencia", widget: "datetime", format: "YYYY-MM-DD", date_format: "YYYY-MM-DD", time_format: false, required: false }
               - { label: "Valor (%)", name: "valor", widget: "number", value_type: "float", required: false }
 
-      - label: "Avisos / Disclaimer"
-        name: "avisos"
-        widget: "object"
-        required: false
-        fields:
-          - { label: "Texto principal", name: "texto_principal", widget: "text", required: false }
-
-      - label: "Objetivo do Fundo"
-        name: "objetivo"
-        widget: "text"
-        required: false
-
-      - label: "Perfil do Investidor"
-        name: "perfil_investidor"
-        widget: "text"
-        required: false
-
       - label: "Características-chave"
         name: "caracteristicas_chave"
         widget: "object"
