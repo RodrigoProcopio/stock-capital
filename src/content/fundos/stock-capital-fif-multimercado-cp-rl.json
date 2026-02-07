@@ -1,0 +1,89 @@
+{
+  "id": "stock-capital-fif-multimercado-cp-rl",
+  "slug": "fundo-de-investimento",
+  "nome": "STOCK Capital FIF Multimercado CP RL",
+  "simbolo": "STOCK",
+  "categoria_label": "RENDA VARIÁVEL",
+  "labels": {
+    "secao_info": "Informações do fundo",
+    "valor_cota": "Valor da Cota",
+    "variacao_cota": "Variação da cota",
+    "rendimento_total_cota": "Rendimento total da Cota",
+    "benchmark": "Benchmark – CDI",
+    "prospecto": "De acordo com o prospecto atual"
+  },
+  "topo": {
+    "valor_cota": {
+      "data_referencia": "2026-02-02",
+      "valor": null,
+      "moeda": "BRL",
+      "formato": "R$",
+      "label": "Valor da Cota em 02 fev 2026"
+    },
+    "variacao_cota": {
+      "data_referencia": "2026-02-03",
+      "valor": null,
+      "unidade": "%",
+      "label": "Variação da cota em 03 fev 2026"
+    },
+    "rendimento_total_cota": {
+      "data_referencia": "2026-02-03",
+      "valor": null,
+      "unidade": "%",
+      "label": "Rendimento total da Cota em 03 fev 2026"
+    },
+    "taxa_administracao_destaque": "2,30%",
+    "prospecto_label": "De acordo com o prospecto atual"
+  },
+  "avisos": {
+    "texto_principal": "As informações aqui apresentadas referem-se exclusivamente ao Fundo de Investimento mencionado e devem ser interpretadas apenas neste contexto, à luz da política de investimento e dos limites por modalidade de ativo financeiro previstos no Regulamento do Fundo. Este material possui caráter estritamente informativo e não constitui, em nenhuma hipótese, recomendação, oferta, solicitação ou convite para compra ou venda de quaisquer ativos no Brasil. O Fundo de Investimento aqui apresentado foi registrado perante a Comissão de Valores Mobiliários (CVM) e, portanto, está disponível para oferta pública no mercado brasileiro.",
+    "observacoes_cliente": "Manter dinâmica de abas. Criar tabela atualizável mensalmente via CMS. Benchmark – CDI. Gráfico de crescimento hipotético similar ao da página principal."
+  },
+  "secoes_removidas": ["distribuicao", "documentos_nao_disponiveis", "periodos_52_semanas"],
+  "caracteristicas_chave": {
+    "patrimonio_liquido": "R$ 50.000,00",
+    "bolsa": "B3 S.A. – Brasil, Bolsa, Balcão",
+    "classe_de_ativos": "FIF",
+    "codigo_cvm": "64507423000185",
+    "domicilio": "Brasil",
+    "data_constituicao": "09/01/2026",
+    "moeda": "Real Brasileiro",
+    "benchmark": "CDI"
+  },
+  "caracteristicas_portfolio": {
+    "numero_ativos_carteira": 65,
+    "retorno_12m": "0,0%",
+    "volatilidade": "0,0%",
+    "beta": "0,0%",
+    "beta_referencia": "CDI",
+    "sharpe": "0,0%",
+    "maximo_drawdown": "0,0%"
+  },
+  "exposicao": {
+    "itens": [],
+    "observacao": "Preencher via CMS: setor e percentual de exposição do fundo."
+  },
+  "rentabilidade": {
+    "benchmark_label": "CDI",
+    "formato_mes": "MM/AAAA",
+    "tabela_mensal": [
+      {
+        "mes": "01/2026",
+        "fundo": 0.0,
+        "cdi": 0.0
+      }
+    ],
+    "observacao": "Tabela atualizável mensalmente via CMS."
+  },
+  "taxas": [
+    { "nome": "Taxa de Administração", "valor": "0,15% a.a." },
+    { "nome": "Taxa de Gestão", "valor": "0,70% a.a." },
+    { "nome": "Taxa de Custódia", "valor": "0,05% a.a." },
+    { "nome": "Taxa de Distribuição", "valor": "Até 0,80% a.a." },
+    { "nome": "Taxa de Consultoria de Valores Mobiliário", "valor": "0,60% a.a." },
+    { "nome": "Taxa de Performance", "valor": "20% sobre a valorização do CDI" },
+    { "nome": "Taxa de Entrada", "valor": "0,00%" },
+    { "nome": "Taxa de Saída", "valor": "0,00%" }
+  ],
+  "documentos": []
+}

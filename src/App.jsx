@@ -25,6 +25,7 @@ const NAV = [
   { id: "nossos-servicos", label: "Nossos Serviços" },
   { id: "governanca", label: "Governança" },
   { id: "publicacoes", label: "Publicações" },
+  { id: "fundo-de-investimento", label: "Fundo de Investimento", to: "/fundo-de-investimento" },
   { id: "formulario-api", label: "Formulário de API" },
   { id: "contato", label: "Contato" },
 ];
@@ -168,15 +169,26 @@ export default function App() {
           <nav id="main-menu" className="border-t border-brand-navy/10 bg-brand-100/70">
             <ul className="grid w-full gap-1 px-6 py-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6">
               {NAV.map((item) => (
-                <li key={item.id}>
-                  <button
-                    onClick={() => goTo(item.id)}
-                    className="w-full rounded-lg px-4 py-2 text-left text-sm font-semibold hover:bg-white hover:text-brand-navy"
-                  >
-                    {item.label}
-                  </button>
-                </li>
-              ))}
+  <li key={item.id}>
+    {item.to ? (
+      <Link
+        to={item.to}
+        onClick={() => setMenuOpen(false)}
+        className="block w-full rounded-lg px-4 py-2 text-left text-sm font-semibold hover:bg-white hover:text-brand-navy"
+      >
+        {item.label}
+      </Link>
+    ) : (
+      <button
+        onClick={() => goTo(item.id)}
+        className="w-full rounded-lg px-4 py-2 text-left text-sm font-semibold hover:bg-white hover:text-brand-navy"
+      >
+        {item.label}
+      </button>
+    )}
+  </li>
+))}
+
             </ul>
           </nav>
         )}

@@ -20,6 +20,7 @@ import PoliticaPrivacidade from "./pages/PoliticaPrivacidade.jsx";
 import TermosUso from "./pages/TermosUso.jsx";
 import SolicitacaoLGPD from "./pages/SolicitacaoLGPD.jsx";
 import PoliticaRetencaoLGPD from "./pages/PoliticaRetencaoLGPD.jsx";
+import FundoInvestimento from "./pages/FundoInvestimento.jsx";
 
 // Componente para rolar ao topo em cada navegação
 function ScrollToTop() {
@@ -44,6 +45,7 @@ function WithScroll({ children }) {
 const router = createBrowserRouter([
   { path: "/", element: <WithScroll><App /></WithScroll> }, // Landing
   { path: "/formulario-api", element: <WithScroll><FormularioApi /></WithScroll> },
+  { path: "/fundo-de-investimento", element: <WithScroll><FundoInvestimento /></WithScroll> },
 
   // Publicações
   { path: "/publicacoes/cartas", element: <WithScroll><Cartas /></WithScroll> },

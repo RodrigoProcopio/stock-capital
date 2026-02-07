@@ -234,3 +234,125 @@ collections:
               - { label: "Mês", name: "date", widget: "datetime", format: "YYYY-MM", date_format: "YYYY-MM", time_format: false }
               - { label: "Sortino", name: "sortino", widget: "number", value_type: "float", step: 0.01 }
               - { label: "Sharpe",  name: "sharpe",  widget: "number", value_type: "float", step: 0.01 }
+
+        - name: "fundos"
+    label: "Fundo • Página"
+    label_singular: "Fundo"
+    folder: "src/content/fundos"
+    create: true
+    format: "json"
+    extension: "json"
+    slug: "{{slug}}"
+    fields:
+      - { label: "ID", name: "id", widget: "string" }
+      - { label: "Slug (URL)", name: "slug", widget: "string", hint: "Ex: fundo-de-investimento" }
+      - { label: "Nome do Fundo", name: "nome", widget: "string" }
+      - { label: "Símbolo", name: "simbolo", widget: "string" }
+      - { label: "Categoria (label)", name: "categoria_label", widget: "string", default: "RENDA VARIÁVEL" }
+
+      - label: "Topo"
+        name: "topo"
+        widget: "object"
+        fields:
+          - label: "Valor da Cota"
+            name: "valor_cota"
+            widget: "object"
+            fields:
+              - { label: "Label (texto exibido)", name: "label", widget: "string", required: false }
+              - { label: "Data de referência (YYYY-MM-DD)", name: "data_referencia", widget: "string", required: false }
+              - { label: "Valor (R$)", name: "valor", widget: "number", value_type: "float", required: false }
+              - { label: "Moeda", name: "moeda", widget: "string", default: "BRL" }
+              - { label: "Prefixo", name: "formato", widget: "string", default: "R$" }
+
+          - label: "Variação da Cota"
+            name: "variacao_cota"
+            widget: "object"
+            fields:
+              - { label: "Label (texto exibido)", name: "label", widget: "string", required: false }
+              - { label: "Data de referência (YYYY-MM-DD)", name: "data_referencia", widget: "string", required: false }
+              - { label: "Valor (%)", name: "valor", widget: "number", value_type: "float", required: false }
+              - { label: "Unidade", name: "unidade", widget: "string", default: "%" }
+
+          - label: "Rendimento Total da Cota"
+            name: "rendimento_total_cota"
+            widget: "object"
+            fields:
+              - { label: "Label (texto exibido)", name: "label", widget: "string", required: false }
+              - { label: "Data de referência (YYYY-MM-DD)", name: "data_referencia", widget: "string", required: false }
+              - { label: "Valor (%)", name: "valor", widget: "number", value_type: "float", required: false }
+              - { label: "Unidade", name: "unidade", widget: "string", default: "%" }
+
+          - { label: "Taxa de Administração (destaque)", name: "taxa_administracao_destaque", widget: "string", default: "2,30%" }
+          - { label: "Texto Prospecto", name: "prospecto_label", widget: "string", default: "De acordo com o prospecto atual" }
+
+      - label: "Características-chave"
+        name: "caracteristicas_chave"
+        widget: "object"
+        fields:
+          - { label: "Patrimônio líquido do fundo", name: "patrimonio_liquido", widget: "string" }
+          - { label: "Bolsa", name: "bolsa", widget: "string" }
+          - { label: "Classe de ativos", name: "classe_de_ativos", widget: "string" }
+          - { label: "Código CVM", name: "codigo_cvm", widget: "string" }
+          - { label: "Domicílio", name: "domicilio", widget: "string" }
+          - { label: "Data de constituição (MM/AAAA ou DD/MM/AAAA)", name: "data_constituicao", widget: "string" }
+          - { label: "Moeda", name: "moeda", widget: "string" }
+          - { label: "Benchmark", name: "benchmark", widget: "string", default: "CDI" }
+
+      - label: "Características do portfólio"
+        name: "caracteristicas_portfolio"
+        widget: "object"
+        fields:
+          - { label: "Número de ativos na carteira", name: "numero_ativos_carteira", widget: "number", value_type: "int" }
+          - { label: "Retorno 12m", name: "retorno_12m", widget: "string" }
+          - { label: "Volatilidade", name: "volatilidade", widget: "string" }
+          - { label: "Beta (valor)", name: "beta", widget: "string" }
+          - { label: "Beta (referência)", name: "beta_referencia", widget: "string", default: "CDI" }
+          - { label: "Sharpe", name: "sharpe", widget: "string" }
+          - { label: "Máximo drawdown", name: "maximo_drawdown", widget: "string" }
+
+      - label: "Exposição (setores)"
+        name: "exposicao"
+        widget: "object"
+        fields:
+          - label: "Itens"
+            name: "itens"
+            widget: "list"
+            fields:
+              - { label: "Setor", name: "setor", widget: "string" }
+              - { label: "Percentual (%)", name: "percentual", widget: "number", value_type: "float" }
+
+      - label: "Rentabilidade"
+        name: "rentabilidade"
+        widget: "object"
+        fields:
+          - { label: "Benchmark (label)", name: "benchmark_label", widget: "string", default: "CDI" }
+          - { label: "Formato do mês", name: "formato_mes", widget: "string", default: "MM/AAAA" }
+          - label: "Tabela Mensal"
+            name: "tabela_mensal"
+            widget: "list"
+            summary: "{{fields.mes}} • Fundo: {{fields.fundo}}% • CDI: {{fields.cdi}}%"
+            fields:
+              - {
+                  label: "Mês (MM/AAAA)",
+                  name: "mes",
+                  widget: "string",
+                  pattern: ["^(0[1-9]|1[0-2])\\/(19|20)\\d{2}$", "Use MM/AAAA. Ex: 02/2026"]
+                }
+              - { label: "Fundo (%)", name: "fundo", widget: "number", value_type: "float" }
+              - { label: "CDI (%)", name: "cdi", widget: "number", value_type: "float" }
+
+      - label: "Taxas"
+        name: "taxas"
+        widget: "list"
+        fields:
+          - { label: "Nome", name: "nome", widget: "string" }
+          - { label: "Valor", name: "valor", widget: "string" }
+
+      - label: "Documentos"
+        name: "documentos"
+        widget: "list"
+        fields:
+          - { label: "Título", name: "titulo", widget: "string" }
+          - { label: "Data (DD/MM/AAAA)", name: "data", widget: "string", required: false }
+          - { label: "PDF", name: "pdf", widget: "file", media_folder: "/public/uploads", public_folder: "/uploads" }
+
