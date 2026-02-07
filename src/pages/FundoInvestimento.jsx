@@ -470,7 +470,7 @@ function DocCard({ titulo, data, pdf }) {
   bg-white p-5 shadow-sm 
   hover:shadow-md transition
 ">
-      <h3 className="font-semibold text-brand-navy">{titulo}</h3>
+      <h3 className="font-semibold text-brand-navy line-clamp-2">{titulo}</h3>
       {data && <p className="mt-1 text-xs text-slate-500">{data}</p>}
       {pdf && (
         <a
