@@ -6,7 +6,36 @@
   "simbolo": "STOCK",
   "categoria_label": "RENDA VARIÁVEL",
   "exposicao": {
-    "itens": [],
+    "itens": [
+      {
+        "setor": "Infraestrutura & Utilities",
+        "percentual": 5.6
+      },
+      {
+        "setor": "Ativos Ambientais",
+        "percentual": 10
+      },
+      {
+        "setor": "Financeiro & Serviços Financeiros",
+        "percentual": 7.5
+      },
+      {
+        "setor": "Materiais, Metais & Mineração",
+        "percentual": 11.5
+      },
+      {
+        "setor": "Energia & Transição Energética",
+        "percentual": 12.8
+      },
+      {
+        "setor": "Tecnologia & Inovação Digital",
+        "percentual": 18
+      },
+      {
+        "setor": "Renda Fixa & Caixa",
+        "percentual": 34.6
+      }
+    ],
     "observacao": "Preencher via CMS: setor e percentual de exposição do fundo."
   },
   "rentabilidade": {
@@ -45,7 +74,7 @@
   "topo": {
     "valor_cota": {
       "data_referencia": "2026-02-02",
-      "valor": null,
+      "valor": 500,
       "moeda": "BRL",
       "formato": "R$",
       "label": "Valor da Cota em 02 fev 2026"
