@@ -23,8 +23,9 @@ import {
   YAxis,
   CartesianGrid,
   Tooltip,
-  BarChart,
-  Bar,
+  PieChart,
+  Pie,
+  Cell,
   Legend,
 } from "recharts";
 
@@ -539,35 +540,68 @@ export default function FundoInvestimento() {
             />
 
             <div className="rounded-xl border border-brand-navy/15 p-4">
-              <div className="text-sm font-semibold text-brand-navy">
-                Repartições da Exposição
-              </div>
-              <div className="mt-3 h-[280px] w-full">
-                {exposicao.length === 0 ? (
-                  <div className="flex h-full items-center justify-center text-sm text-slate-600">
-                    Sem dados de exposição.
-                  </div>
-                ) : (
-                  <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={exposicao}>
-                      <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis
-                        dataKey="setor"
-                        tick={{ fontSize: 12 }}
-                        interval={0}
-                        angle={-15}
-                        textAnchor="end"
-                        height={70}
-                      />
-                      <YAxis tick={{ fontSize: 12 }} />
-                      <Tooltip />
-                      <Legend />
-                      <Bar dataKey="percentual" name="Percentual (%)" />
-                    </BarChart>
-                  </ResponsiveContainer>
-                )}
-              </div>
-            </div>
+  <div className="text-sm font-semibold text-brand-navy">
+    Repartições da Exposição
+  </div>
+
+  <div className="mt-3 h-[320px] w-full">
+    {exposicao.length === 0 ? (
+      <div className="flex h-full items-center justify-center text-sm text-slate-600">
+        Sem dados de exposição.
+      </div>
+    ) : (
+      <ResponsiveContainer width="100%" height="100%">
+        <PieChart>
+          <Tooltip
+            formatter={(value, name) => [`${Number(value).toFixed(1)}%`, name]}
+          />
+
+          <Legend
+            layout="vertical"
+            align="right"
+            verticalAlign="middle"
+            iconType="circle"
+            wrapperStyle={{ paddingLeft: 12 }}
+          />
+
+          <Pie
+            data={exposicao}
+            dataKey="percentual"
+            nameKey="setor"
+            cx="40%"
+            cy="50%"
+            innerRadius="55%"
+            outerRadius="85%"
+            paddingAngle={2}
+            labelLine={false}
+            label={({ percent }) =>
+              percent && percent > 0.04 ? `${(percent * 100).toFixed(0)}%` : ""
+            }
+          >
+            {exposicao.map((_, i) => (
+              <Cell
+                key={`cell-${i}`}
+                // cores (pode ajustar depois). Não aplica grayscale.
+                fill={[
+                  "#1E3A8A",
+                  "#F59E0B",
+                  "#3B82F6",
+                  "#F97316",
+                  "#10B981",
+                  "#8B5CF6",
+                  "#EF4444",
+                  "#14B8A6",
+                  "#A855F7",
+                  "#22C55E",
+                ][i % 10]}
+              />
+            ))}
+          </Pie>
+        </PieChart>
+      </ResponsiveContainer>
+    )}
+  </div>
+</div>
           </div>
         </SectionCard>
 
