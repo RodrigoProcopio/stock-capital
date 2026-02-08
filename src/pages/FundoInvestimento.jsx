@@ -2,12 +2,14 @@
 import React, { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import logo from "../assets/logo.png";
+
 import logoNovaFutura from "../assets/logos/nova-futura.png";
 import logoSmartSave from "../assets/logos/smartsave.png";
 import logoB3 from "../assets/logos/b3.png";
 import logoStockCapital from "../assets/logos/stock-capital.png";
 import logoANBIMA from "../assets/logos/anbima.png";
 import logoCVM from "../assets/logos/cvm.png";
+
 import FloatingWhatsApp from "../components/FloatingWhatsApp.jsx";
 import ScrollToTopButton from "../components/ScrollToTopButton.jsx";
 
@@ -27,6 +29,7 @@ import {
   Pie,
   Cell,
   Legend,
+  Sector,
 } from "recharts";
 
 function cx(...c) {
@@ -55,17 +58,15 @@ function pct(v) {
 
 function formatDateBR(dateStr) {
   if (!dateStr) return "";
-
   try {
     const d = new Date(dateStr);
-
     return new Intl.DateTimeFormat("pt-BR", {
       day: "2-digit",
       month: "short",
       year: "numeric",
     })
       .format(d)
-      .replace(".", ""); // remove "fev."
+      .replace(".", "");
   } catch {
     return dateStr;
   }
@@ -82,11 +83,10 @@ function parseMesToSortable(mes) {
 }
 
 function buildCrescimentoHipotetico(rows) {
-  // rows: [{mes, fundo, cdi}] em % mensal (ex.: 1.23)
-  // retorna [{mes, fundoBase100, cdiBase100}]
   const sorted = [...rows].sort(
     (a, b) => parseMesToSortable(a.mes) - parseMesToSortable(b.mes)
   );
+
   let fundoAcc = 100;
   let cdiAcc = 100;
 
@@ -104,6 +104,10 @@ function buildCrescimentoHipotetico(rows) {
   }
   return out;
 }
+
+/* =========================
+   UI COMPONENTS
+========================= */
 
 function FundHeader({ data }) {
   const topo = data?.topo ?? {};
@@ -136,24 +140,22 @@ function FundHeader({ data }) {
             </p>
           </div>
 
-<div className="
-  flex flex-col items-center justify-center text-center
-  rounded-xl border border-brand-navy/15 bg-gradient-to-br from-white to-brand-100/30
-  px-6 py-4
-  min-w-[220px]
-">
-  <div className="text-xs text-slate-500">
-    Taxa de Administração
-  </div>
-
-  <div className="text-2xl font-bold text-brand-navy">
-    {topo?.taxa_administracao_destaque ?? "—"}
-  </div>
-
-  <div className="mt-1 text-xs text-slate-500">
-    {topo?.prospecto_label ?? data?.labels?.prospecto ?? ""}
-  </div>
-</div>
+          {/* Card taxa admin centralizado */}
+          <div
+            className="
+              flex flex-col items-center justify-center text-center
+              rounded-xl border border-brand-navy/15 bg-gradient-to-br from-white to-brand-100/30
+              px-6 py-4 min-w-[220px]
+            "
+          >
+            <div className="text-xs text-slate-500">Taxa de Administração</div>
+            <div className="text-2xl font-bold text-brand-navy">
+              {topo?.taxa_administracao_destaque ?? "—"}
+            </div>
+            <div className="mt-1 text-xs text-slate-500">
+              {topo?.prospecto_label ?? data?.labels?.prospecto ?? ""}
+            </div>
+          </div>
         </div>
 
         <div className="mt-6 grid gap-4 md:grid-cols-3">
@@ -165,7 +167,9 @@ function FundHeader({ data }) {
                 : "Valor da Cota")
             }
             value={brl(vc?.valor)}
-            meta={vc?.data_referencia ? `Ref.: ${formatDateBR(vc.data_referencia)}` : ""}
+            meta={
+              vc?.data_referencia ? `Ref.: ${formatDateBR(vc.data_referencia)}` : ""
+            }
           />
 
           <KpiCard
@@ -176,7 +180,9 @@ function FundHeader({ data }) {
                 : "Variação da cota")
             }
             value={pct(vari?.valor)}
-            meta={vari?.data_referencia ? `Ref.: ${formatDateBR(vari.data_referencia)}` : ""}
+            meta={
+              vari?.data_referencia ? `Ref.: ${formatDateBR(vari.data_referencia)}` : ""
+            }
           />
 
           <KpiCard
@@ -187,7 +193,9 @@ function FundHeader({ data }) {
                 : "Rendimento total da Cota")
             }
             value={pct(rend?.valor)}
-            meta={rend?.data_referencia ? `Ref.: ${formatDateBR(rend.data_referencia)}` : ""}
+            meta={
+              rend?.data_referencia ? `Ref.: ${formatDateBR(rend.data_referencia)}` : ""
+            }
           />
         </div>
 
@@ -255,46 +263,24 @@ function Table2Col({ rows }) {
 function Tabs({ tabs, activeId, onSelect }) {
   return (
     <div className="sticky top-0 z-40 border-b border-brand-navy/10 bg-white/90 backdrop-blur supports-[backdrop-filter]:bg-white/70">
-      
       <div className="relative">
-
-        {/* Fade esquerdo */}
         <div className="pointer-events-none absolute left-0 top-0 h-full w-10 bg-gradient-to-r from-white to-transparent" />
-
-        {/* Fade direito */}
         <div className="pointer-events-none absolute right-0 top-0 h-full w-10 bg-gradient-to-l from-white to-transparent" />
 
-        {/* Scroll container */}
-        <div className="
-          mx-auto
-          flex
-          max-w-6xl
-          items-center
-          gap-2
-          overflow-x-auto
-          scroll-smooth
-          scrollbar-hide
-          snap-x
-          snap-mandatory
-          px-6
-          py-3
-        ">
+        <div
+          className="
+            mx-auto flex max-w-6xl items-center gap-2
+            overflow-x-auto scroll-smooth scrollbar-hide
+            snap-x snap-mandatory
+            px-6 py-3
+          "
+        >
           {tabs.map((t) => (
             <button
               key={t.id}
               onClick={() => onSelect(t.id)}
               className={cx(
-                `
-                whitespace-nowrap
-                snap-start
-                rounded-xl
-                border
-                px-4
-                py-2
-                text-sm
-                font-semibold
-                transition
-                `,
+                "whitespace-nowrap snap-start rounded-lg border px-2 py-1 text-sm font-semibold transition",
                 activeId === t.id
                   ? "border-brand-navy bg-brand-100/60 text-brand-navy"
                   : "border-brand-navy/15 bg-white text-slate-700 hover:bg-brand-100/40"
@@ -304,11 +290,313 @@ function Tabs({ tabs, activeId, onSelect }) {
             </button>
           ))}
         </div>
-
       </div>
     </div>
   );
 }
+
+/* =========================
+   PREMIUM DONUT (EXPOSIÇÃO)
+========================= */
+
+function ExposureDonutCard({ title = "Repartições da Exposição", items }) {
+  const [showLegendMobile, setShowLegendMobile] = useState(false);
+  const [activeIndex, setActiveIndex] = useState(-1);
+
+  const palette = [
+    "#0f2a5f",
+    "#2563eb",
+    "#10b981",
+    "#f59e0b",
+    "#ef4444",
+    "#8b5cf6",
+    "#14b8a6",
+    "#64748b",
+  ];
+
+  function fmtPct(v) {
+    const n = Number(v);
+    if (!Number.isFinite(n)) return "—";
+    return `${n.toFixed(n % 1 === 0 ? 0 : 1)}%`;
+  }
+
+  const data = useMemo(() => {
+    const safe = Array.isArray(items) ? items : [];
+    const cleaned = safe
+      .map((x, idx) => ({
+        name: x.setor ?? "—",
+        value: Number(x.percentual ?? 0), // ✅ vem do CMS
+        color: palette[idx % palette.length],
+      }))
+      .filter((x) => Number.isFinite(x.value) && x.value > 0)
+      .sort((a, b) => b.value - a.value);
+
+    return { cleaned };
+  }, [items]);
+
+  function CustomTooltip({ active, payload }) {
+    if (!active || !payload?.length) return null;
+    const p = payload[0]?.payload;
+    return (
+      <div className="rounded-lg border border-brand-navy/10 bg-white px-3 py-2 shadow-md">
+        <div className="text-xs font-semibold text-slate-700">{p?.name}</div>
+        <div className="mt-1 text-sm font-bold text-brand-navy">
+          {fmtPct(p?.value)}
+        </div>
+      </div>
+    );
+  }
+
+  // ✅ Label usa o MESMO valor da legenda (CMS)
+  const renderPercentLabel = (props) => {
+    const { cx, cy, midAngle, innerRadius, outerRadius, payload } = props;
+    const RADIAN = Math.PI / 180;
+
+    const r = innerRadius + (outerRadius - innerRadius) * 0.62;
+    const x = cx + r * Math.cos(-midAngle * RADIAN);
+    const y = cy + r * Math.sin(-midAngle * RADIAN);
+
+    return (
+      <text
+        x={x}
+        y={y}
+        textAnchor="middle"
+        dominantBaseline="central"
+        className="fill-white text-[11px] font-extrabold"
+      >
+        {fmtPct(payload?.value)}
+      </text>
+    );
+  };
+
+  // ✅ “Explode” no hover
+  const renderActiveShape = (props) => {
+    const {
+      cx,
+      cy,
+      innerRadius,
+      outerRadius,
+      startAngle,
+      endAngle,
+      fill,
+    } = props;
+
+    return (
+      <g>
+        <Sector
+          cx={cx}
+          cy={cy}
+          innerRadius={innerRadius}
+          outerRadius={outerRadius + 10} // “sai” do donut
+          startAngle={startAngle}
+          endAngle={endAngle}
+          fill={fill}
+        />
+        <Sector
+          cx={cx}
+          cy={cy}
+          innerRadius={innerRadius}
+          outerRadius={outerRadius + 10}
+          startAngle={startAngle}
+          endAngle={endAngle}
+          fill={fill}
+          opacity={0.15} // glow sutil
+        />
+      </g>
+    );
+  };
+
+  if (!data.cleaned.length) {
+    return (
+      <div className="rounded-2xl border border-brand-navy/10 p-6 bg-white">
+        <div className="text-base font-semibold text-brand-navy text-center">
+          {title}
+        </div>
+        <div className="mt-3 flex h-[220px] items-center justify-center text-sm text-slate-600">
+          Sem dados de exposição.
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="rounded-xl border border-brand-navy/15 bg-white p-4">
+      <div className="text-base font-semibold text-brand-navy text-center">
+        {title}
+      </div>
+      <div className="mt-4 grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
+
+        {/* DONUT */}
+        <div className="relative h-[250px] w-full">
+          <ResponsiveContainer width="100%" height="100%">
+            <PieChart>
+              <Tooltip content={<CustomTooltip />} />
+
+              <Pie
+                data={data.cleaned}
+                dataKey="value"
+                nameKey="name"
+                innerRadius="50%"
+                outerRadius="92%"
+                paddingAngle={2}
+                stroke="rgba(15, 42, 95, 0.08)"
+                strokeWidth={1}
+                isAnimationActive
+                labelLine={false}
+                label={renderPercentLabel}
+                activeIndex={activeIndex}
+                activeShape={renderActiveShape}
+                onMouseEnter={(_, idx) => setActiveIndex(idx)}
+                onMouseLeave={() => setActiveIndex(-1)}
+              >
+                {data.cleaned.map((entry, i) => (
+                  <Cell key={`cell-${i}`} fill={entry.color} />
+                ))}
+              </Pie>
+            </PieChart>
+          </ResponsiveContainer>
+        </div>
+
+         {/* LEGENDA */}
+        <div className="md:block">
+          <div className="md:hidden">
+            <button
+              type="button"
+              onClick={() => setShowLegendMobile((s) => !s)}
+              className="w-full rounded-lg border border-brand-navy/15 bg-white px-3 py-2 text-sm font-semibold text-brand-navy hover:bg-brand-100/40"
+            >
+              {showLegendMobile ? "Ocultar legenda" : "Mostrar legenda"}
+            </button>
+          </div>
+
+          <div
+            className={[
+              "mt-3 space-y-1.5",
+              "md:mt-0 md:space-y-1.5",
+              "md:max-h-[260px] md:overflow-auto md:pr-1",
+              "md:[scrollbar-width:thin]",
+              showLegendMobile ? "block" : "hidden md:block",
+            ].join(" ")}
+          >
+            {data.cleaned.map((item, i) => (
+              <div className="flex items-center justify-between gap-2 rounded-md border border-brand-navy/10 bg-white px-2 py-1.5">
+  <div className="flex min-w-0 items-center gap-2">
+    <span
+      className="h-2 w-2 flex-none rounded-full"
+      style={{ backgroundColor: item.color }}
+    />
+    <span className="truncate text-xs text-slate-600">
+      {item.name}
+    </span>
+  </div>
+  <span className="flex-none text-xs font-semibold text-slate-700">
+    {fmtPct(item.value)}
+  </span>
+</div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* =========================
+   PLATAFORMAS DE DISTRIBUIÇÃO
+========================= */
+
+function PlataformasDistribuicao({ plataformas = [] }) {
+  return (
+    <SectionCard
+      id="plataformas"
+      title="Invista por meio das plataformas de distribuição"
+      subtitle="O Stock Capital Fundo de Investimento Financeiro Multimercado está disponível nas plataformas parceiras:"
+    >
+      <div className="flex flex-wrap justify-center gap-6">
+        {plataformas.map((p, i) => (
+          <a
+            key={i}
+            href={p.href}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="
+              group w-[260px]
+              rounded-xl border border-brand-navy/10 bg-white p-6
+              flex items-center justify-center
+              transition hover:shadow-md hover:border-brand-navy/20
+            "
+            aria-label={`Abrir ${p.name}`}
+            title={p.name}
+          >
+            <div className="flex h-24 items-center justify-center">
+              <img
+                src={p.logo}
+                alt={p.name}
+                className={cx("w-auto object-contain", p.imgClass || "h-16")}
+                loading="lazy"
+                decoding="async"
+              />
+            </div>
+          </a>
+        ))}
+      </div>
+    </SectionCard>
+  );
+}
+
+/* =========================
+   INSTITUIÇÕES (LOGO CARDS)
+========================= */
+
+function LogoCard({ label, src, alt, imgClass = "h-14" }) {
+  return (
+    <div className="rounded-xl border border-brand-navy/10 bg-white p-4 text-center">
+      <div className="text-[11px] font-semibold tracking-wider text-slate-500 uppercase text-center">
+        {label}
+      </div>
+      <div className="mt-4 flex h-24 w-full items-center justify-center">
+        <img
+          src={src}
+          alt={alt}
+          className={cx("w-auto object-contain", imgClass)}
+          loading="lazy"
+          decoding="async"
+        />
+      </div>
+    </div>
+  );
+}
+
+function DocCard({ titulo, data, pdf }) {
+  return (
+    <article
+      className="
+        flex h-full min-h-[170px] flex-col justify-between
+        rounded-xl border border-brand-navy/15 bg-white p-5 shadow-sm
+        transition hover:shadow-md
+      "
+    >
+      <div>
+        <h3 className="font-semibold text-brand-navy line-clamp-2">{titulo}</h3>
+        {data && <p className="mt-1 text-xs text-slate-500">{data}</p>}
+      </div>
+
+      {pdf && (
+        <a
+          href={pdf}
+          className="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-lg border border-brand-navy/20 px-3 py-2 text-sm font-medium hover:bg-brand-100"
+          download
+        >
+          Baixar PDF
+        </a>
+      )}
+    </article>
+  );
+}
+
+/* =========================
+   PAGE
+========================= */
 
 export default function FundoInvestimento() {
   const data = fundo;
@@ -323,6 +611,7 @@ export default function FundoInvestimento() {
       { id: "taxas", label: "Taxas" },
       { id: "plataformas", label: "Onde Investir" },
       { id: "documentos", label: "Documentos" },
+      { id: "instituicoes", label: "Instituições" },
     ],
     []
   );
@@ -375,10 +664,14 @@ export default function FundoInvestimento() {
 
   return (
     <div className="min-h-screen bg-gray-50 text-slate-ink">
-      {/* Header simples (mantém estilo do site) */}
+      {/* Header */}
       <header className="border-b border-brand-navy/10 bg-white">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
-          <Link to="/" className="flex items-center gap-3" aria-label="Voltar para Home">
+          <Link
+            to="/"
+            className="flex items-center gap-3"
+            aria-label="Voltar para Home"
+          >
             <img
               src={logo}
               alt="Logo Stock Capital"
@@ -402,29 +695,8 @@ export default function FundoInvestimento() {
       <Tabs tabs={tabs} activeId={active} onSelect={go} />
 
       <main className="mx-auto max-w-6xl space-y-8 px-6 py-8">
-        {/* Topo */}
         <FundHeader data={data} />
 
-        {/* Objetivo do Fundo */}
-        <SectionCard id="objetivo" title="Objetivo do Fundo">
-          <p className="text-sm leading-relaxed text-slate-700">
-            Proporcionar retornos consistentes ajustados ao risco no médio e longo
-            prazo, por meio de uma estratégia multimercado dinâmica e altamente
-            diversificada, com baixa correlação estrutural em relação às
-            estratégias tradicionais.
-          </p>
-        </SectionCard>
-
-        {/* Perfil do Investidor */}
-        <SectionCard id="perfil-investidor" title="Perfil do Investidor">
-          <p className="text-sm leading-relaxed text-slate-700">
-            Investidores que buscam rentabilidade superior ao CDI no médio e longo
-            prazo, com tolerância a volatilidade moderada/alta e interesse em
-            exposição diversificada a setores disruptivos e tradicionais.
-          </p>
-        </SectionCard>
-
-        {/* Visão geral */}
         <SectionCard
           id="visao-geral"
           title="Características-chave"
@@ -462,7 +734,22 @@ export default function FundoInvestimento() {
           />
         </SectionCard>
 
-        {/* Rentabilidade */}
+        <SectionCard id="objetivo" title="Objetivo do Fundo">
+          <p className="text-sm leading-relaxed text-slate-700">
+            Proporcionar retornos consistentes ajustados ao risco no médio e longo prazo,
+            por meio de uma estratégia multimercado dinâmica e altamente diversificada,
+            com baixa correlação estrutural em relação às estratégias tradicionais.
+          </p>
+        </SectionCard>
+
+        <SectionCard id="perfil-investidor" title="Perfil do Investidor">
+          <p className="text-sm leading-relaxed text-slate-700">
+            Investidores que buscam rentabilidade superior ao CDI no médio e longo prazo,
+            com tolerância a volatilidade moderada/alta e interesse em exposição diversificada
+            a setores disruptivos e tradicionais.
+          </p>
+        </SectionCard>
+
         <SectionCard
           id="rentabilidade"
           title="Rentabilidade"
@@ -501,7 +788,8 @@ export default function FundoInvestimento() {
                 {rentRows.length === 0 ? (
                   <tr>
                     <td colSpan={3} className="px-4 py-6 text-center text-slate-600">
-                      Nenhum registro ainda. Cadastre no CMS em: <b>Fundo • Página → Rentabilidade → Tabela Mensal</b>.
+                      Nenhum registro ainda. Cadastre no CMS em:{" "}
+                      <b>Fundo • Página → Rentabilidade → Tabela Mensal</b>.
                     </td>
                   </tr>
                 ) : (
@@ -518,13 +806,12 @@ export default function FundoInvestimento() {
           </div>
         </SectionCard>
 
-        {/* Portfólio */}
         <SectionCard
           id="portfolio"
           title="Características do portfólio"
           subtitle="Indicadores e repartições de exposição."
         >
-          <div className="grid gap-6 lg:grid-cols-2">
+          <div className="grid gap-5 lg:grid-cols-[0.8fr_1.2fr] items-start">
             <Table2Col
               rows={[
                 {
@@ -539,73 +826,10 @@ export default function FundoInvestimento() {
               ]}
             />
 
-            <div className="rounded-xl border border-brand-navy/15 p-4">
-  <div className="text-sm font-semibold text-brand-navy">
-    Repartições da Exposição
-  </div>
-
-  <div className="mt-3 h-[320px] w-full">
-    {exposicao.length === 0 ? (
-      <div className="flex h-full items-center justify-center text-sm text-slate-600">
-        Sem dados de exposição.
-      </div>
-    ) : (
-      <ResponsiveContainer width="100%" height="100%">
-        <PieChart>
-          <Tooltip
-            formatter={(value, name) => [`${Number(value).toFixed(1)}%`, name]}
-          />
-
-          <Legend
-            layout="vertical"
-            align="right"
-            verticalAlign="middle"
-            iconType="circle"
-            wrapperStyle={{ paddingLeft: 12 }}
-          />
-
-          <Pie
-            data={exposicao}
-            dataKey="percentual"
-            nameKey="setor"
-            cx="40%"
-            cy="50%"
-            innerRadius="55%"
-            outerRadius="85%"
-            paddingAngle={2}
-            labelLine={false}
-            label={({ percent }) =>
-              percent && percent > 0.04 ? `${(percent * 100).toFixed(0)}%` : ""
-            }
-          >
-            {exposicao.map((_, i) => (
-              <Cell
-                key={`cell-${i}`}
-                // cores (pode ajustar depois). Não aplica grayscale.
-                fill={[
-                  "#1E3A8A",
-                  "#F59E0B",
-                  "#3B82F6",
-                  "#F97316",
-                  "#10B981",
-                  "#8B5CF6",
-                  "#EF4444",
-                  "#14B8A6",
-                  "#A855F7",
-                  "#22C55E",
-                ][i % 10]}
-              />
-            ))}
-          </Pie>
-        </PieChart>
-      </ResponsiveContainer>
-    )}
-  </div>
-</div>
+            <ExposureDonutCard items={exposicao} />
           </div>
         </SectionCard>
 
-        {/* Taxas */}
         <SectionCard id="taxas" title="Taxas" subtitle="Conforme configuração do fundo.">
           <div className="overflow-hidden rounded-xl border border-brand-navy/15">
             <table className="w-full text-sm">
@@ -627,25 +851,24 @@ export default function FundoInvestimento() {
           </div>
         </SectionCard>
 
-{/* Plataformas de distribuição */}
-<PlataformasDistribuicao
-  plataformas={[
-    {
-      name: "Nova Futura",
-      logo: logoNovaFutura,
-      href: "https://www.novafutura.com.br/",
-    },
-  ]}
-/>
+        <PlataformasDistribuicao
+          plataformas={[
+            {
+              name: "Nova Futura",
+              logo: logoNovaFutura,
+              href: "https://www.novafutura.com.br/",
+              imgClass: "h-48",
+            },
+          ]}
+        />
 
-        {/* Documentos */}
         <SectionCard id="documentos" title="Documentos">
           {docs.length === 0 ? (
             <div className="rounded-xl border border-brand-navy/15 bg-white p-5 text-sm text-slate-600">
               Nenhum documento cadastrado ainda.
             </div>
           ) : (
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 items-stretch">
+            <div className="grid items-stretch gap-6 md:grid-cols-2 lg:grid-cols-3">
               {docs.map((d, i) => (
                 <DocCard key={i} titulo={d.titulo} data={d.data} pdf={d.pdf} />
               ))}
@@ -653,193 +876,31 @@ export default function FundoInvestimento() {
           )}
         </SectionCard>
 
-        {/* Instituições */}
-<SectionCard
-  id="instituicoes"
-  title="Instituições"
-  subtitle="Administração, gestão, custódia e registros relacionados ao fundo."
->
-  <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-<LogoCard
-  label="ADMINISTRADORA E DISTRIBUIDORA"
-  src={logoNovaFutura}
-  alt="Nova Futura"
-  imgClass="h-48"
-/>
-
-<LogoCard
-  label="GESTORA DE RECURSOS"
-  src={logoSmartSave}
-  alt="SmartSave"
-  imgClass="h-10"
-/>
-
-<LogoCard
-  label="BANCO CUSTODIANTE"
-  src={logoB3}
-  alt="B3"
-  imgClass="h-24"
-/>
-
-<LogoCard
-  label="CONSULTOR DE VALORES MOBILIÁRIOS"
-  src={logoStockCapital}
-  alt="Stock Capital"
-  imgClass="h-16"
-/>
-
-<LogoCard
-  label="ANBIMA"
-  src={logoANBIMA}
-  alt="ANBIMA"
-  imgClass="h-16"
-/>
-
-<LogoCard
-  label="CVM"
-  src={logoCVM}
-  alt="CVM"
-  imgClass="h-16"
-/>
-
-  </div>
-</SectionCard>
-
+        <SectionCard
+          id="instituicoes"
+          title="Instituições"
+          subtitle="Administração, gestão, custódia e registros relacionados ao fundo."
+        >
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            <LogoCard label="ADMINISTRADORA E DISTRIBUIDORA" src={logoNovaFutura} alt="Nova Futura" imgClass="h-48" />
+            <LogoCard label="GESTORA DE RECURSOS" src={logoSmartSave} alt="SmartSave" imgClass="h-12" />
+            <LogoCard label="BANCO CUSTODIANTE" src={logoB3} alt="B3" imgClass="h-24" />
+            <LogoCard label="CONSULTOR DE VALORES MOBILIÁRIOS" src={logoStockCapital} alt="Stock Capital" imgClass="h-16" />
+            <LogoCard label="ANBIMA" src={logoANBIMA} alt="ANBIMA" imgClass="h-16" />
+            <LogoCard label="CVM" src={logoCVM} alt="CVM" imgClass="h-16" />
+          </div>
+        </SectionCard>
       </main>
 
       {/* Botões flutuantes */}
       <FloatingWhatsApp />
       <ScrollToTopButton />
 
-      {/* Rodapé */}
       <footer className="border-t border-brand-navy/10 bg-brand-primary py-10 text-white">
         <div className="mx-auto max-w-7xl px-4 text-center text-sm text-white/90">
           © {new Date().getFullYear()} Stock Capital MFO — Todos os direitos reservados.
         </div>
       </footer>
     </div>
-  );
-}
-
-function PlataformasDistribuicao() {
-  const plataformas = [
-    {
-      nome: "Nova Futura",
-      url: "https://www.novafutura.com.br/",
-      logo: logoNovaFutura,
-      imgClass: "h-48", 
-    },
-  ];
-
-  return (
-    <SectionCard
-      id="plataformas"
-      title="Invista por meio das plataformas de distribuição"
-      subtitle="O Stock Capital Fundo de Investimento Financeiro Multimercado está disponível nas plataformas parceiras:"
-    >
-      <div className="
-  grid
-  gap-6
-  justify-center
-  grid-cols-[repeat(auto-fit,minmax(220px,260px))]
-">
-        {plataformas.map((p, i) => (
-          <a
-            key={i}
-            href={p.url}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="
-              group
-              rounded-xl 
-              border border-brand-navy/10 
-              bg-white 
-              p-6
-              flex items-center justify-center
-              transition
-              hover:shadow-md
-              hover:border-brand-navy/20
-            "
-          >
-            <div className="flex h-20 items-center justify-center">
-              <img
-                src={p.logo}
-                alt={p.nome}
-                className={cx(
-  "w-auto object-contain transition duration-300",
-  p.imgClass
-)}
-                loading="lazy"
-                decoding="async"
-              />
-            </div>
-          </a>
-        ))}
-      </div>
-    </SectionCard>
-  );
-}
-
-function LogoCard({ label, src, alt, imgClass = "" }) {
-  return (
-    <div className="
-      rounded-xl border border-brand-navy/10 
-      bg-white p-4
-      flex flex-col items-center
-      text-center
-    ">
-      
-      <div className="
-        text-[11px] 
-        font-semibold 
-        tracking-wider 
-        text-slate-500
-        uppercase
-      ">
-        {label}
-      </div>
-
-      {/* Área padrão */}
-      <div className="mt-4 flex h-16 w-full items-center justify-center">
-        <img
-          src={src}
-          alt={alt}
-          className={`
-            object-contain
-            transition duration-300
-            hover:scale-105
-            ${imgClass}
-          `}
-          loading="lazy"
-        />
-      </div>
-    </div>
-  );
-}
-
-function DocCard({ titulo, data, pdf }) {
-  return (
-    <article
-      className="
-        flex h-full min-h-[170px] flex-col justify-between
-        rounded-xl border border-brand-navy/15 bg-white p-5 shadow-sm
-        transition hover:shadow-md
-      "
-    >
-      <div>
-        <h3 className="font-semibold text-brand-navy line-clamp-2">{titulo}</h3>
-        {data && <p className="mt-1 text-xs text-slate-500">{data}</p>}
-      </div>
-
-      {pdf && (
-        <a
-          href={pdf}
-          className="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-lg border border-brand-navy/20 px-3 py-2 text-sm font-medium hover:bg-brand-100"
-          download
-        >
-          Baixar PDF
-        </a>
-      )}
-    </article>
   );
 }
