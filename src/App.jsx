@@ -8,6 +8,7 @@ import ChartsSection from "./components/charts/ChartsSection.jsx";
 import { Link } from "react-router-dom";
 import FloatingWhatsApp from "./components/FloatingWhatsApp.jsx";
 import ScrollToTopButton from "./components/ScrollToTopButton.jsx";
+import { BriefcaseBusiness, LineChart, CalendarDays, ArrowRight } from "lucide-react";
 
 const POLICY_VERSION = "v1";
 
@@ -214,18 +215,71 @@ export default function App() {
                 Gerenciamos patrimônios com excelência para construir o mundo ao nosso redor.
               </h1>
 
-              {/* Botão Fale Conosco (env vars) */}
-              <div className="mt-8 flex justify-center hover:-translate-y-0.5">
-                <a
-                  href={`https://calendar.app.google/MvXcvYdRbtoENSU16`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="mt-6 rounded-xl bg-brand-navy px-6 py-3 text-sm font-semibold text-white 
-                             shadow-sm transition hover:bg-brand-primary"
-                >
-                  Fale Conosco
-                </a>
-              </div>
+              {/* Botões (3 CTAs) centralizados */}
+<div className="mt-8 flex flex-wrap items-center justify-center gap-3">
+  {/* Nossos Serviços -> seção */}
+  <button
+    onClick={() => goTo("nossos-servicos")}
+    className="
+rounded-xl px-5 py-3 text-sm font-semibold
+border border-white/60 bg-white/10 text-white backdrop-blur
+transition-all duration-300 ease-out
+hover:bg-brand-navy
+hover:text-white
+hover:border-brand-navy
+hover:-translate-y-0.5
+hover:shadow-xl
+focus:outline-none focus-visible:ring-2 focus-visible:ring-white/70
+inline-flex items-center justify-center
+"
+
+  >
+    Nossos Serviços
+  </button>
+
+  {/* Fundo de Investimento -> página */}
+  <Link
+    to="/fundo-de-investimento"
+    onClick={() => setMenuOpen(false)}
+    className="
+rounded-xl px-5 py-3 text-sm font-semibold
+border border-white/60 bg-white/10 text-white backdrop-blur
+transition-all duration-300 ease-out
+hover:bg-brand-navy
+hover:text-white
+hover:border-brand-navy
+hover:-translate-y-0.5
+hover:shadow-xl
+focus:outline-none focus-visible:ring-2 focus-visible:ring-white/70
+inline-flex items-center justify-center
+"
+
+  >
+    Fundo de Investimento
+  </Link>
+
+  {/* Fale Conosco */}
+  <a
+    href="https://calendar.app.google/MvXcvYdRbtoENSU16"
+    target="_blank"
+    rel="noopener noreferrer"
+    className="
+rounded-xl px-5 py-3 text-sm font-semibold
+border border-white/60 bg-white/10 text-white backdrop-blur
+transition-all duration-300 ease-out
+hover:bg-brand-navy
+hover:text-white
+hover:border-brand-navy
+hover:-translate-y-0.5
+hover:shadow-xl
+focus:outline-none focus-visible:ring-2 focus-visible:ring-white/70
+inline-flex items-center justify-center
+"
+ >
+    Fale Conosco
+  </a>
+</div>
+
             </div>
           </div>
         </div>
