@@ -45,7 +45,12 @@
       {
         "mes": "01/2026",
         "fundo": 0,
-        "cdi": 0
+        "cdi": 1.16
+      },
+      {
+        "mes": "02/2026",
+        "cdi": 0.61,
+        "fundo": 0
       }
     ],
     "observacao": "Tabela atualizável mensalmente via CMS."
