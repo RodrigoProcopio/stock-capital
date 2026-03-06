@@ -737,7 +737,7 @@ export default function FundoInvestimento() {
         <SectionCard
           id="rentabilidade"
           title="Rentabilidade"
-          subtitle={`Tabela mensal (${data?.rentabilidade?.formato_mes ?? "MM/AAAA"}) e comparação mensal de rentabilidade em %.`}
+          subtitle="tabela mensal de comparação de rentabilidade em %"
         >
           <div className="h-[320px] w-full rounded-xl border border-brand-navy/15 p-4">
             {rentChartRows.length === 0 ? (
