@@ -767,7 +767,7 @@ export default function FundoInvestimento() {
       type="monotone"
       dataKey="cdi"
       name="CDI (%)"
-      stroke="#10b981"
+      stroke="#d4a017"
       strokeWidth={2.5}
       dot={false}
       activeDot={{ r: 5 }}
