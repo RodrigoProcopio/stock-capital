@@ -746,28 +746,34 @@ export default function FundoInvestimento() {
               </div>
             ) : (
               <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={rentChartRows}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="mes" tick={{ fontSize: 12 }} />
-                  <YAxis tick={{ fontSize: 12 }} />
-                  <Tooltip formatter={(value) => pct(value)} />
-                  <Legend />
-                  <Line
-                    type="monotone"
-                    dataKey="fundo"
-                    name="Fundo (%)"
-                    strokeWidth={2}
-                    dot={false}
-                  />
-                  <Line
-                    type="monotone"
-                    dataKey="cdi"
-                    name="CDI (%)"
-                    strokeWidth={2}
-                    dot={false}
-                  />
-                </LineChart>
-              </ResponsiveContainer>
+  <LineChart data={rentChartRows}>
+    <CartesianGrid strokeDasharray="3 3" />
+    <XAxis dataKey="mes" tick={{ fontSize: 12 }} />
+    <YAxis tick={{ fontSize: 12 }} />
+    <Tooltip formatter={(value) => pct(value)} />
+    <Legend />
+
+    <Line
+      type="monotone"
+      dataKey="fundo"
+      name="Fundo (%)"
+      stroke="#0f2a5f"
+      strokeWidth={2.5}
+      dot={false}
+      activeDot={{ r: 5 }}
+    />
+
+    <Line
+      type="monotone"
+      dataKey="cdi"
+      name="CDI (%)"
+      stroke="#10b981"
+      strokeWidth={2.5}
+      dot={false}
+      activeDot={{ r: 5 }}
+    />
+  </LineChart>
+</ResponsiveContainer>
             )}
           </div>
 
