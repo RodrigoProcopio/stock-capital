@@ -757,7 +757,7 @@ export default function FundoInvestimento() {
       type="monotone"
       dataKey="fundo"
       name="Fundo (%)"
-      stroke="#0f2a5f"
+      stroke="#10b981"
       strokeWidth={2.5}
       dot={false}
       activeDot={{ r: 5 }}
