@@ -1,7 +1,7 @@
 {
   "type": "desempenho",
   "title": "Rentabilidade Mensal",
-  "subtitle": "Tabela mensal (MM/AAAA) e crescimento hipotético (base 100).",
+  "subtitle": ,
   "accumulation": "none",
   "notes": "¹ Retorno acima do IPCA · ² IFHA indica a rentabilidade dos fundos multimercado no Brasil",
   "autoplay_seconds": 8,
