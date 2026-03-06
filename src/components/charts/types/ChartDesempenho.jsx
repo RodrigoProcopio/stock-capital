@@ -26,16 +26,30 @@ const fmtMes = (iso) => {
 };
 
 /**
- * buildMonthlyData agora retorna apenas os valores MENSAIS (não acumulados)
- * - rendimento: valor mensal direto em % (ex: 1.13%)
- * - mensal: mesmo valor (para compatibilidade com tooltip)
+ * buildAccumulated agora devolve OS DOIS VALORES:
+ * - rendimento: acumulado (mantém a linha e o rótulo final)
+ * - mensal: valor isolado do mês (para o tooltip)
  */
-function buildMonthlyData(arr = []) {
+function buildAccumulated(arr = [], mode = "compound") {
   const sorted = [...arr].sort((a, b) => (a.date < b.date ? -1 : a.date > b.date ? 1 : 0));
 
+  if (mode === "sum") {
+    let acc = 0;
+    return sorted.map(({ date, rendimento }) => {
+      const mensal = Number(rendimento) || 0;
+      acc += mensal;
+      return { date, rendimento: acc, mensal };
+    });
+  }
+
+  // compound
+  let accMul = 1;
   return sorted.map(({ date, rendimento }) => {
-    const mensal = Number(rendimento) || 0;  // % do mês (ex.: 1.13)
-    return { date, rendimento: mensal, mensal };
+    const mensal = Number(rendimento) || 0;      // % do mês (ex.: 1.13)
+    const r = Number(rendimento) / 100;
+    accMul *= 1 + (Number.isFinite(r) ? r : 0);
+    const acumulado = (accMul - 1) * 100;        // % acumulado até o mês
+    return { date, rendimento: acumulado, mensal };
   });
 }
 
@@ -78,10 +92,11 @@ export default function ChartDesempenho({ config }) {
     let alive = true;
     (async () => {
       try {
+        const mode = (config.accumulation || "compound").toLowerCase(); // "sum" | "compound"
         const loaded = (config.series || []).map((s) => {
           const raw = readJson(String(s.source));
           const rows = Array.isArray(raw) ? raw : Array.isArray(raw?.series) ? raw.series : [];
-          const data = buildMonthlyData(rows); // Agora usa valores mensais diretos
+          const data = buildAccumulated(rows, mode);
           const label =
             s.label ||
             raw?.nome ||
@@ -108,20 +123,9 @@ export default function ChartDesempenho({ config }) {
     return <div className="h-[460px] grid place-items-center">Carregando…</div>;
   }
 
-  // Cálculo do range do eixo Y para valores mensais
-  const allValues = series.flatMap((s) => s.data.map((d) => Number(d.rendimento) || 0));
-  const minY = Math.min(0, ...allValues);
-  const maxY = Math.max(...allValues);
-  
-  // Arredonda para múltiplos de 2 para melhor visualização
-  const top = Math.ceil(maxY / 2) * 2;
-  const bottom = Math.floor(minY / 2) * 2;
-  
-  // Cria ticks a cada 2%
-  const yTicks = [];
-  for (let i = bottom; i <= top; i += 2) {
-    yTicks.push(i);
-  }
+  const maxY = Math.max(16, ...series.flatMap((s) => s.data.map((d) => Number(d.rendimento) || 0)));
+  const top = Math.ceil(maxY / 4) * 4;
+  const yTicks = Array.from({ length: Math.floor(top / 4) + 1 }, (_, i) => i * 4);
 
   return (
     <figure className="w-full">
@@ -136,14 +140,14 @@ export default function ChartDesempenho({ config }) {
         <LineChart data={baseData} margin={{ top: 12, right: 170, left: 48, bottom: 28 }}>
           <CartesianGrid strokeDasharray="3 3" />
           <XAxis dataKey="date" type="category" allowDuplicatedCategory={false} tickMargin={8} />
-          <YAxis ticks={yTicks} domain={[bottom, top]} tickFormatter={(v) => `${v}%`} width={44} />
+          <YAxis ticks={yTicks} domain={[0, top]} tickFormatter={(v) => `${v}%`} width={44} />
 
-          {/* Tooltip customizado: mostra valores mensais de cada série */}
+          {/* Tooltip customizado: mostra valores mensais (isolados) de cada série */}
           <Tooltip content={<CustomTooltip />} />
 
           {series.map((s, idx) => {
             const sty = styleFor(s.label, idx);
-            const yKey = s.yKey || "rendimento"; // Agora traça os valores MENSAIS
+            const yKey = s.yKey || "rendimento"; // continua traçando o ACUMULADO
             return (
               <Line
                 key={idx}
@@ -156,7 +160,7 @@ export default function ChartDesempenho({ config }) {
                 strokeDasharray={sty.strokeDasharray}
                 dot={false}
               >
-                {/* Label final mostra o valor mensal do último período + nome da série */}
+                {/* Label final continua mostrando o acumulado + nome da série */}
                 <LabelList
                   dataKey={yKey}
                   position="right"
