@@ -1,7 +1,7 @@
 {
   "type": "desempenho",
   "title": "Rentabilidade Mensal",
-  "subtitle": ,
+  "subtitle": "none",
   "accumulation": "none",
   "notes": "¹ Retorno acima do IPCA · ² IFHA indica a rentabilidade dos fundos multimercado no Brasil",
   "autoplay_seconds": 8,
