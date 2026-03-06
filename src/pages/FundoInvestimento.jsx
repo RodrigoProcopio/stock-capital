@@ -1,4 +1,3 @@
-// src/pages/FundoInvestimento.jsx
 import React, { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import logo from "../assets/logo.png";
@@ -82,29 +81,6 @@ function parseMesToSortable(mes) {
   return new Date(y, m - 1, 1).getTime();
 }
 
-function buildCrescimentoHipotetico(rows) {
-  const sorted = [...rows].sort(
-    (a, b) => parseMesToSortable(a.mes) - parseMesToSortable(b.mes)
-  );
-
-  let fundoAcc = 100;
-  let cdiAcc = 100;
-
-  const out = [];
-  for (const r of sorted) {
-    const rf = Number(r.fundo ?? 0);
-    const rc = Number(r.cdi ?? 0);
-    fundoAcc *= 1 + (Number.isFinite(rf) ? rf : 0) / 100;
-    cdiAcc *= 1 + (Number.isFinite(rc) ? rc : 0) / 100;
-    out.push({
-      mes: r.mes,
-      fundoBase100: Number(fundoAcc.toFixed(2)),
-      cdiBase100: Number(cdiAcc.toFixed(2)),
-    });
-  }
-  return out;
-}
-
 /* =========================
    UI COMPONENTS
 ========================= */
@@ -140,7 +116,6 @@ function FundHeader({ data }) {
             </p>
           </div>
 
-          {/* Card taxa admin centralizado */}
           <div
             className="
               flex flex-col items-center justify-center text-center
@@ -325,7 +300,7 @@ function ExposureDonutCard({ title = "Repartições da Exposição", items }) {
     const cleaned = safe
       .map((x, idx) => ({
         name: x.setor ?? "—",
-        value: Number(x.percentual ?? 0), // ✅ vem do CMS
+        value: Number(x.percentual ?? 0),
         color: palette[idx % palette.length],
       }))
       .filter((x) => Number.isFinite(x.value) && x.value > 0)
@@ -347,7 +322,6 @@ function ExposureDonutCard({ title = "Repartições da Exposição", items }) {
     );
   }
 
-  // ✅ Label usa o MESMO valor da legenda (CMS)
   const renderPercentLabel = (props) => {
     const { cx, cy, midAngle, innerRadius, outerRadius, payload } = props;
     const RADIAN = Math.PI / 180;
@@ -369,7 +343,6 @@ function ExposureDonutCard({ title = "Repartições da Exposição", items }) {
     );
   };
 
-  // ✅ “Explode” no hover
   const renderActiveShape = (props) => {
     const {
       cx,
@@ -387,7 +360,7 @@ function ExposureDonutCard({ title = "Repartições da Exposição", items }) {
           cx={cx}
           cy={cy}
           innerRadius={innerRadius}
-          outerRadius={outerRadius + 10} // “sai” do donut
+          outerRadius={outerRadius + 10}
           startAngle={startAngle}
           endAngle={endAngle}
           fill={fill}
@@ -400,7 +373,7 @@ function ExposureDonutCard({ title = "Repartições da Exposição", items }) {
           startAngle={startAngle}
           endAngle={endAngle}
           fill={fill}
-          opacity={0.15} // glow sutil
+          opacity={0.15}
         />
       </g>
     );
@@ -425,8 +398,6 @@ function ExposureDonutCard({ title = "Repartições da Exposição", items }) {
         {title}
       </div>
       <div className="mt-4 grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
-
-        {/* DONUT */}
         <div className="relative h-[250px] w-full">
           <ResponsiveContainer width="100%" height="100%">
             <PieChart>
@@ -457,7 +428,6 @@ function ExposureDonutCard({ title = "Repartições da Exposição", items }) {
           </ResponsiveContainer>
         </div>
 
-         {/* LEGENDA */}
         <div className="md:block">
           <div className="md:hidden">
             <button
@@ -479,20 +449,23 @@ function ExposureDonutCard({ title = "Repartições da Exposição", items }) {
             ].join(" ")}
           >
             {data.cleaned.map((item, i) => (
-              <div className="flex items-center justify-between gap-2 rounded-md border border-brand-navy/10 bg-white px-2 py-1.5">
-  <div className="flex min-w-0 items-center gap-2">
-    <span
-      className="h-2 w-2 flex-none rounded-full"
-      style={{ backgroundColor: item.color }}
-    />
-    <span className="truncate text-xs text-slate-600">
-      {item.name}
-    </span>
-  </div>
-  <span className="flex-none text-xs font-semibold text-slate-700">
-    {fmtPct(item.value)}
-  </span>
-</div>
+              <div
+                key={`${item.name}-${i}`}
+                className="flex items-center justify-between gap-2 rounded-md border border-brand-navy/10 bg-white px-2 py-1.5"
+              >
+                <div className="flex min-w-0 items-center gap-2">
+                  <span
+                    className="h-2 w-2 flex-none rounded-full"
+                    style={{ backgroundColor: item.color }}
+                  />
+                  <span className="truncate text-xs text-slate-600">
+                    {item.name}
+                  </span>
+                </div>
+                <span className="flex-none text-xs font-semibold text-slate-700">
+                  {fmtPct(item.value)}
+                </span>
+              </div>
             ))}
           </div>
         </div>
@@ -633,12 +606,25 @@ export default function FundoInvestimento() {
     );
   }, [data]);
 
-  const crescimento = useMemo(() => {
+  const rentChartRows = useMemo(() => {
     const rows = Array.isArray(data?.rentabilidade?.tabela_mensal)
       ? data.rentabilidade.tabela_mensal
       : [];
-    return buildCrescimentoHipotetico(rows);
+
+    return [...rows]
+      .sort((a, b) => parseMesToSortable(a.mes) - parseMesToSortable(b.mes))
+      .map((r) => ({
+        mes: r.mes,
+        fundo: Number(r.fundo ?? 0),
+        cdi: Number(r.cdi ?? 0),
+      }));
   }, [data]);
+
+  const visibleRentRows = useMemo(() => {
+    return rentRows.slice(0, 12);
+  }, [rentRows]);
+
+  const hasMoreThan12Rows = rentRows.length > 12;
 
   const exposicao = useMemo(() => {
     const items = Array.isArray(data?.exposicao?.itens)
@@ -664,7 +650,6 @@ export default function FundoInvestimento() {
 
   return (
     <div className="min-h-screen bg-gray-50 text-slate-ink">
-      {/* Header */}
       <header className="border-b border-brand-navy/10 bg-white">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
           <Link
@@ -691,7 +676,6 @@ export default function FundoInvestimento() {
         </div>
       </header>
 
-      {/* Tabs */}
       <Tabs tabs={tabs} activeId={active} onSelect={go} />
 
       <main className="mx-auto max-w-6xl space-y-8 px-6 py-8">
@@ -753,57 +737,88 @@ export default function FundoInvestimento() {
         <SectionCard
           id="rentabilidade"
           title="Rentabilidade"
-          subtitle={`Tabela mensal (${data?.rentabilidade?.formato_mes ?? "MM/AAAA"}) e crescimento hipotético (base 100).`}
+          subtitle={`Tabela mensal (${data?.rentabilidade?.formato_mes ?? "MM/AAAA"}) e comparação mensal de rentabilidade em %.`}
         >
           <div className="h-[320px] w-full rounded-xl border border-brand-navy/15 p-4">
-            {crescimento.length === 0 ? (
+            {rentChartRows.length === 0 ? (
               <div className="flex h-full items-center justify-center text-sm text-slate-600">
                 Sem dados para exibir o gráfico. Adicione linhas em “Rentabilidade → Tabela Mensal” no CMS.
               </div>
             ) : (
               <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={crescimento}>
+                <LineChart data={rentChartRows}>
                   <CartesianGrid strokeDasharray="3 3" />
                   <XAxis dataKey="mes" tick={{ fontSize: 12 }} />
                   <YAxis tick={{ fontSize: 12 }} />
-                  <Tooltip />
+                  <Tooltip formatter={(value) => pct(value)} />
                   <Legend />
-                  <Line type="monotone" dataKey="fundoBase100" name="Fundo (Base 100)" strokeWidth={2} dot={false} />
-                  <Line type="monotone" dataKey="cdiBase100" name="CDI (Base 100)" strokeWidth={2} dot={false} />
+                  <Line
+                    type="monotone"
+                    dataKey="fundo"
+                    name="Fundo (%)"
+                    strokeWidth={2}
+                    dot={false}
+                  />
+                  <Line
+                    type="monotone"
+                    dataKey="cdi"
+                    name="CDI (%)"
+                    strokeWidth={2}
+                    dot={false}
+                  />
                 </LineChart>
               </ResponsiveContainer>
             )}
           </div>
 
           <div className="mt-6 overflow-hidden rounded-xl border border-brand-navy/15">
-            <table className="w-full text-sm">
-              <thead className="bg-brand-100/30">
-                <tr className="text-left">
-                  <th className="px-4 py-3 font-semibold text-slate-700">Mês</th>
-                  <th className="px-4 py-3 font-semibold text-slate-700">Fundo (%)</th>
-                  <th className="px-4 py-3 font-semibold text-slate-700">CDI (%)</th>
-                </tr>
-              </thead>
-              <tbody>
-                {rentRows.length === 0 ? (
-                  <tr>
-                    <td colSpan={3} className="px-4 py-6 text-center text-slate-600">
-                      Nenhum registro ainda. Cadastre no CMS em:{" "}
-                      <b>Fundo • Página → Rentabilidade → Tabela Mensal</b>.
-                    </td>
+            <div
+              className={cx(
+                "overflow-y-auto",
+                hasMoreThan12Rows ? "max-h-[565px]" : ""
+              )}
+            >
+              <table className="w-full text-sm">
+                <thead className="sticky top-0 z-10 bg-brand-100/30">
+                  <tr className="text-left">
+                    <th className="px-4 py-3 font-semibold text-slate-700">Mês</th>
+                    <th className="px-4 py-3 font-semibold text-slate-700">Fundo (%)</th>
+                    <th className="px-4 py-3 font-semibold text-slate-700">CDI (%)</th>
                   </tr>
-                ) : (
-                  rentRows.map((r, idx) => (
-                    <tr key={idx} className="border-t border-brand-navy/10">
-                      <td className="px-4 py-3 font-semibold text-slate-700">{r.mes}</td>
-                      <td className="px-4 py-3 text-slate-700">{pct(r.fundo)}</td>
-                      <td className="px-4 py-3 text-slate-700">{pct(r.cdi)}</td>
+                </thead>
+                <tbody>
+                  {rentRows.length === 0 ? (
+                    <tr>
+                      <td colSpan={3} className="px-4 py-6 text-center text-slate-600">
+                        Nenhum registro ainda. Cadastre no CMS em:{" "}
+                        <b>Fundo • Página → Rentabilidade → Tabela Mensal</b>.
+                      </td>
                     </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
+                  ) : (
+                    rentRows.map((r, idx) => (
+                      <tr
+                        key={idx}
+                        className={cx(
+                          "border-t border-brand-navy/10",
+                          idx >= visibleRentRows.length ? "opacity-100" : ""
+                        )}
+                      >
+                        <td className="px-4 py-3 font-semibold text-slate-700">{r.mes}</td>
+                        <td className="px-4 py-3 text-slate-700">{pct(r.fundo)}</td>
+                        <td className="px-4 py-3 text-slate-700">{pct(r.cdi)}</td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
           </div>
+
+          {hasMoreThan12Rows && (
+            <p className="mt-3 text-xs text-slate-500">
+              Exibindo os 12 meses mais recentes primeiro. Role a tabela para visualizar os períodos anteriores.
+            </p>
+          )}
         </SectionCard>
 
         <SectionCard
@@ -892,7 +907,6 @@ export default function FundoInvestimento() {
         </SectionCard>
       </main>
 
-      {/* Botões flutuantes */}
       <FloatingWhatsApp />
       <ScrollToTopButton />
 
