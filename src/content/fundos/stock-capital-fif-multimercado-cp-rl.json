@@ -43,14 +43,54 @@
     "formato_mes": "MM/AAAA",
     "tabela_mensal": [
       {
-        "mes": "01/2026",
-        "fundo": 0,
-        "cdi": 1.16
+        "mes": "03/2021",
+        "fundo": 4.04,
+        "cdi": 0.16
       },
       {
-        "mes": "02/2026",
-        "cdi": 0.61,
-        "fundo": 0
+        "mes": "04/2021",
+        "cdi": 1.11,
+        "fundo": 1.01
+      },
+      {
+        "mes": "05/2021",
+        "cdi": 1.69,
+        "fundo": 7.24
+      },
+      {
+        "mes": "06/2021",
+        "cdi": 2.22,
+        "fundo": 0.2
+      },
+      {
+        "mes": "07/2021",
+        "cdi": 2.56,
+        "fundo": 0.22
+      },
+      {
+        "cdi": 2.6,
+        "fundo": 2.65,
+        "mes": "08/2021"
+      },
+      {
+        "mes": "09/2021",
+        "cdi": 2.91,
+        "fundo": -4.12
+      },
+      {
+        "mes": "10/2021",
+        "cdi": 3.4,
+        "fundo": -1
+      },
+      {
+        "mes": "11/2021",
+        "cdi": 3.54,
+        "fundo": -1.31
+      },
+      {
+        "mes": "12/2021",
+        "cdi": 3.92,
+        "fundo": 6.85
       }
     ],
     "observacao": "Tabela atualizável mensalmente via CMS."
